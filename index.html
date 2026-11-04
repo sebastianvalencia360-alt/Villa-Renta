@@ -6269,7 +6269,7 @@ function rkInit(ask){if(RK.init)return RK.init;if(!window.claude||typeof claude.
       e=>{RK.err=e.code;RK.loading=false;clearTimeout(RK.timer);if(rkOpen())openRanking();});
     rkPush(true);return true;})().catch(()=>false);return RK.init;}
 function rkPush(force){if(!RK.db||!RK.uid||RK.can===false||RK.writing||!S)return;const st=rkStats();if(!force&&(st.score===RK.lastScore||NOW()-RK.lastW<4*60000))return;
-  RK.writing=true;RK.db.doc("ranking/"+RK.uid).set({city:String(S.name||"Mi pueblo").slice(0,32),...st,t:NOW()}).then(()=>{RK.lastScore=st.score;RK.lastW=NOW();})
+  RK.writing=true;RK.db.doc("ranking/"+RK.uid).set({name:String(S.mayor||"").slice(0,20),city:String(S.name||"Mi pueblo").slice(0,32),...st,t:NOW()}).then(()=>{RK.lastScore=st.score;RK.lastW=NOW();})
     .catch(e=>{if(e&&e.code==="invalid_argument"){RK.can=false;if(rkOpen())openRanking();}}).finally(()=>{RK.writing=false;});}
 async function openRanking(){modalFn=openRanking;const me=rkStats();
   const shell=(body)=>openModal(head("Ranking de alcaldes","Compite con quienes juegan tu Villa Renta")+body,true);
@@ -6287,7 +6287,7 @@ async function openRanking(){modalFn=openRanking;const me=rkStats();
   const foot=RK.can===false?`<div class="note">Puedes ver el ranking, pero para aparecer en él el dueño del juego debe compartírtelo con permiso para editar.</div>`:pos>=0?`<div class="note good">Vas en el puesto <b>#${pos+1}</b> de ${rows.length}.</div>`:"";
   shell(tabs+list+foot+rkMine(me,pos));
   const box=$("#modal");rows.slice(0,50).forEach((r,i)=>{const p=ps[r.id]||{};const im=box.querySelector(`[data-rk="${i}"]`),nm=box.querySelector(`[data-rkn="${i}"]`),ct=box.querySelector(`[data-rkc="${i}"]`);
-    if(im)im.src=p.avatarUrl||"";if(nm)nm.textContent=(r.id===RK.uid?"Tú":(p.name||"Alcalde"));if(ct)ct.textContent=String(r.city||"Pueblo sin nombre");});}
+    if(im)im.src=p.avatarUrl||"";if(nm)nm.textContent=(r.id===RK.uid?"Tú":(r.name||p.name||"Alcalde"));if(ct)ct.textContent=String(r.city||"Pueblo sin nombre");});}
 function rkMine(st,pos){return `<div class="rkme"><b>Tu puntaje: ${fmt(st.score)}</b><small>Población ${fmt(st.pop)} ×3 · Nivel ${st.lvl} ×200 · Logros ${st.ach} ×120 · Islas ${st.isles} ×400 · Felicidad ${st.happy}% ×5 · Construcciones y ganancias también suman</small></div>`;}
 (function(){const st=document.createElement("style");st.textContent=`.rk{display:grid;gap:6px;margin-top:8px;max-height:52vh;overflow:auto;padding-right:2px}
 .rkr{display:grid;grid-template-columns:34px 36px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 10px;border:2px solid var(--line);border-radius:12px;background:var(--paper)}
@@ -6324,6 +6324,60 @@ bitsBase(lbits,lbase,4,3);bitsBase(dbits,dbase,2,1);lbits[28]=0;lbase[28]=258;fi
 function inflate(src,sizeHint){const d=new D(src,new Uint8Array(sizeHint||src.length*4));let bfinal;do{bfinal=bit(d);const type=bits(d,2,0);if(type===0)stored(d);else if(type===1)block(d,sltree,sdtree);else if(type===2){dyn(d,d.lt,d.dt);block(d,d.lt,d.dt);}else throw new Error("inflate: bloque inválido");}while(!bfinal);return d.d.subarray(0,d.o);}
 return function(u8){if(u8[0]!==0x1f||u8[1]!==0x8b)return u8;const flg=u8[3];let p=10;if(flg&4){p+=2+(u8[p]|(u8[p+1]<<8));}if(flg&8){while(u8[p++]);}if(flg&16){while(u8[p++]);}if(flg&2)p+=2;
  const n=u8.length,isize=(u8[n-4]|(u8[n-3]<<8)|(u8[n-2]<<16)|(u8[n-1]<<24))>>>0;return inflate(u8.subarray(p,n-8),isize||undefined);};})();
+
+/* ---- Nombre del alcalde: se pregunta al empezar y se usa en el tutorial y el ranking ---- */
+const cleanName=(v,n)=>String(v||"").replace(/[<>&"`]/g,"").replace(/\s+/g," ").trim().slice(0,n);
+const escA=v=>String(v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+(function(){const st=document.createElement("style");st.textContent=`.tutf{display:block;margin-top:6px;font-weight:600;font-size:13px}.tutf input,.mfield input{display:block;width:100%;margin-top:3px;padding:8px 10px;border:2px solid var(--line);border-radius:10px;font:inherit;background:#fff}
+.tutf input.bad,.mfield input.bad{border-color:var(--bad);animation:mshake .3s}@keyframes mshake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}.mfield{display:block;margin:8px 0;font-weight:600}`;document.head.appendChild(st);})();
+TUT[0].btn="¡Empezar!";
+TUT[0].p=()=>`Soy Rosa, la alcaldesa a cargo mientras llegas. Antes de empezar, cuéntame:</p><label class="tutf">¿Cómo quieres que te llamen, alcalde?<input id="tutMayor" maxlength="20" placeholder="Tu nombre o apodo" autocomplete="nickname" value="${escA(S.mayor)}"></label><label class="tutf">¿Cómo se llama tu ciudad?<input id="tutCity" maxlength="24" value="${escA(S.name)}"></label><p style="margin:0">`;
+{const p1=TUT[1].p;TUT[1].p=()=>(S.mayor?`¡Bienvenido, ${S.mayor}! `:"")+p1();}
+{const L=TUT[TUT.length-1];Object.defineProperty(L,"t",{get:()=>S&&S.mayor?`¡Lo hiciste muy bien, ${S.mayor}!`:"¡Lo hiciste muy bien!",configurable:true});}
+function mayorFrom(idM,idC){const m=$("#"+idM),c=$("#"+idC);const v=cleanName(m&&m.value,20);if(!v){if(m){m.classList.remove("bad");void m.offsetWidth;m.classList.add("bad");m.focus();}toast("Escribe cómo quieres que te llamen.");return false;}
+  S.mayor=v;const cv=cleanName(c&&c.value,24);if(cv)S.name=cv;hud();save();return true;}
+{const _ta=tutAdvance;tutAdvance=function(){if(S&&S.tut&&S.tut.step===0&&!mayorFrom("tutMayor","tutCity"))return;_ta();};}
+function openMayor(){modalFn=null;openModal(head("¿Cómo quieres que te llamen?","Tu nombre aparece en el ranking y Rosa te saluda por él")+`<label class="mfield">Tu nombre de alcalde<input id="mMayor" maxlength="20" placeholder="Tu nombre o apodo" value="${escA(S.mayor)}"></label><label class="mfield">Nombre de tu ciudad<input id="mCity" maxlength="24" value="${escA(S.name)}"></label><div class="row"><button class="btn go" data-act="mayorSave">Guardar</button></div>`);setTimeout(()=>{const i=$("#mMayor");if(i)i.focus();},50);}
+let MAYOR_ASKED=false;setInterval(()=>{if(MAYOR_ASKED||!S||S.mayor||(S.tut&&S.tut.on)||!$("#modal").hidden||$("#loading").hidden===false)return;MAYOR_ASKED=true;openMayor();},4000);
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;if(b.dataset.act==="mayorSave"){e.stopPropagation();if(mayorFrom("mMayor","mCity")){closeModal();toast(`¡Listo, ${S.mayor}! Ese es tu nombre de alcalde.`,3500);}}},true);
+
+/* ---- Ranking en la página web (fuera de Claude): entrar con Google y tabla en Firebase ---- */
+const FB_CFG=null; /* se completa con la configuración del proyecto Firebase */
+const FB={ready:null,user:null,db:null,rows:[],unsub:null,err:null,loading:false,lastW:0,lastScore:-1,writing:false};
+const inClaude=()=>!!(window.claude&&typeof window.claude.use==="function");
+function fbLoad(){if(FB.ready)return FB.ready;FB.ready=new Promise((res,rej)=>{const v="10.12.2",urls=["app","auth","firestore"].map(n=>`https://www.gstatic.com/firebasejs/${v}/firebase-${n}-compat.js`);let i=0;
+  const next=()=>{if(i>=urls.length){try{if(!firebase.apps.length)firebase.initializeApp(FB_CFG);FB.db=firebase.firestore();
+      firebase.auth().onAuthStateChanged(u=>{FB.user=u;if(u){try{localStorage.setItem("vr_fb","1");}catch(e){}fbPush(true);}if(rkOpen())openRanking();});fbSub();res(true);}catch(e){FB.ready=null;rej(e);}return;}
+    const s=document.createElement("script");s.src=urls[i++];s.onload=next;s.onerror=()=>{FB.ready=null;rej(new Error("sin conexión"));};document.head.appendChild(s);};next();});return FB.ready;}
+function fbSub(){if(FB.unsub||!FB.db)return;FB.loading=true;FB.unsub=FB.db.collection("ranking").orderBy("score","desc").limit(100).onSnapshot(s=>{FB.rows=s.docs.map(d=>({id:d.id,...d.data()}));FB.loading=false;FB.err=null;if(rkOpen())openRanking();},
+  e=>{FB.err=(e&&e.code)||"error";FB.loading=false;FB.unsub=null;if(rkOpen())openRanking();});}
+function fbPush(force){if(!FB.user||!FB.db||!S||!S.mayor||FB.writing)return;const st=rkStats();if(!force&&(st.score===FB.lastScore||Date.now()-FB.lastW<4*60000))return;FB.writing=true;
+  FB.db.collection("ranking").doc(FB.user.uid).set({name:String(S.mayor).slice(0,20),city:String(S.name||"Mi pueblo").slice(0,32),score:st.score,pop:st.pop,lvl:st.lvl,ach:st.ach,isles:st.isles,built:st.built,happy:st.happy,t:Date.now()})
+    .then(()=>{FB.lastScore=st.score;FB.lastW=Date.now();}).catch(e=>{console.warn("ranking",e);}).finally(()=>{FB.writing=false;});}
+{const _orC=openRanking;openRanking=async function(){if(inClaude())return _orC();modalFn=openRanking;const me=rkStats();
+  const sh=b=>openModal(head("Ranking de alcaldes","Compite con todos los que juegan Villa Renta")+b,true);
+  if(!FB_CFG){sh(`<div class="note">El ranking en línea se está preparando. ¡Muy pronto vas a poder competir con tus amigos!</div>${rkMine(me,null)}`);return;}
+  if(!FB.db){sh(`<div class="note">Conectando con el ranking…</div>`);try{await fbLoad();}catch(e){if(rkOpen())sh(`<div class="note">No se pudo conectar al ranking. Revisa tu conexión a internet.</div>${rkMine(me,null)}`);return;}if(!rkOpen())return;}
+  const f=RK_TABS[RK.tab][1],rows=FB.rows.slice().sort((a,b)=>(b[f]||0)-(a[f]||0)||(b.score||0)-(a.score||0)),uid=FB.user&&FB.user.uid,pos=rows.findIndex(r=>r.id===uid);
+  const medal=i=>i===0?"🥇":i===1?"🥈":i===2?"🥉":`${i+1}`;
+  const tabs=`<div class="tabs" role="tablist">${Object.entries(RK_TABS).map(([k,v])=>`<button class="tab" role="tab" data-act="rkTab" data-t="${k}" aria-selected="${RK.tab===k}">${v[0]}</button>`).join("")}</div>`;
+  let list;if(FB.err)list=`<div class="note">El ranking no está disponible ahora. Vuelve a abrirlo más tarde.</div>`;else if(!rows.length)list=`<div class="note">${FB.loading?"Cargando…":"Todavía no hay nadie. ¡Sé el primero!"}</div>`;
+  else list=`<div class="rk">${rows.slice(0,50).map((r,i)=>`<div class="rkr${r.id===uid?" me":""}"><span class="rkp">${medal(i)}</span><span class="rka rki" data-rki="${i}"></span><div class="rkn"><b data-rkn="${i}"></b><small data-rkc="${i}"></small></div><div class="rks"><span>${ICON("star")} ${+r.lvl||1}</span><span>${ICON("people")} ${fmt(+r.pop||0)}</span><b>${fmt(+r[f]||0)}</b></div></div>`).join("")}</div>`;
+  const acc=!FB.user?`<div class="note">Para aparecer en el ranking entra con tu cuenta de Google. Solo se muestra tu nombre de alcalde, nunca tu correo.</div><div class="row"><button class="btn go" data-act="fbLogin">${GLOGO} Entrar con Google</button></div>`
+    :`<div class="note good">${pos>=0?`Vas en el puesto <b>#${pos+1}</b> de ${rows.length}. `:""}Conectado con Google como <b id="rkMe"></b>. <button class="btn sm" data-act="fbLogout">Salir</button></div>`;
+  sh(tabs+list+acc+rkMine(me,pos));const box=$("#modal");
+  rows.slice(0,50).forEach((r,i)=>{const nm=box.querySelector(`[data-rkn="${i}"]`),ct=box.querySelector(`[data-rkc="${i}"]`),av=box.querySelector(`[data-rki="${i}"]`);const n=String(r.name||"Alcalde").slice(0,20);
+    if(nm)nm.textContent=r.id===uid?`${n} (tú)`:n;if(ct)ct.textContent=String(r.city||"Pueblo sin nombre").slice(0,32);if(av){av.textContent=n.charAt(0).toUpperCase();let h=0;for(const ch of r.id)h=(h*31+ch.charCodeAt(0))%360;av.style.background=`hsl(${h} 60% 70%)`;}});
+  const me2=$("#rkMe");if(me2)me2.textContent=S.mayor||"alcalde";if(FB.user)fbPush(false);};}
+const GLOGO=`<svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>`;
+(function(){const st=document.createElement("style");st.textContent=`.rki{display:grid;place-items:center;font:800 16px var(--f-display);color:var(--ink)}`;document.head.appendChild(st);})();
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(a==="fbLogin"){e.stopPropagation();if(!S.mayor){openMayor();return;}if(typeof firebase==="undefined"){toast("Conectando… intenta de nuevo en un momento.");return;}
+    firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(()=>toast(`¡Listo, ${S.mayor}! Ya estás en el ranking.`,3500)).catch(err=>{const c=err&&err.code||"";if(c!=="auth/popup-closed-by-user"&&c!=="auth/cancelled-popup-request")toast(c==="auth/popup-blocked"?"Tu navegador bloqueó la ventana de Google. Permite las ventanas emergentes e intenta de nuevo.":"No se pudo entrar con Google. Intenta de nuevo.",5000);});}
+  else if(a==="fbLogout"){e.stopPropagation();if(typeof firebase!=="undefined")firebase.auth().signOut().then(()=>{try{localStorage.removeItem("vr_fb");}catch(e){}toast("Saliste de tu cuenta de Google.");});}},true);
+setInterval(()=>{if(FB.user&&S)fbPush(false);},60000);
+/* si ya entraste con Google antes, se reconecta solo y tu puntaje se sigue actualizando */
+setTimeout(()=>{if(!FB_CFG||inClaude()||!navigator.onLine)return;let was=false;try{was=localStorage.getItem("vr_fb")==="1";}catch(e){}if(was)fbLoad().catch(()=>{});},5000);
 
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
@@ -7092,7 +7146,7 @@ function openClima(){modalFn=openClima;const wk=S.wx?S.wx.k:"sol",W=WX_N[wk],ev=
     <div class="item"><div><b>Carretera y visitantes</b><small>${fmt(S.stats.viajeros||0)} viajeros han parado a comprar${S.stats.seQuedan?` y ${S.stats.seQuedan} familias se quedaron a vivir`:""}. ${S.cruise&&S.cruise.state==="docked"?`¡Hay un crucero en el puerto con ${S.cruise.pax} pasajeros!`:portObj()&&!portObj().build?"Cada cierto tiempo llega un crucero con turistas.":"Con el Muelle (nivel 6) llegarán cruceros con turistas."}</small></div>${ICON("people")}</div></div>
   <div class="note"><b>Obras:</b> los edificios nuevos pasan por una fase de construcción. Cuando terminan, toca el martillo para inaugurarlos. Con diamantes puedes terminarlos al tiro.</div>`);}
 function openSettings(){modalFn=openSettings;openModal(head("Ajustes")+
-  `<label class="note" for="cityName">Nombre de la ciudad</label><input type="text" id="cityName" maxlength="24" value="${S.name.replace(/"/g,"&quot;")}"><div class="row"><button class="btn go sm" data-act="rename">Guardar nombre</button></div>
+  `<label class="note" for="mayorName">Tu nombre de alcalde (sale en el ranking)</label><input type="text" id="mayorName" maxlength="20" value="${escA(S.mayor)}"><label class="note" for="cityName">Nombre de la ciudad</label><input type="text" id="cityName" maxlength="24" value="${S.name.replace(/"/g,"&quot;")}"><div class="row"><button class="btn go sm" data-act="rename">Guardar nombre</button></div>
   <div class="switch"><span><b>Energía ilimitada</b></span><button class="btn sm" data-act="unl" aria-pressed="${S.unlimited}">${S.unlimited?"Activada":"Desactivada"}</button></div>
   ${sndRow()}
   <div class="switch"><span><b>Tutorial</b><br><small class="note">Vuelve a ver los pasos básicos con la alcaldesa Rosa.</small></span><button class="btn sm" data-act="tutAgain">Ver de nuevo</button></div>
@@ -7197,7 +7251,7 @@ document.addEventListener("click",e=>{
     case "ebuy":{const g=+b.dataset.g;if(S.gems<g){toast("Te faltan diamantes.");break;}syncEnergy();S.gems-=g;S.energy=Math.min(eMax(),S.energy+(+b.dataset.n));bonus("¡Energía!");save();openEnergy();break;}
     case "ebuyc":{const c=+b.dataset.c;if(S.coins<c){toast("Te faltan monedas.");break;}syncEnergy();S.coins-=c;S.energy=Math.min(eMax(),S.energy+3);save();openEnergy();break;}
     case "unl":syncEnergy();S.unlimited=!S.unlimited;save();if(modalFn)modalFn();break;
-    case "rename":{const v=($("#cityName").value||"").trim();if(v)S.name=v.slice(0,24);save();toast("Nombre guardado.");break;}
+    case "rename":{const v=cleanName($("#cityName").value,24);if(v)S.name=v;const mv=cleanName($("#mayorName")&&$("#mayorName").value,20);if(mv)S.mayor=mv;hud();save();toast("Nombre guardado.");break;}
     case "wipe":S._wipe=true;openSettings();break;
     case "wipeno":S._wipe=false;openSettings();break;
     case "wipeyes":try{localStorage.removeItem(SAVE_KEY);}catch(er){}location.reload();break;
