@@ -6505,6 +6505,67 @@ setInterval(()=>{if(!S||!FB_CFG||inClaude()||S.accAsk||FB.user||!(S.tut&&S.tut.d
   openModal(head("Guarda tu ciudad en tu cuenta","Con tu Gmail no pierdes tu partida y puedes seguir en otro equipo")+`<div class="note">Solo usamos tu cuenta para guardar la partida y para el ranking. En el ranking sale tu nombre de alcalde, nunca tu correo.</div><div class="row"><button class="btn go" data-act="acctLogin">${GLOGO} Entrar con Google</button><button class="btn" data-act="close">Ahora no</button></div>`);
   fbLoad().catch(()=>{});},20000);
 
+/* ---- Anuncios opcionales con premio: Google H5 Games Ads o CrazyGames (en Claude no hay anuncios) ---- */
+const ADS_CFG={client:null}; /* "ca-pub-…" cuando AdSense apruebe la cuenta */
+const AD={prov:null,ready:false,busy:false,lastInt:0,offerT:0};
+const AD_CAP={energia:8,acelerar:8,cosecha:6};
+function adTest(){try{if(/[?&]anuncios=prueba/.test(location.search))localStorage.setItem("vr_adtest","1");if(/[?&]anuncios=no/.test(location.search))localStorage.removeItem("vr_adtest");return localStorage.getItem("vr_adtest")==="1";}catch(e){return false;}}
+function adInit(){if(AD.prov!==null)return;AD.prov="";if(typeof inClaude==="function"&&inClaude())return;
+  const s=document.createElement("script");
+  if(/crazygames/.test(location.hostname)){s.src="https://sdk.crazygames.com/crazygames-sdk-v3.js";s.onload=()=>{try{window.CrazyGames.SDK.init().then(()=>{AD.prov="cg";AD.ready=true;}).catch(()=>{});}catch(e){}};document.head.appendChild(s);return;}
+  if(ADS_CFG.client){window.adsbygoogle=window.adsbygoogle||[];window.adBreak=window.adConfig=function(o){window.adsbygoogle.push(o);};
+    s.async=true;s.src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client="+ADS_CFG.client;s.setAttribute("data-ad-client",ADS_CFG.client);s.setAttribute("data-ad-frequency-hint","120s");s.crossOrigin="anonymous";if(adTest())s.setAttribute("data-adbreak-test","on");
+    document.head.appendChild(s);AD.prov="google";window.adConfig({preloadAdBreaks:"on",sound:"on",onReady:()=>{AD.ready=true;}});return;}
+  if(adTest()){AD.prov="sim";AD.ready=true;}}
+const adOn=()=>{adInit();return !!AD.prov&&AD.ready&&!!S;};
+function adLeft(k){const d=todayStr();if(!S.adc||S.adc.d!==d)S.adc={d,n:{}};return AD_CAP[k]-(S.adc.n[k]||0);}
+function adPause(on){AD.busy=on;try{if(SND&&SND.master){if(on){AD.vol=SND.master.gain.value;SND.master.gain.value=0;}else if(AD.vol!=null){SND.master.gain.value=AD.vol;AD.vol=null;}}}catch(e){}}
+function adSim(reward,done){const ov=document.createElement("div");ov.id="adSim";ov.innerHTML=`<div class="adbox toy"><span class="adtag">Anuncio de prueba</span><b>Aquí se verá un anuncio</b><small>${reward?"Míralo completo para recibir tu premio.":"Anuncio entre niveles."}</small><div class="adcount">5</div><div class="row"><button class="btn" data-x="skip">${reward?"Saltar (sin premio)":"Cerrar"}</button><button class="btn go" data-x="ok" disabled>Recibir premio</button></div></div>`;
+  document.body.appendChild(ov);let n=5;const c=ov.querySelector(".adcount"),ok=ov.querySelector('[data-x="ok"]');if(!reward)ok.hidden=true;
+  const tm=setInterval(()=>{n--;c.textContent=n>0?n:"✓";if(n<=0){clearInterval(tm);ok.disabled=false;if(!reward){ov.remove();done(true);}}},1000);
+  ov.addEventListener("click",e=>{const x=e.target.dataset&&e.target.dataset.x;if(!x)return;clearInterval(tm);ov.remove();done(x==="ok");});}
+function adReward(k,grant){if(!adOn()){toast("No hay anuncios disponibles ahora.");return;}if(adLeft(k)<=0){toast("Ya viste todos los anuncios de hoy para esto. ¡Vuelve mañana!");return;}if(AD.busy)return;
+  const done=ok=>{adPause(false);if(ok){S.adc.n[k]=(S.adc.n[k]||0)+1;grant();hud();save();}else toast("El anuncio no se completó, así que no hay premio.",3000);if(modalFn&&!$("#modal").hidden)modalFn();};
+  adPause(true);
+  if(AD.prov==="sim"){adSim(true,done);return;}
+  if(AD.prov==="google"){let ok=false;window.adBreak({type:"reward",name:"premio_"+k,beforeReward:show=>show(),adViewed:()=>{ok=true;},adDismissed:()=>{ok=false;},
+      adBreakDone:info=>{const st=info&&info.breakStatus;if(!ok&&st!=="dismissed"&&st!=="viewed"){adPause(false);toast("No hay anuncios disponibles ahora. Intenta más tarde.",3000);return;}done(ok);}});return;}
+  if(AD.prov==="cg"){window.CrazyGames.SDK.ad.requestAd("rewarded",{adStarted:()=>{},adFinished:()=>done(true),adError:()=>{adPause(false);toast("No hay anuncios disponibles ahora.",3000);}});}}
+function adInter(name){if(!adOn()||AD.busy||S.lvl<3||NOW()-AD.lastInt<5*60000)return;AD.lastInt=NOW();
+  if(AD.prov==="sim"){adPause(true);adSim(false,()=>adPause(false));return;}
+  if(AD.prov==="google"){window.adBreak({type:"next",name,beforeAd:()=>adPause(true),afterAd:()=>adPause(false)});return;}
+  if(AD.prov==="cg"){window.CrazyGames.SDK.ad.requestAd("midgame",{adStarted:()=>adPause(true),adFinished:()=>adPause(false),adError:()=>adPause(false)});}}
+(function(){const st=document.createElement("style");st.textContent=`
+#adSim{position:fixed;inset:0;z-index:50;background:rgba(10,16,30,.82);display:grid;place-items:center;padding:16px}
+#adSim .adbox{width:min(420px,100%);padding:18px;display:grid;gap:8px;justify-items:center;text-align:center;background:repeating-linear-gradient(45deg,#fff 0 14px,#f3f6fa 14px 28px)}
+#adSim .adtag{font:800 11px var(--f-display);letter-spacing:.08em;text-transform:uppercase;background:var(--gold);border:2px solid var(--line);border-radius:999px;padding:3px 9px}
+#adSim b{font:800 20px var(--f-display)}#adSim .adcount{font:800 40px var(--f-display);width:70px;height:70px;border-radius:50%;border:3px solid var(--line);display:grid;place-items:center;background:#fff}
+.adbtn{background:linear-gradient(#ffe9a8,#ffd166)!important}.adbtn svg{width:18px;height:18px}
+#adOffer{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 70px);z-index:6;display:flex;gap:8px;align-items:center;padding:8px 10px 8px 14px;animation:adin .3s ease-out}
+#adOffer>span{display:grid;color:#b07a00}#adOffer>span svg{width:22px;height:22px}
+@keyframes adin{from{opacity:0;transform:translate(-50%,10px)}}`;document.head.appendChild(st);})();
+const AD_TV=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M10 9.5v5l4-2.5z" fill="currentColor"/></svg>`;
+/* energía gratis con anuncio */
+{const _oe=openEnergy;openEnergy=function(){_oe();if(!adOn())return;const l=$("#modal .list");if(!l)return;const n=adLeft("energia"),full=energyNow()>=eMax();
+  l.insertAdjacentHTML("afterbegin",`<div class="item"><div><b>+5 energía gratis</b><small>Mira un anuncio · ${full?"tu energía está llena":n>0?`quedan ${n} hoy`:"vuelve mañana"}</small></div><button class="btn sm adbtn" data-act="adEnergy" ${n>0&&!full?"":"disabled"}>${AD_TV} Ver anuncio</button></div>`);};}
+/* acelerar 30 min con anuncio (casas, parcelas y aserradero) */
+{const _rb=rushBtn;rushBtn=function(o,left){const h=_rb(o,left);if(!(left>0)||!adOn())return h;const n=adLeft("acelerar");
+  return h+`<div class="rushrow"><button class="btn sm adbtn" data-act="adRush" data-o="${o.id}" ${n>0?"":"disabled"}>${AD_TV} −30 min con anuncio</button><small>${n>0?`Gratis · quedan ${n} hoy`:"Vuelve mañana"}</small></div>`;};}
+function adRushGrant(o){const it=CAT[o.k];let left=0;if(it.cat==="casa"||o.k==="aserradero")left=o.t0+it.t*1000-NOW();else if(o.k==="parcela"&&o.crop){const cr=CROPS.find(c=>c.id===o.crop);left=o.pt+cr.t*1000-NOW();}
+  const cut=Math.min(Math.max(0,left),30*60000);if(it.cat==="casa"||o.k==="aserradero")o.t0-=cut;else o.pt-=cut;if(o.k==="parcela")drawObj(o);bonus(cut>=left?"¡Listo ya!":"−30 min");}
+/* duplicar la cosecha con anuncio */
+{const _hv=harvest;harvest=function(o){const before=S.merc,cr=CROPS.find(c=>c.id===o.crop);_hv(o);const got=S.merc-before;if(got>0&&adOn()&&adLeft("cosecha")>0)adOffer(`Duplicar cosecha (+${got})`,()=>adReward("cosecha",()=>{const add=Math.min(got,Math.max(0,storeCap()-S.merc));S.merc+=add;popup(objCenter(o),`+${add} mercadería`,"#8a5a1e",1);}));};}
+function adOffer(txt,fn){const old=$("#adOffer");if(old)old.remove();const el=document.createElement("div");el.id="adOffer";el.className="toy";el.innerHTML=`<span>${AD_TV}</span><b>${txt}</b><button class="btn sm adbtn">Ver anuncio</button><button class="btn sm" aria-label="Cerrar">×</button>`;
+  document.body.appendChild(el);const bs=el.querySelectorAll("button");bs[0].onclick=()=>{el.remove();fn();};bs[1].onclick=()=>el.remove();clearTimeout(AD.offerT);AD.offerT=setTimeout(()=>el.remove(),10000);}
+/* un anuncio corto al subir de nivel (máximo uno cada 5 min, desde nivel 3) */
+{const _ax=addXP;addXP=function(n){const lv=S.lvl;_ax(n);if(S.lvl>lv)setTimeout(()=>adInter("subir_nivel"),2500);};}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(a==="adEnergy"){e.stopPropagation();adReward("energia",()=>{syncEnergy();S.energy=Math.min(eMax(),S.energy+5);bonus("+5 energía");});}
+  else if(a==="adRush"){e.stopPropagation();const o=OBJ[+b.dataset.o];if(o)adReward("acelerar",()=>{adRushGrant(o);openInfo(o);});}},true);
+setTimeout(()=>{try{adInit();}catch(e){}},3000);
+/* enlace a la política de privacidad (solo en la página web) */
+{const _os2=openSettings;openSettings=function(){_os2();if(typeof inClaude==="function"&&inClaude())return;const sw=[...document.querySelectorAll("#modal .switch")];const last=sw[sw.length-1];if(last)last.insertAdjacentHTML("afterend",`<div class="switch"><span><b>Privacidad</b><br><small class="note">Qué datos usa el juego, la cuenta y los anuncios.</small></span><a class="btn sm" href="privacidad.html" target="_blank" rel="noopener">Ver</a></div>`);};}
+
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
   const r0=rightOf(path[1][0]-path[0][0],path[1][1]-path[0][1]),c0=cellC(...path[0]);pts.push({p:new V3(c0.x+r0[0]*off,.02,c0.z+r0[1]*off)});
