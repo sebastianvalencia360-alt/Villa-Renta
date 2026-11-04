@@ -6335,7 +6335,8 @@ TUT[0].p=()=>`Soy Rosa, la alcaldesa a cargo mientras llegas. Antes de empezar, 
 {const p1=TUT[1].p;TUT[1].p=()=>(S.mayor?`¡Bienvenido, ${S.mayor}! `:"")+p1();}
 {const L=TUT[TUT.length-1];Object.defineProperty(L,"t",{get:()=>S&&S.mayor?`¡Lo hiciste muy bien, ${S.mayor}!`:"¡Lo hiciste muy bien!",configurable:true});}
 function mayorFrom(idM,idC){const m=$("#"+idM),c=$("#"+idC);const v=cleanName(m&&m.value,20);if(!v){if(m){m.classList.remove("bad");void m.offsetWidth;m.classList.add("bad");m.focus();}toast("Escribe cómo quieres que te llamen.");return false;}
-  S.mayor=v;const cv=cleanName(c&&c.value,24);if(cv)S.name=cv;hud();save();return true;}
+  S.mayor=v;const cv=cleanName(c&&c.value,24);if(cv&&cv!==S.name){S.name=cv;cityRenamed();}hud();save();return true;}
+function cityRenamed(){try{buildHwDecor();}catch(e){}for(const o of liveK("estadio"))drawObj(o);hud();}
 {const _ta=tutAdvance;tutAdvance=function(){if(S&&S.tut&&S.tut.step===0&&!mayorFrom("tutMayor","tutCity"))return;_ta();};}
 function openMayor(){modalFn=null;openModal(head("¿Cómo quieres que te llamen?","Tu nombre aparece en el ranking y Rosa te saluda por él")+`<label class="mfield">Tu nombre de alcalde<input id="mMayor" maxlength="20" placeholder="Tu nombre o apodo" value="${escA(S.mayor)}"></label><label class="mfield">Nombre de tu ciudad<input id="mCity" maxlength="24" value="${escA(S.name)}"></label><div class="row"><button class="btn go" data-act="mayorSave">Guardar</button></div>`);setTimeout(()=>{const i=$("#mMayor");if(i)i.focus();},50);}
 let MAYOR_ASKED=false;setInterval(()=>{if(MAYOR_ASKED||!S||S.mayor||(S.tut&&S.tut.on)||!$("#modal").hidden||$("#loading").hidden===false)return;MAYOR_ASKED=true;openMayor();},4000);
@@ -6378,6 +6379,83 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
 setInterval(()=>{if(FB.user&&S)fbPush(false);},60000);
 /* si ya entraste con Google antes, se reconecta solo y tu puntaje se sigue actualizando */
 setTimeout(()=>{if(!FB_CFG||inClaude()||!navigator.onLine)return;let was=false;try{was=localStorage.getItem("vr_fb")==="1";}catch(e){}if(was)fbLoad().catch(()=>{});},5000);
+
+/* ---- Petición de vecinos: ficha visual (menos texto, acción directa) ---- */
+const REQ_V={
+  tienda:{q:r=>`¡Nos encantaría tener ${/a$/.test(CAT[r.shop].name)?"una":"un"} ${CAT[r.shop].name} cerca!`,ico:"shop",th:r=>r.shop,goal:r=>`${CAT[r.shop].name}`,near:8,btn:r=>`Construir ${CAT[r.shop].name}`},
+  verde:{q:()=>"¿Podrían poner algo verde por aquí?",ico:"tree",th:()=>"arbol",goal:()=>"Una decoración nueva",near:3,btn:()=>"Elegir decoración"},
+  local:{q:()=>"No tenemos dónde comprar cerca…",ico:"shop",th:()=>"almacen",goal:()=>"Un local abastecido",near:6,btn:()=>"Ver locales"},
+  comida:{q:()=>"En el barrio nos está faltando comida…",ico:"crate",th:()=>"crop:trigo",goal:r=>`${fmt(r.q)} de mercadería`,near:0,btn:()=>"Ir a cosechar"},
+  estrella:{q:()=>"Nuestra casa necesita un arreglo.",ico:"star",th:(r,o)=>o?o.k:"cabana",goal:()=>"Mejorar la casa una ★",near:0,btn:()=>"Mejorar esta casa"},
+  seguridad:{q:()=>"Nos sentiríamos más seguros con una Comisaría.",ico:"police",th:()=>"comisaria",goal:()=>"Una Comisaría",near:10,btn:()=>"Construir Comisaría"}};
+(function(){const st=document.createElement("style");st.textContent=`
+.rqhero{grid-template-columns:84px minmax(0,1fr) auto}
+.rqq{position:relative;margin:12px 0 10px 4px;padding:10px 14px;border:2px solid var(--line);border-radius:16px;background:#fff;font:700 16px/1.25 var(--f-display);box-shadow:0 3px 0 var(--line)}
+.rqq:before{content:"";position:absolute;left:22px;top:-10px;width:16px;height:16px;background:#fff;border-left:2px solid var(--line);border-top:2px solid var(--line);transform:rotate(45deg)}
+.rqq small{display:block;font:600 12px var(--f-body);color:var(--muted);margin-top:3px}
+.rqgoal{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:2px solid var(--line);border-radius:14px;background:var(--paper2)}
+.rqgoal .gi{width:44px;height:44px;border-radius:12px;border:2px solid var(--line);background:#fff;display:grid;place-items:center}.rqgoal .gi svg{width:26px;height:26px}
+.rqgoal b{font:800 16px/1.15 var(--f-display);display:block}.rqgoal small{color:var(--muted)}
+.rqst{font:800 12px var(--f-display);padding:5px 10px;border-radius:999px;border:2px solid var(--line);background:#fff;white-space:nowrap}.rqst.ok{background:#d9f5df;color:#1d6b33}
+.rqrw{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
+.rqrw div{display:grid;justify-items:center;gap:2px;padding:8px 4px;border:2px solid var(--line);border-radius:12px;background:#fffaf0;text-align:center}
+.rqrw svg{width:22px;height:22px}.rqrw b{font:800 15px var(--f-display)}.rqrw small{font-size:11px;color:var(--muted);line-height:1.1}
+.rqbad{margin-top:8px;font-size:12px;color:var(--bad);font-weight:600}
+.rqacts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.rqacts .btn{padding:11px 12px;font:800 15px/1.1 var(--f-display);border-radius:13px;box-shadow:0 3px 0 var(--line)}.rqacts .main{grid-column:1/-1}.rqacts .btn svg{width:20px;height:20px;flex:none}.prog .ptop b svg{width:16px;height:16px;vertical-align:-3px}
+@media (max-width:420px){.rqrw{grid-template-columns:repeat(2,minmax(0,1fr))}}`;document.head.appendChild(st);})();
+openReq=function(){modalFn=openReq;const r=S.req;if(!r){closeModal();return;}const o=OBJ[r.oid],V=REQ_V[r.k]||REQ_V.verde,T=REQ_T[r.k];
+  const who=r.who||(o&&residentsOf(o)[0]&&residentsOf(o)[0].name)||"Un vecino",fam=o?famName(o):"",done=o&&reqDone(r,o);
+  let img="";try{img=thumb(V.th(r,o));}catch(e){}
+  const c=80+30*S.lvl,prog=r.k==="comida"?`<div class="pbar" style="margin-top:6px"><i style="width:${Math.min(100,S.merc/r.q*100).toFixed(0)}%"></i></div><small>${fmt(Math.min(S.merc,r.q))} de ${fmt(r.q)}</small>`:"";
+  const hero=`<div class="ihero rqhero" style="--c1:#fff1c9;--c2:#e9963a"><div class="ithumb">${img?`<img src="${img}" alt="">`:""}</div><div class="ihd"><span class="ichip">Petición</span><h2>${T.t}</h2><div class="isub"><span>${o?CAT[o.k].name:"Casa"}${fam?` de los ${fam}`:""}</span></div></div><button class="x" data-act="close" aria-label="Cerrar">×</button></div>`;
+  const quote=`<div class="rqq">“${V.q(r)}”<small>— ${who}</small></div>`;
+  const goal=`<div class="rqgoal"><span class="gi">${ICON(V.ico)}</span><div><b>${V.goal(r)}</b>${V.near?`<small>a ${V.near} casillas o menos de su casa</small>`:r.k==="estrella"?`<small>en esta misma casa</small>`:""}${prog}</div><span class="rqst${done?" ok":""}">${done?"✓ Cumplida":"Pendiente"}</span></div>`;
+  const tl=Math.max(0,r.until-NOW()),tp=Math.max(0,Math.min(1,tl/(12*60000)));const timer=`<div class="prog${tl>0?"":" done"}" data-end="${r.until}" data-tot="${12*60000}" data-pre="Quedan " data-done="Se acabó el tiempo" data-rev="1"><div class="ptop"><b>${ICON("sun")} Tiempo</b><span class="pl">${tl>0?"Quedan "+dur(Math.ceil(tl/1000)):"Se acabó el tiempo"}</span></div><div class="pbar big"><i style="width:${(tp*100).toFixed(1)}%;background:#f0a53a"></i></div></div>`;
+  const rw=`<div class="rqrw"><div>${ICON("coin")}<b>+${fmt(c)}</b><small>monedas</small></div><div>${ICON("star")}<b>+30</b><small>experiencia</small></div><div>${ICON("gem")}<b>40%</b><small>chance de diamante</small></div><div>${ICON("happy")}<b>+10</b><small>felicidad del barrio</small></div></div>`;
+  const bad=`<div class="rqbad">Si no cumples a tiempo: −10 de felicidad en el barrio por 30 min.</div>`;
+  const acts=`<div class="rqacts">${done?`<div class="note good main">¡Ya está cumplida! El premio llega en unos segundos.</div>`:`<button class="btn go main" data-act="reqGo">${V.btn(r)}</button>`}${o?`<button class="btn" data-act="reqSee" data-o="${o.id}">Ver la casa</button>`:""}${o&&!o.vac&&houseReady(o)?`<button class="btn gold" data-act="rentnow" data-o="${o.id}">${ICON("coin")} Cobrar arriendo</button>`:""}</div>`;
+  openModal(hero+quote+goal+`<div style="margin-top:10px">${timer}</div>`+rw+bad+acts);};
+function reqGo(){const r=S.req;if(!r)return;const o=OBJ[r.oid];closeModal();
+  const shopIn=t=>{shopTab=t;openShop();};
+  if(r.k==="tienda"){const it=CAT[r.shop];if(unlockedShop(r.shop)&&S.coins>=(it.cost||0))startPlace(r.shop);else shopIn("local");if(o)focusOn(o);}
+  else if(r.k==="seguridad"){if(S.lvl>=(CAT.comisaria.req||1)&&S.coins>=CAT.comisaria.cost)startPlace("comisaria");else shopIn("comunidad");if(o)focusOn(o);}
+  else if(r.k==="verde"){shopIn("deco");if(o)focusOn(o);}
+  else if(r.k==="local"){shopIn("local");if(o)focusOn(o);}
+  else if(r.k==="estrella"){if(o)openInfo(o);}
+  else if(r.k==="comida"){const p=liveK("parcela").find(q=>q.crop&&cropStage(q)>=2)||liveK("parcela")[0];if(p){focusOn(p);toast(p.crop&&cropStage(p)>=2?"Toca la parcela para cosechar.":"Siembra en tus parcelas y cosecha para juntar mercadería.",3500);}}}
+function focusOn(o){const c=objCenter(o);cam.tx=c.x;cam.tz=c.z;}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(a==="reqGo"){e.stopPropagation();reqGo();}else if(a==="reqSee"){e.stopPropagation();const o=OBJ[+b.dataset.o];if(o){focusOn(o);openInfo(o);}}},true);
+
+/* ---- Ficha de casa más visual: vecinos compactos y necesidades como íconos ---- */
+const NEED_S={comercio:"Tienda",seguridad:"Policía",bomberos:"Bomberos",verde:"Áreas verdes",trabajo:"Trabajo",comida:"Comida",molestia:"Sin ruido",agua:"Agua",luz:"Luz",basura:"Limpieza",escuela:"Escuela",salud:"Salud"};
+(function(){const st=document.createElement("style");st.textContent=`
+.ppl2{display:grid;gap:6px}
+.pc{border:2px solid var(--line);border-radius:14px;background:var(--paper2);overflow:hidden}
+.pc summary{list-style:none;display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 10px;cursor:pointer}
+.pc summary::-webkit-details-marker{display:none}
+.pc .pav{width:36px;height:36px;font-size:16px}
+.pc .pn b{display:block;font:800 15px/1.1 var(--f-display)}.pc .pn small{color:var(--muted);font-size:12px}
+.pc[open] summary{border-bottom:2px dashed rgba(29,41,68,.2)}
+.pdx{padding:7px 12px 9px 56px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:5px}
+.pdx span{background:#fff;border:1.5px solid rgba(29,41,68,.25);border-radius:999px;padding:2px 8px}
+.lk2{font:800 11px var(--f-display);padding:4px 8px;border-radius:999px;border:2px solid var(--line);white-space:nowrap}.lk2.ok{background:#d9f5df}.lk2.want{background:#fff1c9}.lk2.no{background:#ffe1dc}
+.nd2{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px;margin-top:8px}
+.nd2 div{position:relative;display:grid;justify-items:center;gap:3px;padding:8px 4px 7px;border:2px solid var(--line);border-radius:12px;background:#ecf8ee;text-align:center}
+.nd2 div.no{background:#ffe7e3}
+.nd2 svg{width:24px;height:24px}.nd2 small{font:700 11px/1.1 var(--f-body)}
+.nd2 i{position:absolute;top:-7px;right:-6px;width:18px;height:18px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font:900 10px/1 var(--f-body);font-style:normal;background:#3aa856;color:#fff}
+.nd2 .no i{background:#d9534a}
+.hpbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center}.hpbar svg{width:22px;height:22px}.hpbar b{font:800 15px var(--f-display)}.hpbar .pbar{height:14px}`;document.head.appendChild(st);})();
+needsHtml=function(o){const miss=o.miss||[],hn=houseNeeds(o),keys=Object.keys(NEED_N).filter(k=>k==="molestia"||k==="basura"?miss.includes(k):k==="escuela"?(miss.includes(k)||hn.kids):k==="salud"?(miss.includes(k)||hn.health):true);
+  keys.sort((a,b)=>(miss.includes(b)?1:0)-(miss.includes(a)?1:0));const h=o.hp??0;
+  return `<div class="hpbar">${ICON(faceOf(h))}<div class="pbar hp"><i style="width:${h}%"></i></div><b>${o.hp??"–"}%</b></div>${o.vac?`<div class="note bad">Casa vacía: cubre lo que falta (en rojo) y llegan vecinos nuevos.</div>`:o.leaveAt?`<div class="note bad">¡Se quieren ir! Cubre lo que está en rojo.</div>`:""}
+  <div class="nd2">${keys.map(k=>{const ok=!miss.includes(k);return `<div class="${ok?"":"no"}" title="${NEED_N[k][1]}">${ICON(NEED_N[k][0])}<small>${NEED_S[k]||NEED_N[k][1]}</small><i>${ok?"✓":"✗"}</i></div>`;}).join("")}</div>`;};
+function personCard(r){const age=r.age<1?"bebé":r.age+" años",jobO=r.job&&OBJ[r.job],job=isWorker(r)?(jobO?itemOf(jobO).name:null):null;
+  const sub=[age,r.uni?"estudia":job?job:isWorker(r)?"sin trabajo":r.age<6?"":r.age<18?"escolar":"jubilado"].filter(Boolean).join(" · ");
+  const lk=r.likes[0]&&CAT[r.likes[0]];let chip="";if(lk){const has=Object.values(OBJ).some(o=>o.k===r.likes[0]&&live(o)),un=unlockedShop(r.likes[0]);chip=`<span class="lk2 ${has?"ok":un?"want":"no"}">${has?"♥":"Quiere"} ${lk.name}</span>`;}
+  const mv=S.mov&&S.mov.find(m=>m.p.id===r.id);const det=[r.trait,r.uni?`estudia ${r.carrera}`:r.carrera,r.pn?`${r.f?"casada":"casado"} con ${r.pn}`:"",r.night?"sale de noche":"",r.drive?"maneja":"",mv?"busca casa propia":"",...r.likes.slice(1).map(k=>CAT[k]?`también le gusta ${CAT[k].name}`:"")].filter(Boolean);
+  return `<details class="pc"><summary><span class="pav" style="background:${r.col}">${r.name[0]}</span><span class="pn"><b>${r.name}</b><small${job===null&&isWorker(r)?' class="bad"':""}>${sub}</small></span>${chip}</summary><div class="pdx">${det.map(d=>`<span>${d}</span>`).join("")||"<span>Sin más datos</span>"}</div></details>`;}
 
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
@@ -6422,7 +6500,7 @@ function buildHwDecor(){if(hwDecor)scene.remove(hwDecor);hwDecor=new THREE.Group
       for(const s of [-1,1]){bx(hwDecor,.03,.07,1,rail,x+s*.47,.02,z);}const deck=bx(hwDecor,1,.12,1,pil,x,-.12,z);
       if(k%2===0)cy(hwDecor,.12,.14,2.3,pil,x,-2.4,z,10);}}
   const sx=HW_X+1.5-M/2,sz=HW_JZ-.6-M/2,sgG=new THREE.Group();sgG.position.set(sx,0,sz);hwDecor.add(sgG);for(const dx of [-.42,.42])cy(sgG,.025,.025,1.16,mat("post",{color:"#9aa3ad",metalness:.4}),dx,0,-.045,8);bx(sgG,.9,.03,.03,mat("post",{color:"#9aa3ad",metalness:.4}),0,.95,-.045);
-  const s1=signMesh("← VILLA RENTA","#1e6b3c","#ffffff",1.0,.24);s1.position.set(0,.82,-.01);sgG.add(s1);const s2=signMesh("RUTA 5","#1e6b3c","#ffffff",.5,.16);s2.position.set(0,1.07,-.01);sgG.add(s2);sgG.rotation.y=Math.PI/4;
+  const s1=signMesh("← "+String(S&&S.name||"Villa Renta").toUpperCase(),"#1e6b3c","#ffffff",1.0,.24);s1.position.set(0,.82,-.01);sgG.add(s1);const s2=signMesh("RUTA 5","#1e6b3c","#ffffff",.5,.16);s2.position.set(0,1.07,-.01);sgG.add(s2);sgG.rotation.y=Math.PI/4;
   for(const zz of [3,12,32,42]){const r=mk("light_square");r.position.set(x+.44,0,zz+OFF+.5-M/2);r.rotation.y=-Math.PI/2;lampGlow(r,0,.56,.19,.42,1.1);hwDecor.add(r);}}
 function hwEnds(){return [[HW_X,OFF],[HW_X,OFF+47]];}
 function bridgePts(end,inbound){const x=HW_X+.5-M/2,dir=end[1]===OFF?-1:1,r=dir<0?-.17:.17;const lane=inbound?(dir<0?-.17:.17):(dir<0?.17:-.17);const pts=[];
@@ -7066,10 +7144,10 @@ function openInfo(o){modalFn=()=>openInfo(o);const it=itemOf(o);const b=bonusAt(
   let sub="",tiles="",prog="",acts="",extra="";
   if(it.cat==="casa"){const v=rentVal(o),ready=houseReady(o),hp=o.hp??70;
     if(S.req&&S.req.oid===o.id)extra+=`<button class="ibanner" data-act="reqview">${ICON("speech")}<span><b>Petición vecinal pendiente</b><small>Toca para ver qué piden y el premio.</small></span></button>`;
-    tiles=tile("people",o.vac?"Vacía":it.pop,"habitantes",o.vac?"bad":"")+tile("coin",fmt(v),`arriendo cada ${dur(it.t)}`)+tile(hp>=70?"happy":hp>=45?"meh":"sad",hp+"%",rentMul(o)>1?"felicidad · +25% arriendo":rentMul(o)<1?"felicidad · −25% arriendo":"felicidad",hp>=70?"good":hp<45?"bad":"");
+    tiles=tile("people",o.vac?"Vacía":it.pop,"habitantes",o.vac?"bad":"")+tile("coin",fmt(v),`cada ${dur(it.t)}`)+tile(hp>=70?"happy":hp>=45?"meh":"sad",hp+"%",rentMul(o)>1?"felicidad · +25%":rentMul(o)<1?"felicidad · −25%":"felicidad",hp>=70?"good":hp<45?"bad":"");
     if(o.vac)prog=`<div class="note bad">Los vecinos se fueron. Cubre lo que les falta y llegarán nuevos.</div>`;
     else{prog=progBox("Arriendo",o.t0+it.t*1000,it.t*1000,"¡Listo para cobrar!")+rushBtn(o,o.t0+it.t*1000-NOW());if(ready)acts=`<button class="btn gold" data-act="rent" data-o="${o.id}">${ICON("coin")} Cobrar ${fmt(v)} · 1 energía</button>`;}
-    if(!o.vac){const ps=residentsOf(o);extra+=`<div class="isec"><h4>${ICON("people")} Vecinos <small>${ps.length} ${ps.length===1?"persona":"personas"}${ps[0]?` · familia ${ps[0].ap}`:""}</small></h4><div class="people">${ps.map(personHtml).join("")}</div></div>`;}
+    if(!o.vac){const ps=residentsOf(o);extra+=`<div class="isec"><h4>${ICON("people")} ${ps[0]?`Familia ${ps[0].ap}`:"Vecinos"} <small>${ps.length} · toca a alguien para ver más</small></h4><div class="ppl2">${ps.map(personCard).join("")}</div></div>`;}
     extra+=`<div class="isec"><h4>${ICON("happy")} Qué necesitan</h4>${needsHtml(o)}</div>`;}
   else if(it.cat==="local"){const open=shopOpen(o),pc=it.pay*starMul(o)*(1+b/100);
     tiles=tile("crate",o.sup?`${o.stock}/${it.cap}`:"Vacío",o.sup?"clientes por atender":"sin mercadería",o.sup?"":"bad")+tile("coin",fmt(o.till),"en la caja",o.till>0?"good":"")+tile("people",fmt(pc),"paga cada cliente")+tile(open?"sun":"moon",open?"Abierto":"Cerrado",({d:"de 8:00 a 20:00",a:"abre siempre",t:"de 13:00 a 2:00",n:"de 20:00 a 4:00"})[HOURS[o.k]||"a"],open?"":"bad");
@@ -7107,8 +7185,8 @@ function openInfo(o){modalFn=()=>openInfo(o);const it=itemOf(o);const b=bonusAt(
   openModal(h);}
 /* barras que avanzan solas mientras la ficha está abierta */
 setInterval(()=>{const m=document.getElementById("modal");if(!m||m.hidden)return;let fire=false;
-  m.querySelectorAll(".prog[data-end]").forEach(el=>{const end=+el.dataset.end,tot=+el.dataset.tot,left=Math.max(0,end-NOW()),p=tot>0?Math.min(1,1-left/tot):1;
-    const i=el.querySelector(".pbar i"),l=el.querySelector(".pl");if(i)i.style.width=(p*100).toFixed(1)+"%";if(l)l.textContent=left>0?"Listo en "+dur(Math.ceil(left/1000)):el.dataset.done;
+  m.querySelectorAll(".prog[data-end]").forEach(el=>{const end=+el.dataset.end,tot=+el.dataset.tot,left=Math.max(0,end-NOW()),p=tot>0?(el.dataset.rev?Math.max(0,left/tot):Math.min(1,1-left/tot)):1;
+    const i=el.querySelector(".pbar i"),l=el.querySelector(".pl");if(i)i.style.width=(p*100).toFixed(1)+"%";if(l)l.textContent=left>0?(el.dataset.pre||"Listo en ")+dur(Math.ceil(left/1000)):el.dataset.done;
     if(left<=0&&!el.classList.contains("done")){el.classList.add("done");fire=true;}});
   if(fire&&typeof modalFn==="function")setTimeout(()=>{if(!m.hidden)modalFn();},250);},500);
 
@@ -7251,7 +7329,7 @@ document.addEventListener("click",e=>{
     case "ebuy":{const g=+b.dataset.g;if(S.gems<g){toast("Te faltan diamantes.");break;}syncEnergy();S.gems-=g;S.energy=Math.min(eMax(),S.energy+(+b.dataset.n));bonus("¡Energía!");save();openEnergy();break;}
     case "ebuyc":{const c=+b.dataset.c;if(S.coins<c){toast("Te faltan monedas.");break;}syncEnergy();S.coins-=c;S.energy=Math.min(eMax(),S.energy+3);save();openEnergy();break;}
     case "unl":syncEnergy();S.unlimited=!S.unlimited;save();if(modalFn)modalFn();break;
-    case "rename":{const v=cleanName($("#cityName").value,24);if(v)S.name=v;const mv=cleanName($("#mayorName")&&$("#mayorName").value,20);if(mv)S.mayor=mv;hud();save();toast("Nombre guardado.");break;}
+    case "rename":{const v=cleanName($("#cityName").value,24);if(v)S.name=v;const mv=cleanName($("#mayorName")&&$("#mayorName").value,20);if(mv)S.mayor=mv;cityRenamed();save();toast("Nombre guardado.");break;}
     case "wipe":S._wipe=true;openSettings();break;
     case "wipeno":S._wipe=false;openSettings();break;
     case "wipeyes":try{localStorage.removeItem(SAVE_KEY);}catch(er){}location.reload();break;
