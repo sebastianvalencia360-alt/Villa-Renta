@@ -7148,7 +7148,7 @@ function openInfo(o){modalFn=()=>openInfo(o);const it=itemOf(o);const b=bonusAt(
     if(o.vac)prog=`<div class="note bad">Los vecinos se fueron. Cubre lo que les falta y llegarán nuevos.</div>`;
     else{prog=progBox("Arriendo",o.t0+it.t*1000,it.t*1000,"¡Listo para cobrar!")+rushBtn(o,o.t0+it.t*1000-NOW());if(ready)acts=`<button class="btn gold" data-act="rent" data-o="${o.id}">${ICON("coin")} Cobrar ${fmt(v)} · 1 energía</button>`;}
     if(!o.vac){const ps=residentsOf(o);extra+=`<div class="isec"><h4>${ICON("people")} ${ps[0]?`Familia ${ps[0].ap}`:"Vecinos"} <small>${ps.length} · toca a alguien para ver más</small></h4><div class="ppl2">${ps.map(personCard).join("")}</div></div>`;}
-    extra+=`<div class="isec"><h4>${ICON("happy")} Qué necesitan</h4>${needsHtml(o)}</div>`;}
+    extra+=`<div class="isec">${needsHtml(o)}</div>`;}
   else if(it.cat==="local"){const open=shopOpen(o),pc=it.pay*starMul(o)*(1+b/100);
     tiles=tile("crate",o.sup?`${o.stock}/${it.cap}`:"Vacío",o.sup?"clientes por atender":"sin mercadería",o.sup?"":"bad")+tile("coin",fmt(o.till),"en la caja",o.till>0?"good":"")+tile("people",fmt(pc),"paga cada cliente")+tile(open?"sun":"moon",open?"Abierto":"Cerrado",({d:"de 8:00 a 20:00",a:"abre siempre",t:"de 13:00 a 2:00",n:"de 20:00 a 4:00"})[HOURS[o.k]||"a"],open?"":"bad");
     if(!o.sup)acts+=`<button class="btn go" data-act="supply" data-o="${o.id}">${ICON("crate")} Abastecer · ${it.sup} mercadería · 1 energía</button>`;
