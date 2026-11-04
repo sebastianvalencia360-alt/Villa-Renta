@@ -6950,6 +6950,110 @@ trainFrame=function(){const st=stationObj(),T=S&&S.train;if(!st||!T||T.state==="
 /* partidas que ya tienen estación: elegir una vez el mejor lado */
 {const iv=setInterval(()=>{if(!S||!$("#loading").hidden)return;clearInterval(iv);if(S.railV===2)return;S.railV=2;const st=stationObj();if(st){const b=railBest(st);if(b!==(st.r||0)){st.r=b;drawObj(st);TRAIN.stKey="";save();}}},700);}
 
+/* ---- Estación terminal nueva + vía (andén → rampa → viaducto) + contratos del tren ---- */
+const RFLAT=4,RRAMP=3,RH=.95,RDOCK=.25;
+const railY2=d=>d<=RFLAT?.12:d>=RFLAT+RRAMP?RH+.12:.12+RH*((d-RFLAT)/RRAMP);
+DECO.estacion=g=>{utilBase(g,2,"#cfc8ba");const wl=mat("st2wall",{map:stuccoTex(),color:"#efd9b4",side:THREE.DoubleSide}),rf=mat("st2roof",{color:"#7a3b2a",roughness:.8,side:THREE.DoubleSide}),tr=mat("st2trim",{color:"#ffffff"}),
+    gl=mat("st2glass",{color:"#9fd0ec",roughness:.2,emissive:"#ffd98a",emissiveIntensity:0}),pf=mat("st2plat",{color:"#c9c2b4",roughness:.95}),gv=mat("st2grav",{map:stoneTex("#8d877c"),roughness:1}),
+    rail=mat("trail",{color:"#8a8f96",metalness:.6,roughness:.4}),sl=mat("tsleep",{map:woodTex("#6e4a2c")}),cn=mat("st2can",{color:"#2f6b45"}),post=mat("stpost",{color:"#2b2f36"}),yl=mat("st2edge",{color:"#f2c443"});nightMat(gl,0,.8);
+  /* edificio de la estación al fondo, techo a dos aguas */
+  bx(g,1.56,.05,.5,mat("st2plinth",{color:"#a89a86"}),0,0,-.72);bx(g,1.5,.5,.44,wl,0,.04,-.72);bx(g,1.54,.03,.48,tr,0,.54,-.72);
+  const roof=gableRoof(.44,1.5,.3,rf,wl,.06);roof.rotation.y=Math.PI/2;roof.position.set(0,.57,-.72);g.add(roof);
+  for(const x of [-.55,-.3,.3,.55])winFrame(g,.14,.16,x,.16,-.495,gl,tr);bx(g,.26,.32,.02,mat("st2door",{color:"#2f5d8c"}),0,.05,-.495);
+  const ck=new THREE.Mesh(new THREE.CircleGeometry(.08,24),mat("es2clock",{map:clockTex()}));ck.position.set(0,.68,-.47);g.add(ck);
+  const sg=signMesh("ESTACIÓN","#2f6b45","#ffffff",.5,.09);sg.position.set(0,.43,-.484);g.add(sg);
+  /* vía terminal con tope */
+  bx(g,.46,.03,1.5,gv,0,.04,.25);for(let z=-.45;z<=1;z+=.25)bx(g,.5,.02,.06,sl,0,.07,z);for(const x of [-.14,.14])bx(g,.03,.03,1.5,rail,x,.09,.25);
+  bx(g,.42,.12,.08,mat("st2stop",{color:"#d6453a"}),0,.06,-.48);bx(g,.42,.03,.081,tr,0,.14,-.48);
+  /* andenes a ambos lados con borde amarillo, techo, bancas y faroles */
+  for(const s of [-1,1]){const x=s*.62;bx(g,.36,.1,1.4,pf,x,.04,.27);bx(g,.03,.004,1.4,yl,x-s*.165,.14,.27);
+    for(const z of [-.2,.35,.9])cy(g,.015,.015,.42,post,x+s*.08,.14,z,6);const can=bx(g,.42,.025,1.3,cn,x,.56,.32);can.rotation.z=s*.12;
+    for(const z of [.05,.62]){bx(g,.16,.02,.05,mat("es2bench",{color:"#b5793f"}),x+s*.05,.2,z);for(const dz of [-.06,.06])bx(g,.012,.06,.04,post,x+s*.05,.14,z+dz);}}
+  putH(g,"n_Bush_Common",-.9,-.3,0,.14);putH(g,"n_Bush_Common_Flowers",.9,-.3,0,.15);};
+buildTrack=function(){const st=stationObj(),key=st?st.id+","+st.x+","+st.z+","+st.r+",v3":"";if(key===TRAIN.stKey)return;TRAIN.stKey=key;if(TRAIN.track){scene.remove(TRAIN.track);TRAIN.track=null;}RAIL.cells=new Set();if(!st)return;
+  const {c,ang}=trainGeom(st),cells=railCells(st,st.r||0),L=cells.length+1+24;RAIL.len=L;for(const [x,z] of cells)RAIL.cells.add(idx(x,z));
+  const G=new THREE.Group();G.position.copy(c);G.rotation.y=ang;scene.add(G);TRAIN.track=G;
+  const pil=mat("pillar",{map:stoneTex("#b5b0a6")}),rail=mat("trail",{color:"#8a8f96",metalness:.6,roughness:.4}),sl=mat("tsleep",{map:woodTex("#6e4a2c")}),deck=mat("r2deck",{color:"#9c978d",roughness:.9}),side=mat("r2side",{color:"#c9c3b7"}),gv=mat("st2grav",{map:stoneTex("#8d877c"),roughness:1});
+  /* 1) tramo a nivel del suelo */
+  const fl=RFLAT-1;bx(G,.46,.03,fl,gv,0,.04,1+fl/2);for(let z=1.1;z<RFLAT;z+=.25)bx(G,.5,.02,.06,sl,0,.07,z);for(const x of [-.14,.14])bx(G,.03,.03,fl,rail,x,.09,1+fl/2);
+  /* 2) rampa: una sola pieza inclinada */
+  const a=Math.atan2(RH,RRAMP),rl=Math.hypot(RRAMP,RH),R=new THREE.Group();R.position.set(0,.07,RFLAT);R.rotation.x=-a;G.add(R);
+  bx(R,.62,.06,rl,deck,0,-.06,rl/2);for(const sx of [-1,1])bx(R,.03,.08,rl,side,sx*.3,0,rl/2);for(let z=.15;z<rl;z+=.33)bx(R,.5,.02,.06,sl,0,0,z);for(const x of [-.14,.14])bx(R,.03,.03,rl,rail,x,.02,rl/2);
+  /* 3) viaducto elevado hasta el borde del mapa */
+  const z0=RFLAT+RRAMP,len=Math.max(1,L-z0),y=RH+.07;bx(G,.62,.08,len,deck,0,y-.08,z0+len/2);for(const sx of [-1,1])bx(G,.03,.08,len,side,sx*.3,y,z0+len/2);
+  for(let z=z0+.15;z<z0+len;z+=.33)bx(G,.5,.02,.06,sl,0,y,z);for(const x of [-.14,.14])bx(G,.03,.03,len,rail,x,y+.02,z0+len/2);
+  for(let z=z0+1;z<z0+len;z+=2){const cl=cells[Math.round(z-1.5)];const i=cl?idx(cl[0],cl[1]):-1;if(cl&&(occ[i]!=null||roads.has(i)))continue;const h=y+(cl&&!isLand(cl[0],cl[1])?2.4:0);cy(G,.07,.09,h,pil,0,y-h-.08,z,8);}};
+trainFrame=function(){const st=stationObj(),T=S&&S.train;if(!st||!T||T.state==="away"){if(TRAIN.grp)TRAIN.grp.visible=false;return;}if(!TRAIN.grp){TRAIN.grp=trainModel();scene.add(TRAIN.grp);}
+  const {c,dir,ang}=trainGeom(st),e=Math.min(1,(NOW()-T.t0)/12000),L=RAIL.len-2;let d=T.state==="in"?L*(1-(1-Math.pow(1-e,3))):T.state==="out"?L*Math.pow(e,3):0;d+=RDOCK;
+  const mid=d+1.5,tilt=mid>RFLAT&&mid<RFLAT+RRAMP?Math.atan2(RH,RRAMP):0;TRAIN.grp.visible=true;TRAIN.grp.position.set(c.x+dir[0]*d,railY2(mid)-.0,c.z+dir[1]*d);TRAIN.grp.rotation.set(tilt,ang+Math.PI,0,"YXZ");};
+/* ---- Contratos del tren: tú eliges qué trae el próximo (inspirado en Township y CityVille, con un giro) ---- */
+const TR_C={mat:{n:"Carga de materiales",d:"Trae materiales para construir.",ic:"logs"},merc:{n:"Carga de mercadería",d:"Trae mercadería para tus locales.",ic:"crate"},
+  tur:{n:"Tren turístico",d:"El doble de pasajeros y cada uno paga el doble en tus locales.",ic:"people"},exp:{n:"Exportar",d:"Se lleva tu mercadería sobrante y te paga por ella.",ic:"coin"}};
+const trAmt=k=>k==="mat"?10+2*S.lvl:k==="merc"?15+3*S.lvl:0;
+trainTick=function(){const st=stationObj();buildTrack();if(!st){if(TRAIN.grp)TRAIN.grp.visible=false;return;}const T=S.train||(S.train={state:"away",next:NOW()+60000});if(!T.cargo)T.cargo="mat";const t=NOW();
+  if(T.state==="away"&&t>=T.next){T.state="in";T.t0=t;}
+  else if(T.state==="in"&&t-T.t0>=12000){T.state="docked";T.t0=t;stat("trenes");const k=T.cargo,tur=k==="tur",pax=(6+Math.min(16,S.lvl))*(tur?2:1);
+    for(let i=0;i<pax;i++)setTimeout(()=>{const a=spawnVisitor(st,null,false);if(a&&tur)a.tour=true;},i*600);let msg="";
+    if(k==="mat"){const q=trAmt("mat");S.mat+=q;popup(objCenter(st).setY(1.2),`+${q} materiales`,"#8a5a1e",1.5);msg=`trae ${q} materiales`;}
+    else if(k==="merc"){const q=Math.min(trAmt("merc"),Math.max(0,storeCap()-S.merc));S.merc+=q;popup(objCenter(st).setY(1.2),`+${q} mercadería`,"#2f7fd6",1.5);msg=q?`trae ${q} de mercadería`:"traía mercadería, pero tus bodegas están llenas";}
+    else if(k==="exp"){const q=Math.min(S.merc,20+5*S.lvl),v=q*6;S.merc-=q;S.coins+=v;stat("earned",v);popup(objCenter(st).setY(1.2),`+${fmt(v)} monedas`,"#e0a400",1.5);msg=q?`se llevó ${q} de mercadería y te pagó ${fmt(v)} monedas`:"venía a buscar mercadería, pero no tenías";}
+    else msg="viene lleno de turistas";
+    toast(`Llegó el tren: ${pax} pasajeros bajan a recorrer ${S.name} y ${msg}.`,4500);news("turismo",`El tren llegó a ${S.name} con ${pax} pasajeros.`,2);checkQuests();save();}
+  else if(T.state==="docked"&&t-T.t0>=25000){T.state="out";T.t0=t;}
+  else if(T.state==="out"&&t-T.t0>=12000){T.state="away";T.next=t+rnd(6,10)*60000;}};
+function trainPanel(){const T=S.train||{},left=T.next?Math.max(0,Math.ceil((T.next-NOW())/1000)):0,away=T.state==="away"||!T.state,callC=200+50*S.lvl;
+  const opts=Object.entries(TR_C).map(([k,v])=>{const sel=(T.cargo||"mat")===k,am=k==="mat"?`+${trAmt("mat")} materiales`:k==="merc"?`+${trAmt("merc")} mercadería`:k==="exp"?`hasta ${20+5*S.lvl} · 6 c/u`:`${(6+Math.min(16,S.lvl))*2} turistas`;
+    return `<button class="trc${sel?" on":""}" data-act="trCargo" data-c="${k}">${ICON(v.ic)}<b>${v.n}</b><small>${v.d}</small><span>${am}</span></button>`;}).join("");
+  return `<div class="isec"><h4>${ICON("bus")} Próximo tren <small>elige qué trae</small></h4><div class="trcs">${opts}</div>
+    ${away?`<div class="row"><span class="note">Llega en ${dur(left)}</span><button class="btn gold sm" data-act="trCall" ${S.coins<callC?"disabled":""}>Llamarlo ya · ${ICON("coin")} ${fmt(callC)}</button></div>`:`<div class="note good">El tren está ${T.state==="docked"?"en el andén":T.state==="in"?"llegando":"saliendo"}. El próximo usará el contrato que elijas.</div>`}</div>`;}
+{const _oi=openInfo;openInfo=function(o){_oi(o);if(!o||o.k!=="estacion"||o.build||$("#modal").hidden)return;const f=$("#modal .ifoot");if(f)f.insertAdjacentHTML("beforebegin",trainPanel());};}
+(function(){const st=document.createElement("style");st.textContent=`.trcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}.trc{display:grid;gap:3px;justify-items:start;text-align:left;padding:10px;border:2px solid var(--line);border-radius:14px;background:var(--paper2);box-shadow:0 3px 0 var(--line);cursor:pointer}
+.trc svg{width:24px;height:24px}.trc b{font:800 14px var(--f-display)}.trc small{color:var(--muted);font-size:12px;line-height:1.25}.trc span{font-weight:800;font-size:12px;color:#2f6b45}.trc.on{background:#fff4cf;outline:3px solid var(--gold)}`;document.head.appendChild(st);})();
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(a==="trCargo"){e.stopPropagation();const T=S.train||(S.train={state:"away",next:NOW()+60000});T.cargo=b.dataset.c;save();const o=stationObj();if(o)openInfo(o);toast(`Listo: el próximo tren será "${TR_C[T.cargo].n}".`,2500);}
+  else if(a==="trCall"){e.stopPropagation();const T=S.train,c=200+50*S.lvl;if(!T||T.state!=="away")return;if(S.coins<c){toast("Te faltan monedas.");return;}S.coins-=c;T.next=NOW();hud();save();toast("¡El tren viene en camino!",2500);setTimeout(()=>{const o=stationObj();if(o&&modalFn)openInfo(o);},300);}},true);
+
+/* ---- Esquinas de calle sin pasto, gente en los paraderos y globos de ánimo ---- */
+/* 1) curvas: rellenar con vereda el rincón exterior que quedaba con pasto */
+const BEND_FILL={geo:null};
+{const _br3=buildRoad;buildRoad=function(i){_br3(i);const g=roadObj[i];if(!g)return;const x=i%M,z=Math.floor(i/M),mask=roadMask(x,z);if(isHwMain(i)||isBridge(i))return;
+  const open=DIRS.filter(d=>mask&d.b);if(open.length!==2||mask===5||mask===10)return;const sx=-(open[0].dx+open[1].dx),sz=-(open[0].dz+open[1].dz);
+  if(!BEND_FILL.geo)BEND_FILL.geo=new THREE.BoxGeometry(.5,.03,.5);const f=new THREE.Mesh(BEND_FILL.geo,walkMat);f.position.set(sx*.25,.0,sz*.25);f.receiveShadow=true;g.add(f);};}
+/* 2) paraderos: bancas donde la gente espera y sube al micro */
+{const _dp=DECO.paradero;DECO.paradero=g=>{_dp(g);g.userData.spots=[{t:"sit",x:-.15,z:.2,y:.24,ry:0},{t:"sit",x:.05,z:.2,y:.24,ry:0},{t:"stand",x:.22,z:.36,y:0,ry:0},{t:"stand",x:-.3,z:.4,y:0,ry:.4}];};}
+{const _ps=pickSpot;pickSpot=function(o,ag,not){if(o.k!=="paradero")return _ps(o,ag,not);const sps=o.g&&o.g.userData.spots;if(!sps)return null;const ok=sps.filter(sp=>sp!==not&&spotFree(sp));if(!ok.length)return null;
+  const sit=ok.filter(s=>s.t==="sit");return (sit.length&&Math.random()<.7)?sit[Math.floor(Math.random()*sit.length)]:ok[Math.floor(Math.random()*ok.length)];};}
+{const _ud=useDur;useDur=function(sp,ag,o){if(o&&o.k==="paradero")return 60+Math.random()*60;return _ud(sp,ag,o);};}
+{const _af2=attractionFor;attractionFor=function(ag){if(!ag.fan&&!ag.work&&busStops().length>=2&&Math.random()<.14){const b=busStops().filter(o=>o.g&&o.g.userData.spots&&o.g.userData.spots.some(spotFree));if(b.length)return b[Math.floor(Math.random()*b.length)];}return _af2(ag);};}
+/* cuando el micro se detiene en un paradero, suben los que esperan y bajan otros */
+setInterval(()=>{if(!S||document.hidden)return;for(const bus of agents){if(!bus.bus||!(bus.wait>0))continue;const cell=bus.path&&bus.path[bus.path.length-1];if(!cell)continue;
+  const st=busStops().find(o=>{const c=roadCellOf(o);return c&&c[0]===cell[0]&&c[1]===cell[1];});if(!st||bus.lastSt===st.id+":"+Math.round(bus.wait*0)+(bus.stopN||0))continue;bus.stopN=(bus.stopN||0)+1;bus.lastSt=st.id+":0"+bus.stopN;
+  let up=0;for(const a of agents)if(a.use&&a.use.o===st){useEnd(a,true);up++;}const down=Math.random()<.6?1+Math.floor(Math.random()*2):0;for(let k=0;k<down;k++)setTimeout(()=>spawnVisitor(st,null,false),400+k*500);
+  if(up||down)moodAt(objCenter(st).setY(.9),"🚌",1400);}},400);
+/* 3) globos de ánimo sobre la gente */
+const MOOD={tex:{},n:0};
+function moodTex(e){if(MOOD.tex[e])return MOOD.tex[e];MOOD.tex[e]=ctex("mood"+e,96,96,c=>{c.fillStyle="#ffffff";c.strokeStyle="#1d2944";c.lineWidth=6;c.beginPath();c.arc(48,42,34,0,7);c.fill();c.stroke();
+  c.beginPath();c.moveTo(38,72);c.lineTo(48,90);c.lineTo(56,72);c.closePath();c.fill();c.stroke();c.fillStyle="#ffffff";c.fillRect(36,64,22,10);c.font="40px serif";c.textAlign="center";c.textBaseline="middle";c.fillText(e,48,44);});return MOOD.tex[e];}
+function moodOn(ag,e,ms){if(!ag||!ag.obj||!ag.obj.visible||MOOD.n>14)return;if(ag.moodS){ag.obj.remove(ag.moodS);ag.moodS=null;MOOD.n--;}
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:moodTex(e),depthTest:false,transparent:true}));const k=1/(ag.obj.scale.x||1);s.scale.set(.22*k,.22*k,1);s.position.y=.42*k;s.renderOrder=9;ag.obj.add(s);ag.moodS=s;MOOD.n++;
+  setTimeout(()=>{if(ag.moodS===s){ag.obj.remove(s);ag.moodS=null;MOOD.n--;}s.material.dispose();},ms||1800);}
+function moodAt(p,e,ms){if(MOOD.n>14)return;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:moodTex(e),depthTest:false,transparent:true}));s.scale.set(.32,.32,1);s.position.copy(p);s.renderOrder=9;scene.add(s);MOOD.n++;
+  setTimeout(()=>{scene.remove(s);s.material.dispose();MOOD.n--;},ms||1600);}
+/* compran: felices · local sin stock: enojados · casa sin lo que necesita: reclamo de vez en cuando */
+{const _spm=stepPed;stepPed=function(ag,dt){const s=ag.target,wasPts=ag.pts,before=s&&OBJ[s.id]?{stock:s.stock,sup:s.sup}:null;_spm(ag,dt);
+  if(before&&wasPts&&!ag.pts&&s&&CAT[s.k]&&CAT[s.k].cat==="local"&&!ag.work){const bought=(s.stock||0)<(before.stock||0);
+    if(bought){if(Math.random()<.45)moodAt(objCenter(s).setY(.75+Math.random()*.2),Math.random()<.5?"😊":"🛍️",1500);}
+    else if(!before.sup||before.stock<=0)moodAt(objCenter(s).setY(.8),"😠",1800);}};}
+function homeOf(ag){if(!ag.who)return null;if(ag.homeO&&OBJ[ag.homeO.id])return ag.homeO;ag.homeO=houses().find(h=>residentsOf(h).includes(ag.who))||null;return ag.homeO;}
+setInterval(()=>{if(!S||document.hidden||isNight())return;const walkers=agents.filter(a=>a.kind==="ped"&&a.obj.visible&&a.pts&&!a.use&&a.who);if(!walkers.length)return;const a=walkers[Math.floor(Math.random()*walkers.length)];
+  const h=homeOf(a);const miss=h&&h.miss||[];const E={comercio:"🛒",seguridad:"👮",bomberos:"🚒",agua:"💧",luz:"💡",basura:"🗑️",trafico:"🚗",comida:"🍞",escuela:"🏫",salud:"🏥",molestia:"😖",trabajo:"💼",verde:"🌳"};
+  const k=miss.find(m=>E[m]);if(k&&Math.random()<.65)moodOn(a,E[k],2200);else if((h&&h.hp||0)>=80)moodOn(a,Math.random()<.5?"😄":"❤️",1800);},3500);
+/* locales sin mercadería: la gente que pasa se enoja */
+setInterval(()=>{if(!S||document.hidden)return;const empty=Object.values(OBJ).filter(o=>isLocal(o)&&live(o)&&o.g&&(!o.sup||o.stock<=0)&&shopOpen(o));if(!empty.length)return;const s=empty[Math.floor(Math.random()*empty.length)];
+  moodAt(objCenter(s).setY(.85),"😠",2000);const c=objCenter(s);const near=agents.find(a=>a.kind==="ped"&&a.obj.visible&&!a.use&&a.obj.position.distanceTo(c)<2.2);if(near)moodOn(near,"😠",2000);},5000);
+
+/* ---- Costos que no te alcanzan, en rojo ---- */
+(function(){const st=document.createElement("style");st.textContent=`.cost span.short{color:#d6453a}.cost span.short svg{filter:drop-shadow(0 0 0 #d6453a);background:#ffe1dc;border-radius:50%;box-shadow:0 0 0 2px #d6453a}`;document.head.appendChild(st);})();
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
   const r0=rightOf(path[1][0]-path[0][0],path[1][1]-path[0][1]),c0=cellC(...path[0]);pts.push({p:new V3(c0.x+r0[0]*off,.02,c0.z+r0[1]*off)});
@@ -7573,7 +7677,7 @@ function openModal(html,wide){const m=$("#modal");m.innerHTML=`<div class="sheet
 function closeModal(){$("#modal").hidden=true;$("#modal").innerHTML="";modalFn=null;}
 let modalFn=null;
 const head=(t,sub)=>`<div class="shead"><div><h2>${t}</h2>${sub?`<div class="sub">${sub}</div>`:""}</div><button class="x" data-act="close" aria-label="Cerrar">×</button></div>`;
-const costHtml=it=>`<div class="cost">${it.special?`<span>Gratis</span>`:it.gems?`<span>${ICON("gem")}${it.gems}</span>`:`<span>${ICON("coin")}${fmt(it.cost)}</span>`}${it.mats?`<span>${ICON("logs")}${it.mats}</span>`:""}</div>`;
+const costHtml=it=>`<div class="cost">${it.special?`<span>Gratis</span>`:it.gems?`<span class="${S&&S.gems<it.gems?"short":""}">${ICON("gem")}${it.gems}</span>`:`<span class="${S&&S.coins<it.cost?"short":""}">${ICON("coin")}${fmt(it.cost)}</span>`}${it.mats?`<span class="${S&&S.mat<it.mats?"short":""}">${ICON("logs")}${it.mats}</span>`:""}</div>`;
 function statLine(it){
   if(it.water)return `Agua para ${it.water} personas`;if(it.power)return `Luz para ${it.power} personas${it.solar?" (de día)":""}`;if(it.gems)return `+${it.b}% en un radio de ${it.r} · exclusiva`;
   if(it.cat==="casa")return `+${it.pop} habitantes · ${fmt(it.rent)} cada ${dur(it.t)}`;
@@ -7623,7 +7727,7 @@ function infoHero(o,it,sub){const cs=CAT_S[it.cat]||["Edificio","#eef4f9","#2f7f
   const chips=(o.ref?`<span class="chip ok">Antisísmico</span>`:"")+(b&&(it.cat==="casa"||it.cat==="local")?`<span class="chip">+${b}% por decoración</span>`:"");
   let img="";try{img=thumb(o.k);}catch(e){}
   return `<div class="ihero" style="--c1:${cs[1]};--c2:${cs[2]}"><div class="ithumb">${img?`<img src="${img}" alt="">`:""}</div><div class="ihd"><span class="ichip">${cs[0]}</span><h2>${it.name}</h2><div class="isub">${st}${sub?`<span>${sub}</span>`:""}${chips}</div></div><button class="x" data-act="close" aria-label="Cerrar">×</button></div>`;}
-const costPill=c=>`${c.c?`<span>${ICON("coin")}${fmt(c.c)}</span>`:""}${c.mt?`<span>${ICON("logs")}${c.mt}</span>`:""}`;
+const costPill=c=>`${c.c?`<span class="${S&&S.coins<c.c?"short":""}">${ICON("coin")}${fmt(c.c)}</span>`:""}${c.mt?`<span class="${S&&S.mat<c.mt?"short":""}">${ICON("logs")}${c.mt}</span>`:""}`;
 function footHtml(o,cancel){return `<div class="ifoot">${cancel?"":`<button class="btn ghost" data-act="rot" data-o="${o.id}">${SVG_ROT} Girar</button>${o.k!=="muni"?`<button class="btn ghost" data-act="mover" data-o="${o.id}">${SVG_MOVE} Mover</button>`:""}`}<button class="btn ghost danger" data-act="sell" data-o="${o.id}">${SVG_DEL} ${cancel?"Cancelar obra":"Demoler"}</button></div>`;}
 function openInfo(o){modalFn=()=>openInfo(o);const it=itemOf(o);const b=bonusAt(o);let h="";
   if(o.build){const p=obraProg(o),ready=p>=1,gm=obraGems(o),left=obraLeft(o),tot=p<1?left*1000/(1-p):1;
@@ -7663,7 +7767,7 @@ function openInfo(o){modalFn=()=>openInfo(o);const it=itemOf(o);const b=bonusAt(
   else if(o.k==="estadio"||o.k==="cancha"){const m=S.match||{},on=m.until&&m.oid===o.id;tiles=tile("star",on?"¡Jugando!":`${o.k==="estadio"?"18":"17"}:00`,on?`contra ${m.rival}`:"próximo partido (cada día)",on?"good":"")+tile("people",fmt(S.stats.partidos||0),"partidos jugados")+tile("happy",fmt(S.stats.victorias||0),"victorias");
     extra=`<div class="note">${o.k==="estadio"?"Cada día a las 18:00 llegan hinchas desde las casas. Si gana el equipo del pueblo hay fuegos artificiales y todos quedan más felices. La entrada deja monedas.":"Los niños y jóvenes vienen a jugar en la tarde y hay un partido de barrio a las 17:00 (si no tienes estadio)."}</div>`;}
   else if(o.k==="balneario"){tiles=tile("sun",(S.wx?S.wx.k:"sol")==="sol"&&!isNight()?"Abierto":"Vacío","bañistas con sol")+tile("people","+"+Math.round(Math.min(.12,liveK("balneario").length*.04)*100)+"%","más viajeros paran");extra=`<div class="note">Con sol llegan bañistas y turistas, y el carrito vende helados. Las casas a 10 casillas son más felices.</div>`;}
-  else if(o.k==="estacion"){const T=S.train||{};tiles=tile("bus",T.state==="docked"?"En el andén":T.state==="in"?"Llegando":T.state==="out"?"Saliendo":T.next?`En ${dur(Math.max(0,Math.ceil((T.next-NOW())/1000)))}`:"Pronto","próximo tren",T.state==="docked"?"good":"")+tile("people",fmt(S.stats.trenes||0),"trenes recibidos");extra=`<div class="note">Cada 6 a 10 minutos llega un tren por el viaducto: bajan pasajeros que recorren el pueblo y trae mercadería o materiales.</div>`;}
+  else if(o.k==="estacion"){const T=S.train||{};tiles=tile("bus",T.state==="docked"?"En el andén":T.state==="in"?"Llegando":T.state==="out"?"Saliendo":T.next?`En ${dur(Math.max(0,Math.ceil((T.next-NOW())/1000)))}`:"Pronto","próximo tren",T.state==="docked"?"good":"")+tile("people",fmt(S.stats.trenes||0),"trenes recibidos");extra=`<div class="note">Cada 6 a 10 minutos llega un tren: bajan pasajeros que compran en tus locales. Abajo eliges qué trae el próximo.</div>`;}
   else if(o.k==="deposito"){tiles=tile("trash",`${Math.round(o.load||0)}/${depCap()}`,"basura en el depósito",(o.load||0)>=depCap()?"bad":"")+tile("work",o.truck?"En ruta":"Listo","camión recolector");extra=`<div class="note">El camión recoge la basura de casas y locales a 22 casillas. ${hasK("reciclaje")?"La planta de reciclaje la convierte en materiales.":"Con una Planta de reciclaje la basura se convierte en materiales."} Si el depósito se llena, el camión deja de salir.</div>`;}
   else if(o.k==="reciclaje"){tiles=tile("logs",fmt(Math.floor((S.stats.reciclado||0)/8)),"materiales reciclados");extra=`<div class="note">Procesa 8 de basura por minuto desde los depósitos y la convierte en 1 material.</div>`;}
   else if(o.k==="paradero"){tiles=tile("bus",busStops().length,"paraderos en la ruta")+tile("people",Math.round(transitCut()*100)+"%","menos viajes en auto")+tile("bus",agents.filter(a=>a.bus).length,"micros andando");extra=(busStops().length<2?(liveK("paradero").length>=2?`<div class="note bad"><b>Pon el otro paradero más lejos.</b> Tus paraderos están en el mismo tramo de calle; el micro necesita al menos 2 paradas distintas.</div>`:`<div class="note bad"><b>Falta otro paradero.</b> El micro empieza a pasar cuando hay 2 paraderos al lado de una calle, conectados por calles.</div>`):"")+`<div class="note">Con 2 o más paraderos pasa un micro que recorre todos. Cada paradero reduce el uso del auto (hasta 60%). Tráfico: <b>${trafficTxt()}</b>.</div>`;}
