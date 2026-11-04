@@ -3993,7 +3993,7 @@ function initBridges(){BRIDGE.clear();for(const I of ISLES)if(I.br&&isleOpen(I))
 const isBridge=i=>BRIDGE.has(i);
 
 const ICON=n=>`<svg viewBox="0 0 24 24"><use href="#ic-${n}"/></svg>`;
-const dur=s=>s<60?`${s} s`:s<3600?`${Math.round(s/60)} min`:`${(s/3600).toFixed(1)} h`;
+const dur=s=>{if(s<60)return `${s} s`;const m=Math.round(s/60);if(m<60)return `${m} min`;const h=Math.floor(m/60),r=m%60;return r?`${h} h ${r} min`:`${h} h`;};
 
 /* =================== Catálogo =================== */
 const CAT={};
@@ -6456,6 +6456,13 @@ function personCard(r){const age=r.age<1?"bebé":r.age+" años",jobO=r.job&&OBJ[
   const lk=r.likes[0]&&CAT[r.likes[0]];let chip="";if(lk){const has=Object.values(OBJ).some(o=>o.k===r.likes[0]&&live(o)),un=unlockedShop(r.likes[0]);chip=`<span class="lk2 ${has?"ok":un?"want":"no"}">${has?"♥":"Quiere"} ${lk.name}</span>`;}
   const mv=S.mov&&S.mov.find(m=>m.p.id===r.id);const det=[r.trait,r.uni?`estudia ${r.carrera}`:r.carrera,r.pn?`${r.f?"casada":"casado"} con ${r.pn}`:"",r.night?"sale de noche":"",r.drive?"maneja":"",mv?"busca casa propia":"",...r.likes.slice(1).map(k=>CAT[k]?`también le gusta ${CAT[k].name}`:"")].filter(Boolean);
   return `<details class="pc"><summary><span class="pav" style="background:${r.col}">${r.name[0]}</span><span class="pn"><b>${r.name}</b><small${job===null&&isWorker(r)?' class="bad"':""}>${sub}</small></span>${chip}</summary><div class="pdx">${det.map(d=>`<span>${d}</span>`).join("")||"<span>Sin más datos</span>"}</div></details>`;}
+
+/* ---- Economía 2.0: las casas se pagan en más tiempo y el comercio es el gran negocio ---- */
+(function(){const H={cabana:[12,60],casita:[24,120],celeste:[40,240],campo:[60,480],familiar:[108,900],chalet:[190,1800],garaje:[280,2700],dospisos:[385,3600],
+    deptos:[325,3600,25],casona:[540,5400],torre1:[1000,7200],mansion:[1800,10800,110,9000],torre2:[2100,10800],torre3:[4335,14400]};
+  for(const k in H){const it=CAT[k],[r,t,pop,cost]=H[k];if(!it)continue;it.rent=r;it.t=t;if(pop)it.pop=pop;if(cost)it.cost=cost;}
+  const L={libreria:35,restaurante:40,cine:45,discoteca:55,ropa:50,hotel:80,super:90,mall:150};
+  for(const k in L)if(CAT[k])CAT[k].pay=L[k];})();
 
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
