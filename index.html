@@ -6610,10 +6610,14 @@ function rpMesh(i,on,x,z){if(!RP.grp){RP.grp=new THREE.Group();scene.add(RP.grp)
   const old=RP.grp.getObjectByName("r"+i);if(old)RP.grp.remove(old);if(!on)return;
   const m=new THREE.Mesh(RP.geo,RP.mat);m.name="r"+i;m.rotation.x=-Math.PI/2;const c=cellC(x,z);m.position.set(c.x,.06,c.z);m.renderOrder=2;RP.grp.add(m);}
 function rpClear(){RP.cells.clear();if(RP.grp)while(RP.grp.children.length)RP.grp.remove(RP.grp.children[0]);}
-paintRoad=function(x,z){const i=idx(x,z);if(RP.erase===null)RP.erase=RP.cells.has(i);
-  if(RP.erase){if(RP.cells.delete(i)){rpMesh(i,false);renderMode();}return;}
-  if(RP.cells.has(i)||!rpValid(x,z))return;RP.cells.set(i,[x,z]);rpMesh(i,true,x,z);if(typeof sfx==="function")try{sfx("click");}catch(e){}renderMode();};
-addEventListener("pointerdown",()=>{RP.erase=null;},true);
+function rpAdd(x,z){const i=idx(x,z);if(RP.cells.has(i)||!rpValid(x,z))return false;RP.cells.set(i,[x,z]);rpMesh(i,true,x,z);return true;}
+paintRoad=function(x,z){const i=idx(x,z);let added=false;
+  if(RP.first==null){RP.first=i;RP.tapDel=RP.cells.has(i)?i:null;RP.lx=x;RP.lz=z;added=rpAdd(x,z);}
+  else{if(i!==RP.first)RP.tapDel=null;let cx=RP.lx,cz=RP.lz;/* rellena los saltos cuando el dedo o el mouse se mueve rápido */
+    while(cx!==x||cz!==z){if(Math.abs(x-cx)>=Math.abs(z-cz))cx+=Math.sign(x-cx);else cz+=Math.sign(z-cz);if(rpAdd(cx,cz))added=true;}RP.lx=x;RP.lz=z;}
+  if(added){if(typeof sfx==="function")try{sfx("click");}catch(e){}renderMode();}};
+addEventListener("pointerdown",()=>{RP.first=null;RP.tapDel=null;},true);
+addEventListener("pointerup",()=>{if(tool==="road"&&RP.tapDel!=null&&RP.cells.delete(RP.tapDel)){rpMesh(RP.tapDel,false);renderMode();}RP.tapDel=null;});
 function rpAccept(){const list=[...RP.cells.values()].filter(([x,z])=>rpValid(x,z)),n=list.length,c=n*10;if(!n){toast("Traza al menos un tramo de calle.");return;}
   if(S.coins<c){toast(`Te faltan ${fmt(c-S.coins)} monedas para estas calles.`,3000);return;}
   for(const [x,z] of list){S.coins-=10;roads.add(idx(x,z));refreshRoadAround(x,z);addXP(.5);}
