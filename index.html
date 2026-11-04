@@ -6920,6 +6920,36 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
 {const _au3=accUpload;accUpload=function(force){if(!force&&!ACC.synced)return Promise.resolve(false);return _au3(force);};}
 {const _as3=accSync;accSync=async function(){try{await _as3();}finally{if(!document.querySelector('#modal [data-act="accUseCloud"]'))ACC.synced=true;}};}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(b&&b.dataset.act==="accUseLocal")ACC.synced=true;},true);
+/* ---- Tren: la vía sale hacia el borde del mapa por el lado más despejado, elevada sobre la ciudad ---- */
+const RAIL_DIRS=[[0,1],[1,0],[0,-1],[-1,0]];
+function railCells(st,r){const d=RAIL_DIRS[r],c=objCenter(st);let x=c.x+M/2,z=c.z+M/2;const out=[];x+=d[0]*1.5;z+=d[1]*1.5;
+  for(let k=0;k<M*2;k++){const cx=Math.floor(x),cz=Math.floor(z);if(!inMap(cx,cz))break;out.push([cx,cz]);x+=d[0];z+=d[1];}return out;}
+function railCost(st,r){let c=0;for(const [x,z] of railCells(st,r)){const i=idx(x,z),o=occ[i];if(o!=null&&o!==st.id)c+=12;else if(roads.has(i))c+=2;else if(isOwned(x,z))c+=1;else c+=.15;}return c+railCells(st,r).length*.05;}
+function railBest(st){let b=st.r||0,bc=1e9;for(let r=0;r<4;r++){const c=railCost(st,r);if(c<bc){bc=c;b=r;}}return b;}
+const RAIL={cells:new Set(),len:40,key:""};
+const RAIL_H=.95,RAIL_RAMP=3;
+const railY=d=>d<=0?.12:d>=RAIL_RAMP?RAIL_H+.1:.12+(RAIL_H-.02)*(d/RAIL_RAMP);
+buildTrack=function(){const st=stationObj(),key=st?st.id+","+st.x+","+st.z+","+st.r:"";if(key===TRAIN.stKey)return;TRAIN.stKey=key;if(TRAIN.track){scene.remove(TRAIN.track);TRAIN.track=null;}RAIL.cells=new Set();if(!st)return;
+  const {c,dir,ang}=trainGeom(st),cells=railCells(st,st.r||0),L=cells.length+1.5+24;RAIL.len=L;for(const [x,z] of cells)RAIL.cells.add(idx(x,z));
+  const G=new THREE.Group();G.position.copy(c);G.rotation.y=ang;scene.add(G);TRAIN.track=G;
+  const pil=mat("pillar",{map:stoneTex("#b5b0a6")}),rail=mat("trail",{color:"#8a8f96",metalness:.6,roughness:.4}),sl=mat("tsleep",{map:woodTex("#6e4a2c")}),deck=mat("r2deck",{color:"#9c978d",roughness:.9}),side=mat("r2side",{color:"#c9c3b7"});
+  const N=Math.ceil(L);for(let z=1;z<=N;z++){const y0=railY(z-.5);const seg=bx(G,.62,.08,1.02,deck,0,y0-.08,z);if(z<=RAIL_RAMP){const a=Math.atan2(RAIL_H-.02,RAIL_RAMP);seg.rotation.x=-a*(z<=RAIL_RAMP?1:0);}
+    for(let k=0;k<3;k++)bx(G,.5,.02,.06,sl,0,y0,z-.33+k*.33);for(const sx of [-1,1])bx(G,.03,.06,1.02,side,sx*.3,y0,z);
+    /* pilares cada 2 tramos, solo donde no hay casa ni calle */
+    if(z>RAIL_RAMP&&z%2===0){const cl=cells[Math.round(z-1.5)];const i=cl?idx(cl[0],cl[1]):-1;const blocked=cl&&(occ[i]!=null||roads.has(i));if(!blocked){const h=y0+(cl&&!isLand(cl[0],cl[1])?2.4:0);cy(G,.07,.09,h,pil,0,y0-h-.08,z,8);}}}
+  /* rieles: tramo en rampa y tramo recto */
+  const ra=Math.atan2(RAIL_H-.02,RAIL_RAMP),rl=Math.hypot(RAIL_RAMP,RAIL_H-.02);for(const x of [-.14,.14]){const r1=bx(G,.03,.03,rl,rail,x,0,0);r1.position.set(x,(.14+RAIL_H+.12)/2,RAIL_RAMP/2+.5);r1.rotation.x=-ra;bx(G,.03,.03,N-RAIL_RAMP,rail,x,RAIL_H+.12,RAIL_RAMP+.5+(N-RAIL_RAMP)/2);}};
+trainFrame=function(){const st=stationObj(),T=S&&S.train;if(!st||!T||T.state==="away"){if(TRAIN.grp)TRAIN.grp.visible=false;return;}if(!TRAIN.grp){TRAIN.grp=trainModel();scene.add(TRAIN.grp);}
+  const {c,dir,ang}=trainGeom(st),e=Math.min(1,(NOW()-T.t0)/12000),L=RAIL.len-2;let d=T.state==="in"?L*(1-(1-Math.pow(1-e,3))):T.state==="out"?L*Math.pow(e,3):0;d+=1.2;
+  TRAIN.grp.visible=true;TRAIN.grp.position.set(c.x+dir[0]*d,railY(d-.6),c.z+dir[1]*d);TRAIN.grp.rotation.set(d<RAIL_RAMP+.6?Math.atan2(RAIL_H-.02,RAIL_RAMP)*(d>.6?1:0):0,ang+Math.PI,0,"YXZ");};
+/* al poner la estación, la vía elige sola el lado más despejado; con Girar puedes cambiarlo */
+{const _plr=place;place=function(k,x,z,rot){const r=_plr(k,x,z,rot);if(r&&k==="estacion"){const st=Object.values(OBJ).filter(o=>o.k==="estacion").pop();if(st){st.r=railBest(st);drawObj(st);TRAIN.stKey="";save();toast("La vía del tren sale por el lado más despejado hacia el borde del mapa. Usa Girar en la estación para cambiar su dirección.",5500);}}return r;};}
+{const _rot=rotateObj;rotateObj=function(o){_rot(o);if(o&&o.k==="estacion"){TRAIN.stKey="";const n=railCells(o,o.r||0).filter(([x,z])=>occ[idx(x,z)]!=null&&occ[idx(x,z)]!==o.id).length;toast(n?`La vía pasaría sobre ${n} ${n>1?"edificios":"edificio"}. Gira otra vez para buscar un lado más despejado.`:"La vía ahora sale por este lado.",3500);}};}
+/* no se puede construir bajo la vía (las calles sí pueden pasar por debajo) */
+{const _cp=canPlace;canPlace=function(k,x,z,quiet){const e=_cp(k,x,z,quiet);if(e||!RAIL.cells.size||k==="estacion")return e;const w=(CAT[k]&&CAT[k].w)||1;for(const [cx,cz] of cellsOf(x,z,w))if(RAIL.cells.has(idx(cx,cz)))return "Ahí pasa la vía del tren.";return null;};}
+/* partidas que ya tienen estación: elegir una vez el mejor lado */
+{const iv=setInterval(()=>{if(!S||!$("#loading").hidden)return;clearInterval(iv);if(S.railV===2)return;S.railV=2;const st=stationObj();if(st){const b=railBest(st);if(b!==(st.r||0)){st.r=b;drawObj(st);TRAIN.stKey="";save();}}},700);}
+
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
   const r0=rightOf(path[1][0]-path[0][0],path[1][1]-path[0][1]),c0=cellC(...path[0]);pts.push({p:new V3(c0.x+r0[0]*off,.02,c0.z+r0[1]*off)});
