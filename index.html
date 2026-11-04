@@ -5047,7 +5047,9 @@ function initSky2(){const N=420,p=new Float32Array(N*3);for(let i=0;i<N;i++){con
   const R=2600,rp=new Float32Array(R*6);for(let i=0;i<R;i++){const x=(Math.random()-.5)*44,y=Math.random()*14,z=(Math.random()-.5)*44;rp.set([x,y,z,x+.05,y+.38,z+.03],i*6);}
   const rg=new THREE.BufferGeometry();rg.setAttribute("position",new THREE.BufferAttribute(rp,3));rain=new THREE.LineSegments(rg,new THREE.LineBasicMaterial({color:0xe6eef7,transparent:true,opacity:0,depthWrite:false}));rain.frustumCulled=false;rain.visible=false;scene.add(rain);
   for(const n in TPL)TPL[n].traverse(m=>{if(!m.isMesh||!m.material)return;const mn=m.material.name;if(mn==="window")nightMat(m.material,0,.85,"#ffc96b");else if(mn==="light"&&n==="light_square")nightMat(m.material,0,2.2,"#fff1c9");});}
-function tickWeather(){const t=NOW();if(!S.wx||t>=S.wx.until){const k=seasonWx();const prev=S.wx&&S.wx.k;S.wx={k,until:t+rnd(5,10)*60000};
+function wxNowTxt(){const w=S.wx||{k:"sol",until:NOW()},N=WX_N,nx=S.wxNext||w.k,left=Math.max(1,Math.round((w.until-NOW())/60000));
+  return `<b>Ahora: ${N[w.k][1]}.</b> ${WX_TXT[w.k]||""} ${nx!==w.k?`En unos ${left} min: <b>${N[nx][1].toLowerCase()}</b>.`:`Seguirá ${N[w.k][1].toLowerCase()} un buen rato.`}`;}
+function tickWeather(){const t=NOW();if(!S.wx||t>=S.wx.until){const k=S.wxNext||seasonWx();S.wxNext=seasonWx();const prev=S.wx&&S.wx.k;S.wx={k,until:t+rnd(5,10)*60000};
     if(k==="lluvia"&&prev!=="lluvia")toast("Empezó a llover: los cultivos crecen más rápido, pero sale menos gente a la calle.",4200);else if(prev==="lluvia"&&k!=="lluvia")toast("Paró la lluvia.");}
   if(DN.rain>.5)for(const o of Object.values(OBJ))if(o.k==="parcela"&&o.crop&&cropProgress(o)<1)o.pt-=2000*.3;}
 const WX_N={sol:["sun","Soleado","Más gente paseando y turistas."],nubes:["cloud","Nublado","Sin efectos especiales."],lluvia:["rain","Lluvia","Los cultivos crecen 30% más rápido, sale menos gente y no hay incendios."]};
@@ -5242,10 +5244,10 @@ function makeEdition(d,first){const P=S.paper,sn=P.snap||paperSnap(),now=paperSn
   const ed={n:(P.n||0)+1,d:d-(S.day0||d)+1,hd,items:items.slice(first?0:1,7).map(i=>({k:i.k,txt:i.txt})),letters:letters(),bdays:(S.life&&S.life.bdays||[]).slice(0,6),
     figs:{earned:Math.max(0,now.earned-sn.earned),customers:Math.max(0,now.customers-sn.customers),viajeros:Math.max(0,now.viajeros-sn.viajeros),pop:now.pop,dpop:now.pop-sn.pop,happy:S.happy||0},
     wx:S.wx?S.wx.k:"sol",ads:(S.mov||[]).slice(0,3).map(m=>`${m.p.full}, ${m.p.age} años, busca casa en ${S.name}. Responder en la municipalidad.`),read:false,lvlUp:now.lvl>sn.lvl?now.lvl:0};
-  P.n=ed.n;P.last=d;P.lastT=NOW();P.snap=now;P.eds=(P.eds||[]).concat(ed).slice(-7);P.view=P.eds.length-1;
+  ed.d=ed.n;P.n=ed.n;P.last=d;P.lastT=NOW();P.snap=now;P.eds=[ed];P.view=0;
   if(!first)toast(`Salió el diario de hoy: "${ed.hd.t.length>60?ed.hd.t.slice(0,58)+"…":ed.hd.t}"`,4200);paperBadge();}
-function paperTick(){if(!S.paper){S.paper={n:0,last:dayNum(),lastT:NOW(),snap:paperSnap(),eds:[]};makeEdition(dayNum(),true);return;}
-  const d=dayNum();if(S.paper.last<d&&dayT()>=7/24)makeEdition(d,false);}
+function paperTick(){if(!S.paper){S.paper={n:0,last:dayNum(),lastT:NOW(),snap:paperSnap(),eds:[],day:todayStr()};makeEdition(dayNum(),true);return;}
+  const td=todayStr();if(S.paper.day!==td){S.paper.day=td;makeEdition(dayNum(),false);}}
 function paperBadge(){const b=$("#nBadge");if(b)b.hidden=!(S.paper&&S.paper.eds.some(e=>!e.read));}
 const WX_TXT={sol:"Despejado, ideal para pasear y comprar.",nubes:"Nublado, sin lluvia por ahora.",lluvia:"Lluvia: bueno para los cultivos, malo para las ventas."};
 function openPaper(i){const P=S.paper;if(!P||!P.eds.length)return;if(i==null)i=P.eds.length-1;i=Math.max(0,Math.min(P.eds.length-1,i));P.view=i;modalFn=()=>openPaper(P.view);const e=P.eds[i];
@@ -5255,13 +5257,13 @@ function openPaper(i){const P=S.paper;if(!P||!P.eds.length)return;if(i==null)i=P
   const lets=e.letters.map(l=>`<div class="art letter"><p>“${l.txt}”</p><small>— ${l.sig}</small></div>`).join("");
   openModal(head("Diario",`Edición Nº ${e.n} · Día ${e.d}`)+`<div class="paper"><div class="mast"><small>Fundado por el alcalde · ${e.n===1?"Primera edición":"Edición matinal"}</small><h2>El Vecino de ${S.name}</h2><small>Día ${e.d} · Nº ${e.n} · Gratis</small></div>
     <h3>${e.hd.t}</h3>${e.hd.s?`<p class="dek">${e.hd.s}</p>`:""}
-    <div class="figs"><div><b>${fmt(e.figs.earned)}</b><small>monedas cobradas ayer</small></div><div><b>${fmt(e.figs.customers)}</b><small>clientes atendidos</small></div><div><b>${fmt(e.figs.pop)}</b><small>habitantes${e.figs.dpop?` (${e.figs.dpop>0?"+":""}${e.figs.dpop})`:""}</small></div><div><b>${e.figs.happy}%</b><small>felicidad</small></div>${e.figs.viajeros?`<div><b>${fmt(e.figs.viajeros)}</b><small>viajeros pararon</small></div>`:""}</div>
+    <div class="figs"><div><b>${fmt(e.figs.earned)}</b><small>monedas cobradas ${e.n===1?"hasta hoy":"ayer"}</small></div><div><b>${fmt(e.figs.customers)}</b><small>clientes atendidos</small></div><div><b>${fmt(e.figs.pop)}</b><small>habitantes${e.figs.dpop?` (${e.figs.dpop>0?"+":""}${e.figs.dpop})`:""}</small></div><div><b>${e.figs.happy}%</b><small>felicidad</small></div>${e.figs.viajeros?`<div><b>${fmt(e.figs.viajeros)}</b><small>viajeros pararon</small></div>`:""}</div>
     <div class="cols">${arts}${e.lvlUp?`<div class="art"><span class="kick">Municipio</span><p>El pueblo subió a nivel ${e.lvlUp}. Hay nuevos edificios disponibles.</p></div>`:""}
     ${e.bdays.length?`<div class="art"><span class="kick">Cumpleaños</span><p>${e.bdays.join(" · ")}</p></div>`:""}
-    <div class="art"><span class="kick">El tiempo</span><p>${WX_TXT[e.wx]||""}</p></div>
+    <div class="art"><span class="kick">El tiempo</span><p>${wxNowTxt()}</p></div>
     ${lets?`<div class="art"><span class="kick">Cartas de los vecinos</span></div>${lets}`:""}
     ${e.ads.length?`<div class="art ads"><span class="kick">Avisos</span>${e.ads.map(a=>`<p>${a}</p>`).join("")}</div>`:""}</div></div>
-    <div class="row"><button class="btn" data-act="dpap" data-n="${i-1}" ${i<=0?"disabled":""}>‹ Anterior</button><button class="btn" data-act="dpap" data-n="${i+1}" ${i>=P.eds.length-1?"disabled":""}>Siguiente ›</button></div>`,true);}
+    <div class="note">Sale un diario nuevo cada día. El de ayer se recicla. 📰</div>`,true);}
 
 /* ---- Temblores ---- */
 const QK={on:false,until:0,t0:0,amp:0,m:0,tsu:0,sea:0};
@@ -5370,7 +5372,7 @@ function dmClaim(i){const m=S.dm&&S.dm.list[i];if(!m||m.cl||dmProg(m)<m.n)return
 function dmReroll(i){const m=S.dm&&S.dm.list[i];if(!m||m.cl)return;if(S.gems<1){toast("Te falta 1 diamante.");return;}S.gems-=1;stat("gemsUsed");S.dm.list[i]=dmMake(S.dm.list.map(x=>x.k));save();openQuests();}
 {const _cq=checkQuests;checkQuests=function(){_cq();if(!S)return;let n=0;if(S.dm)n+=S.dm.list.filter(m=>!m.cl&&dmProg(m)>=m.n).length;if(S.emg)n+=S.emg.filter(e=>e.st==="ok").length;
   const b=$("#qBadge");if(!b)return;const base=b.hidden?0:(+b.textContent||0),tot=base+n;b.hidden=!tot;b.textContent=tot;};}
-function openQuests(){modalFn=openQuests;const act=[];for(let i=0;i<QUESTS.length&&act.length<4;i++)if(!S.qDone.includes(i))act.push(i);
+function openQuests(){modalFn=openQuests;const rdy=[],pend=[];for(let i=0;i<QUESTS.length;i++){if(S.qDone.includes(i))continue;if(questProg(QUESTS[i])>=QUESTS[i].n)rdy.push(i);else if(pend.length<4)pend.push(i);}const act=rdy.concat(pend);
   const gem=n=>`<span class="gemv">${ICON("gem")}${n}</span>`,rw=r=>`${r.c?`<span>${ICON("coin")}${fmt(r.c)}</span>`:""}${r.g?gem(r.g):""}`;
   const emg=(S.emg||[]).map((e,i)=>{const left=Math.max(0,Math.ceil((e.until-NOW())/1000));return `<div class="mq emg ${e.st}"><div><b>${e.t}</b><small>${e.st==="ok"?"¡Resuelta!":e.st==="fail"?"Se acabó el tiempo":`Quedan ${dur(left)}`}</small></div><div class="rw">${rw(e.r)}</div>${e.st==="ok"?`<button class="btn go sm" data-act="emc" data-i="${i}">Reclamar</button>`:""}</div>`;}).join("");
   const dm=S.dm?S.dm.list.map((m,i)=>{const p=dmProg(m),done=p>=m.n;return `<div class="mq${m.cl?" cl":""}"><div><b>${m.t}</b><small>${m.cl?"Cobrada":`${fmt(Math.max(0,p))} de ${fmt(m.n)}`}</small><div class="pbar"><i style="width:${Math.max(0,p)/m.n*100}%"></i></div></div><div class="rw">${rw(m.r)}</div>
@@ -5380,7 +5382,7 @@ function openQuests(){modalFn=openQuests;const act=[];for(let i=0;i<QUESTS.lengt
   openModal(head("Metas y misiones",`${S.qDone.length} de ${QUESTS.length} metas cumplidas`)+`<div class="row"><button class="btn gold" data-act="ach">${ICON("star")} Logros · ${ACH.reduce((a,x)=>a+((S.ach||{})[x.k]||0),0)}/${ACH.length*3}</button><button class="btn" data-act="daily">${ICON("gem")} Recompensa diaria</button></div>`+
     (emg?`<div class="isec"><h4>${ICON("fire")} Emergencias <small>con tiempo límite</small></h4>${emg}</div>`:"")+
     `<div class="isec"><h4>${ICON("star")} Misiones del día <small>${S.dm?(allDone?"¡Cofre cobrado! Mañana hay nuevas.":"Cumple las 3 y ganas un cofre: monedas y 5 diamantes · se renuevan a medianoche"):""}</small></h4>${dm}</div>`+
-    `<div class="isec"><h4>${ICON("people")} Metas del pueblo</h4>${goals||`<div class="note">¡Cumpliste todas las metas!</div>`}</div>`,true);}
+    `<div class="isec"><h4>${ICON("people")} Metas del pueblo${rdy.length?` <small>${rdy.length} para reclamar</small>`:""}</h4>${rdy.length>=2?`<div class="row"><button class="btn go" data-act="claimAll">Reclamar todas (${rdy.length})</button></div>`:""}${goals||`<div class="note">¡Cumpliste todas las metas!</div>`}</div>`,true);}
 
 /* ---- Diamantes: dónde se usan ---- */
 const rushCost=ms=>Math.max(1,Math.ceil(ms/300000));
@@ -7781,6 +7783,7 @@ document.addEventListener("click",e=>{
     case "muniup":upgradeMuni();break;
     case "deliver":deliver(+b.dataset.i);break;
     case "claim":claim(+b.dataset.i);break;
+    case "claimAll":{const ids=QUESTS.map((q,i)=>i).filter(i=>!S.qDone.includes(i)&&questProg(QUESTS[i])>=QUESTS[i].n);let c=0,g=0;for(const i of ids){const q=QUESTS[i];S.qDone.push(i);c+=q.r.c||0;g+=q.r.g||0;S.coins+=q.r.c||0;S.gems+=q.r.g||0;addXP(20);}if(ids.length){bonus(`¡${ids.length} metas!`);toast(`Reclamaste ${ids.length} metas: +${fmt(c)} monedas${g?` y +${g} diamantes`:""}.`,3500);}checkQuests();save();openQuests();break;}
     case "buysector":buySector(+b.dataset.s);break;
     case "ebuy":{const g=+b.dataset.g;if(S.gems<g){toast("Te faltan diamantes.");break;}syncEnergy();S.gems-=g;S.energy=Math.min(eMax(),S.energy+(+b.dataset.n));bonus("¡Energía!");save();openEnergy();break;}
     case "ebuyc":{const c=+b.dataset.c;if(S.coins<c){toast("Te faltan monedas.");break;}syncEnergy();S.coins-=c;S.energy=Math.min(eMax(),S.energy+3);save();openEnergy();break;}
