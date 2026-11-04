@@ -4189,6 +4189,9 @@ function storeCap(){let c=100;for(const o of Object.values(OBJ))if(o.k==="bodega
 const lvlCap=()=>S.muni*5;
 const xpNeed=l=>Math.round(50*Math.pow(l,1.5));
 const starMul=o=>1+.3*((o.s||1)-1);
+const STF={t:0,m:new Map()};function staffRate(o){const sl=slotsOf(o);if(!sl)return null;const t=performance.now();if(t-STF.t>1500){STF.t=t;STF.m.clear();}if(!STF.m.has(o.id))STF.m.set(o.id,Math.min(1,empOf(o)/sl));return STF.m.get(o.id);}
+const PRODK=o=>{const it=CAT[o.k];return !!it&&(it.cat==="local"||o.k==="parcela"||o.k==="aserradero");};
+const staffMul=o=>{const r=o&&o.k!=="muni"?staffRate(o):null;return r==null?1:1+.2*r;};
 function bonusAt(o){let b=0;const w=wOf(o),cx=o.x+w/2,cz=o.z+w/2;for(const d of Object.values(OBJ)){const it=CAT[d.k];if(!it||!it.b)continue;const r=it.r||2;
   if(Math.abs(d.x+.5-cx)<=r+w/2&&Math.abs(d.z+.5-cz)<=r+w/2)b+=it.b;}return Math.min(60,b);}
 function stat(k,n=1){S.stats[k]=(S.stats[k]||0)+n;}
@@ -6802,7 +6805,7 @@ function spawnHighway(){const ends=hwEnds(),from=ends[Math.random()<.5?0:1],to=f
       backPts:lanePts(cells.slice().reverse()).concat(bridgePts(from,false)),onArrive:()=>travelerArrive(dest,model)});return;}}
   const cells=bfs(from,to);if(cells)civilCar(model,hwPathPts(cells,from,to),{hw:true,speed:2.3});}
 function travelerArrive(s,model){if(!OBJ[s.id])return;stat("viajeros");if(s.k==="hotel")stat("huespedes");const it=CAT[s.k];
-  if(live(s)&&s.sup&&s.stock>0){const v=Math.round(it.pay*2.2*starMul(s)*(1+bonusAt(s)/100)*nightPay(s)*(festOn()?1.25:1));s.stock--;s.till+=v;popup(objCenter(s),"+"+fmt(v)+" viajero","#e07a00",1.5);openDoor(s);}
+  if(live(s)&&s.sup&&s.stock>0){const v=Math.round(it.pay*2.2*starMul(s)*staffMul(s)*(1+bonusAt(s)/100)*nightPay(s)*(festOn()?1.25:1));s.stock--;s.till+=v;popup(objCenter(s),"+"+fmt(v)+" viajero","#e07a00",1.5);openDoor(s);}
   const n=1+(Math.random()<.5?1:0);for(let i=0;i<n;i++)spawnVisitor(s,null);
   const vac=houses().filter(h=>h.vac);if(vac.length&&Math.random()<.35){const h=vac[0];h.vac=false;h.backAt=0;h.t0=NOW();stat("seQuedan");if(S.res)delete S.res[h.id];news("casa",`Una familia de viajeros se enamoró del pueblo y se quedó a vivir en ${S.name}.`,3);popup(objCenter(h),"¡Llegaron vecinos!","#2f7fd6",1.6);toast(`Una familia de viajeros se enamoró de ${S.name} y se quedó a vivir en una ${CAT[h.k].name}.`,4500);}
   else if(S.happy>=85&&popHouses()<popCap()&&Math.random()<.08)toast("Unos viajeros preguntaron si hay casas disponibles: ¡construye más casas!",3800);
@@ -6820,7 +6823,7 @@ function spawnTrip(){const hs=houses().filter(h=>!h.vac&&!h.carOut&&h.g&&h.g.use
   const dp=drivePt(h),pts=(out?hwPathPts(cells,null,cells[cells.length-1]):lanePts(cells));if(dp)pts.unshift({p:dp});if(dest&&!out)dest.inc=(dest.inc||0)+1;
   const home=()=>{h.carOut=false;if(h.g&&h.g.userData.car)h.g.userData.car.visible=true;};const back=out?null:lanePts(cells.slice().reverse());if(back&&dp)back.push({p:dp.clone()});
   civilCar(model,pts,{trip:true,home:h.id,noReturn:out,park:!out,stay:rnd(20,50),endCell:cells[cells.length-1],backPts:back,onBack:home,onArrive:()=>{if(out){returns.push({t:performance.now()+rnd(40,90)*1000,home:h.id,model,fromHw:true});return;}
-    if(OBJ[dest.id]){dest.inc=Math.max(0,(dest.inc||1)-1);if(live(dest)&&dest.sup&&dest.stock>0){const v=CAT[dest.k].pay*starMul(dest)*(1+bonusAt(dest)/100)*(S.happy>=80?1.2:1)*nightPay(dest)*(festOn()?1.25:1);dest.stock--;dest.till+=v;stat("customers");openDoor(dest);
+    if(OBJ[dest.id]){dest.inc=Math.max(0,(dest.inc||1)-1);if(live(dest)&&dest.sup&&dest.stock>0){const v=CAT[dest.k].pay*starMul(dest)*staffMul(dest)*(1+bonusAt(dest)/100)*(S.happy>=80?1.2:1)*nightPay(dest)*(festOn()?1.25:1);dest.stock--;dest.till+=v;stat("customers");openDoor(dest);
       popup(objCenter(dest),(dest.k===res.likes[0]&&Math.random()<.5?`♥ ${res.name} `:"")+"+"+fmt(v),"#b88a12",1.3);}}}});}
 function tickReturns(){const t=performance.now();for(let i=returns.length-1;i>=0;i--){const r=returns[i];if(t<r.t)continue;returns.splice(i,1);
   if(r.hw){if(!OBJ[r.from.id])continue;const fc=roadCellOf(r.from),e=hwEnds()[Math.floor(Math.random()*2)];const cells=fc&&bfs(fc,e);if(cells)civilCar(r.model,hwPathPts(cells,null,e),{speed:1.7});continue;}
@@ -7049,12 +7052,12 @@ function supplyShop(o){const it=CAT[o.k];if(o.sup&&o.stock>0){openInfo(o);return
 function collectShop(o){if(o.till<=0){openInfo(o);return;}if(!spend(1))return;const v=Math.round(o.till);S.coins+=v;o.till=0;stat("earned",v);if(o.stock<=0)o.sup=false;addXP(1+Math.floor(v/40));
   popup(objCenter(o),"+"+fmt(v),"#b88a12",1.8);squash(o);fly(objCenter(o).setY(o.h||1),"coin",v);comboHit();save();}
 function harvest(o){const cr=CROPS.find(c=>c.id===o.crop);if(cropStage(o)<2){openInfo(o);return;}
-  if(S.merc+cr.y>storeCap()){toast("Tus bodegas están llenas. Construye otra Bodega o abastece locales.");return;}if(!spend(1))return;
-  S.merc+=cr.y;o.crop=null;o.pt=0;drawObj(o);stat("harvest");addXP(cr.xp);popup(objCenter(o),`+${cr.y} mercadería`,"#8a5a1e",.8);fly(objCenter(o).setY(.4),"crate",cr.y);comboHit();checkQuests();save();}
+  const cy=Math.round(cr.y*staffMul(o));if(S.merc+cy>storeCap()){toast("Tus bodegas están llenas. Construye otra Bodega o abastece locales.");return;}if(!spend(1))return;
+  S.merc+=cy;o.crop=null;o.pt=0;drawObj(o);stat("harvest");addXP(cr.xp);popup(objCenter(o),`+${cy} mercadería`,"#8a5a1e",.8);fly(objCenter(o).setY(.4),"crate",cy);comboHit();checkQuests();save();}
 function plant(o,cid){const cr=CROPS.find(c=>c.id===cid);if(S.lvl<cr.req)return;if(S.coins<cr.cost){toast("Te faltan monedas.");return;}
   S.coins-=cr.cost;o.crop=cid;o.pt=NOW();drawObj(o);popup(objCenter(o),"-"+cr.cost,"#d9534a",.8);closeModal();save();}
 function sawReady(o){return (NOW()-o.t0)/1000>=CAT.aserradero.t;}
-function collectSaw(o){if(!sawReady(o)){openInfo(o);return;}if(!spend(1))return;S.mat+=CAT.aserradero.mat;o.t0=NOW();addXP(2);popup(objCenter(o),`+${CAT.aserradero.mat} materiales`,"#8a5a1e",1.2);squash(o);fly(objCenter(o).setY(.6),"logs",CAT.aserradero.mat);comboHit();save();}
+function collectSaw(o){if(!sawReady(o)){openInfo(o);return;}if(!spend(1))return;const sm=Math.round(CAT.aserradero.mat*staffMul(o));S.mat+=sm;o.t0=NOW();addXP(2);popup(objCenter(o),`+${sm} materiales`,"#8a5a1e",1.2);squash(o);fly(objCenter(o).setY(.6),"logs",sm);comboHit();save();}
 function activate(o){
   const it=itemOf(o);
   if(o.fire){if(!spend(1))return;endEvent(o,true,"player");return;}
@@ -7205,7 +7208,7 @@ function stepPed(ag,dt){
   ag.obj.position.y=.035;
   const u=ag.obj.userData,sw=reduce||!walking?0:Math.sin(performance.now()/90+ag.speed*40)*.7;u.legL.rotation.x=sw;u.legR.rotation.x=-sw;u.armL.rotation.x=-sw*.8;u.armR.rotation.x=sw*.8;
   if(ag.i>=ag.pts.length-1){if(ag.useT&&useArrive(ag))return;
-    const s=ag.target;if(s&&OBJ[s.id])openDoor(s);if(s&&OBJ[s.id]){s.inc=Math.max(0,(s.inc||1)-1);if(s.sup&&s.stock>0&&!ag.work){let v=CAT[s.k].pay*starMul(s)*(1+bonusAt(s)/100)*(S.happy>=80?1.2:1)*(ag.tour?2:1)*nightPay(s)*(festOn()?1.25:1);if(S.happy>=80&&Math.random()<.1){v*=1.5;popup(objCenter(s),"¡Propina!","#e0a400",1.9);}s.stock--;s.till+=v;stat("customers");if(ag.cruise&&S.cruise)S.cruise.spent=(S.cruise.spent||0)+v;const fav=!ag.tour&&ag.who&&ag.who.likes[0]===s.k&&Math.random()<.35;popup(objCenter(s),(fav?"♥ "+ag.who.name+" ":"")+"+"+fmt(v),ag.tour?"#e07a00":"#b88a12",1.3);if(s.stock<=0)checkQuests();}}
+    const s=ag.target;if(s&&OBJ[s.id])openDoor(s);if(s&&OBJ[s.id]){s.inc=Math.max(0,(s.inc||1)-1);if(s.sup&&s.stock>0&&!ag.work){let v=CAT[s.k].pay*starMul(s)*staffMul(s)*(1+bonusAt(s)/100)*(S.happy>=80?1.2:1)*(ag.tour?2:1)*nightPay(s)*(festOn()?1.25:1);if(S.happy>=80&&Math.random()<.1){v*=1.5;popup(objCenter(s),"¡Propina!","#e0a400",1.9);}s.stock--;s.till+=v;stat("customers");if(ag.cruise&&S.cruise)S.cruise.spent=(S.cruise.spent||0)+v;const fav=!ag.tour&&ag.who&&ag.who.likes[0]===s.k&&Math.random()<.35;popup(objCenter(s),(fav?"♥ "+ag.who.name+" ":"")+"+"+fmt(v),ag.tour?"#e07a00":"#b88a12",1.3);if(s.stock<=0)checkQuests();}}
     if(s&&OBJ[s.id]&&s.k==="balneario"&&!ag.fan&&Math.random()<.6){S.coins+=4;popup(objCenter(s),"+4 helado","#ff5a9a",1.2);}
     if(ag.oneShot){if(--ag.visits>0&&s&&OBJ[s.id]){const ac=sidewalkAccess(s);if(ac){ag.startKeys=ac.keys;ag.prePts=[s.gateW?s.gateW.clone():ac.gate.clone(),ac.proj.clone()];}ag.obj.visible=false;ag.pts=null;ag.target=null;ag.wait=1.5+Math.random()*3;return;}ag.dead=true;ag.obj.visible=false;return;}
     ag.obj.visible=false;ag.pts=null;ag.target=null;ag.wait=2+Math.random()*4;}
@@ -7435,19 +7438,19 @@ function openInfo(o){modalFn=()=>openInfo(o);const it=itemOf(o);const b=bonusAt(
     else{prog=progBox("Arriendo",o.t0+it.t*1000,it.t*1000,"¡Listo para cobrar!")+rushBtn(o,o.t0+it.t*1000-NOW());if(ready)acts=`<button class="btn gold" data-act="rent" data-o="${o.id}">${ICON("coin")} Cobrar ${fmt(v)} · 1 energía</button>`;}
     if(!o.vac){const ps=residentsOf(o);extra+=`<div class="isec"><h4>${ICON("people")} ${ps[0]?`Familia ${ps[0].ap}`:"Vecinos"} <small>${ps.length} · toca a alguien para ver más</small></h4><div class="ppl2">${ps.map(personCard).join("")}</div></div>`;}
     extra+=`<div class="isec">${needsHtml(o)}</div>`;}
-  else if(it.cat==="local"){const open=shopOpen(o),pc=it.pay*starMul(o)*(1+b/100);
+  else if(it.cat==="local"){const open=shopOpen(o),pc=it.pay*starMul(o)*staffMul(o)*(1+b/100);
     tiles=tile("crate",o.sup?`${o.stock}/${it.cap}`:"Vacío",o.sup?"clientes por atender":"sin mercadería",o.sup?"":"bad")+tile("coin",fmt(o.till),"en la caja",o.till>0?"good":"")+tile("people",fmt(pc),"paga cada cliente")+tile(open?"sun":"moon",open?"Abierto":"Cerrado",({d:"de 8:00 a 20:00",a:"abre siempre",t:"de 13:00 a 2:00",n:"de 20:00 a 4:00"})[HOURS[o.k]||"a"],open?"":"bad");
     if(!o.sup)acts+=`<button class="btn go" data-act="supply" data-o="${o.id}">${ICON("crate")} Abastecer · ${it.sup} mercadería · 1 energía</button>`;
     if(o.till>0)acts+=`<button class="btn gold" data-act="till" data-o="${o.id}">${ICON("coin")} Cobrar ${fmt(o.till)}</button>`;
     extra+=`<div class="note">${o.k==="cafe"?"De noche el café cobra 50% más por cliente. ":""}Los peatones que entran compran. Cuando atiende a ${it.cap} clientes, cobras y vuelves a abastecer.${fanCount(o.k)?` <b>${fanCount(o.k)} vecinos</b> lo tienen de favorito.`:""}</div>`;}
   else if(o.k==="parcela"){const cr=o.crop&&CROPS.find(c=>c.id===o.crop);
-    if(cr){tiles=tile("seed",cr.name,"cultivo")+tile("wheat","+"+cr.y,"mercadería al cosechar");prog=progBox("Crecimiento",o.pt+cr.t*1000,cr.t*1000,"¡Listo para cosechar!")+rushBtn(o,o.pt+cr.t*1000-NOW());if(cropStage(o)>=2)acts=`<button class="btn gold" data-act="harv" data-o="${o.id}">${ICON("wheat")} Cosechar · 1 energía</button>`;}
+    if(cr){tiles=tile("seed",cr.name,"cultivo")+tile("wheat","+"+Math.round(cr.y*staffMul(o)),"mercadería al cosechar");prog=progBox("Crecimiento",o.pt+cr.t*1000,cr.t*1000,"¡Listo para cosechar!")+rushBtn(o,o.pt+cr.t*1000-NOW());if(cropStage(o)>=2)acts=`<button class="btn gold" data-act="harv" data-o="${o.id}">${ICON("wheat")} Cosechar · 1 energía</button>`;}
     else{tiles=tile("seed","Vacía","sin cultivo","bad");acts=`<button class="btn go" data-act="plantmenu" data-o="${o.id}">${ICON("seed")} Sembrar</button>`;}}
   else if(it.water||it.power){const u=it.water?UT.w:UT.p,cap=it.water||Math.round(it.power*(it.solar&&isNight()?.3:1));
     tiles=tile(it.water?"drop":"bulb",fmt(cap),`personas con ${it.water?"agua":"luz"}${it.solar?(isNight()?" (de noche)":" (de día)"):""}`)+tile(o.broken?"hammer":"happy",o.broken?"Con falla":"Funcionando",o.broken?"no abastece a nadie":"sin problemas",o.broken?"bad":"good")+tile("people",`${fmt(u.sup)}/${fmt(u.dem)}`,`${it.water?"agua":"luz"} del pueblo`,u.bad?"bad":"");
     if(o.broken)acts=`<button class="btn go" data-act="fixu" data-o="${o.id}">${ICON("hammer")} Reparar falla · ${ICON("coin")}${fmt(fixCost(o).c)} · 1 energía</button>`;
     extra=`<div class="note">${u.bad?`<b class="bad">${u.bad} ${u.bad>1?"casas están":"casa está"} sin ${it.water?"agua":"luz"}.</b> Construye más edificios de servicios.`:`Todas las casas tienen ${it.water?"agua":"luz"}.`} <button class="btn sm ghost" data-act="util">Ver servicios</button></div>`;}
-  else if(o.k==="aserradero"){tiles=tile("logs","+"+it.mat,"materiales")+tile("work",dur(it.t),"por ciclo");prog=progBox("Producción",o.t0+it.t*1000,it.t*1000,"¡Listo para recoger!","linear-gradient(180deg,#e2b07a,#b5793f)")+rushBtn(o,o.t0+it.t*1000-NOW());
+  else if(o.k==="aserradero"){tiles=tile("logs","+"+Math.round(it.mat*staffMul(o)),"materiales")+tile("work",dur(it.t),"por ciclo");prog=progBox("Producción",o.t0+it.t*1000,it.t*1000,"¡Listo para recoger!","linear-gradient(180deg,#e2b07a,#b5793f)")+rushBtn(o,o.t0+it.t*1000-NOW());
     if(sawReady(o))acts=`<button class="btn gold" data-act="saw" data-o="${o.id}">${ICON("logs")} Recoger ${it.mat} materiales · 1 energía</button>`;
     extra=`<div class="note">Hace ruido: a los vecinos no les gusta tenerlo a menos de 2 casillas.</div>`;}
   else if(o.k==="bodega"){tiles=tile("crate","+"+it.store,"mercadería que guarda")+tile("crate",fmt(storeCap()),"capacidad total");extra=`<div class="note">Hace ruido: a los vecinos no les gusta tenerla a menos de 2 casillas.</div>`;}
@@ -7462,7 +7465,7 @@ function openInfo(o){modalFn=()=>openInfo(o);const it=itemOf(o);const b=bonusAt(
   else if(o.k==="paradero"){tiles=tile("bus",busStops().length,"paraderos en la ruta")+tile("people",Math.round(transitCut()*100)+"%","menos viajes en auto")+tile("bus",agents.filter(a=>a.bus).length,"micros andando");extra=`<div class="note">Con 2 o más paraderos pasa un micro que recorre todos. Cada paradero reduce el uso del auto (hasta 60%). Tráfico: <b>${trafficTxt()}</b>.</div>`;}
   else if(it.b){tiles=tile("tree","+"+it.b+"%","arriendo y ventas")+tile("star",(it.r||2)+" casillas","alcance");extra=`<div class="note">Sube el arriendo y las ventas de los edificios cercanos. Las casas también lo cuentan como área verde.</div>`;}
   else if(it.desc)extra=`<div class="note">${it.desc}</div>`;
-  if(it.cat!=="casa"&&slotsOf(o)>0)tiles+=tile("work",`${empOf(o)}/${slotsOf(o)}`,"trabajadores");
+  if(it.cat!=="casa"&&slotsOf(o)>0)tiles+=tile("work",`${empOf(o)}/${slotsOf(o)}`,(PRODK(o)?`trabajadores · +${Math.round(20*(staffRate(o)||0))}%`:"trabajadores"),empOf(o)>=slotsOf(o)?"good":"");
   const canStar=(it.cat==="casa"||it.cat==="local")&&(o.s||1)<3;let up="";
   if(canStar){const sc={c:Math.round(it.cost*.6*(o.s||1)),mt:5+Math.round(it.cost/60)*(o.s||1)},ok=S.coins>=sc.c&&S.mat>=sc.mt;
     up=`<div class="upg"><span class="stars">${"★".repeat((o.s||1)+1)}</span><div><b>Mejorar a ${(o.s||1)+1} estrellas</b><small>+30% ${it.cat==="casa"?"de arriendo":"por cliente"} y más felicidad.</small></div><button class="btn gold" data-act="star" data-o="${o.id}" ${ok?"":"disabled"}><span class="cost">${costPill(sc)}</span></button></div>`;}
