@@ -5278,7 +5278,7 @@ function endQuake(){QK.on=false;for(const o of Object.values(OBJ))if(o.g&&o.g.us
   if(m>=5.8){const maxN=2+Math.floor((m-5.8)*3);for(const o of cand.sort(()=>Math.random()-.5)){if(hit.length>=maxN)break;const p=o.ref?.03:Math.min(.5,(m-5.8)*.18+.04);if(Math.random()<p)hit.push(o);}}
   for(const o of hit){o.dmg=true;o.dmgBy="sismo";drawObj(o);dust(objCenter(o),wOf(o));}
   const refOk=cand.filter(o=>o.ref).length;
-  if(hit.length){addEmg("sismo",`Repara los ${hit.length} ${hit.length>1?"edificios dañados":"edificio dañado"} por el sismo`,8,{c:80+40*S.lvl,g:2});S.moods.push({x:M/2,z:M/2,r:99,v:-8,until:NOW()+10*60000});toast(`Sismo ${fmtM(m)}: ${hit.length} ${hit.length>1?"edificios quedaron dañados":"edificio quedó dañado"}. Tócalos para repararlos. Los edificios reforzados resisten mucho mejor.`,6500);
+  if(hit.length){addEmg("sismo",`Repara los ${hit.length} ${hit.length>1?"edificios dañados":"edificio dañado"} por el sismo`,8,{c:80+40*S.lvl,g:2});S.moods.push({x:M/2,z:M/2,r:99,v:-8,until:NOW()+10*60000});toast(`Sismo ${fmtM(m)}: ${hit.length} ${hit.length>1?"edificios quedaron dañados":"edificio quedó dañado"}. Tócalos para repararlos.`,6500);
     news("sismo",`Sismo de ${fmtM(m)} sacudió ${S.name}: ${hit.length} ${hit.length>1?"edificios dañados":"edificio dañado"}${refOk?`, pero los ${refOk} edificios reforzados resistieron`:""}.`,6);}
   else{if(m>=6)S.moods.push({x:M/2,z:M/2,r:99,v:4,until:NOW()+8*60000});toast(m>=6?`Sismo ${fmtM(m)}: ¡la ciudad resistió sin daños! Los vecinos están orgullosos.`:`Fue un temblor de ${fmtM(m)}. Nada que lamentar, solo el susto.`,4500);
     news("sismo",m>=6?`Fuerte sismo de ${fmtM(m)}: ${S.name} resistió sin daños.`:`Temblor de ${fmtM(m)} asustó a los vecinos. No hubo daños.`,m>=6?5:2);}
@@ -7054,6 +7054,90 @@ setInterval(()=>{if(!S||document.hidden)return;const empty=Object.values(OBJ).fi
 
 /* ---- Costos que no te alcanzan, en rojo ---- */
 (function(){const st=document.createElement("style");st.textContent=`.cost span.short{color:#d6453a}.cost span.short svg{filter:drop-shadow(0 0 0 #d6453a);background:#ffe1dc;border-radius:50%;box-shadow:0 0 0 2px #d6453a}`;document.head.appendChild(st);})();
+/* ---- Seguridad: cobertura pintada en el suelo, incendios que queman, multas y seguro contra robo ---- */
+const COV_K={comisaria:{c:0x2f7fd6,n:"Policía"},bomberos:{c:0xe0553f,n:"Bomberos"}},COV_R=10;
+const covered=(o,k)=>!!nearestStation(o,k);
+const COV={grp:null,key:""};
+function covHide(){if(COV.grp){scene.remove(COV.grp);COV.grp=null;}COV.key="";}
+function covShow(k,extra){const key=k+"|"+(extra?extra.join(","):"")+"|"+Object.keys(OBJ).length;if(COV.key===key)return;covHide();COV.key=key;const G=new THREE.Group();COV.grp=G;scene.add(G);const col=COV_K[k].c;
+  const fill=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.16,depthWrite:false}),edge=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.75,depthWrite:false});
+  const centers=liveK(k).map(o=>{const [x,z]=centerXZ(o);return [x,z];});if(extra)centers.push(extra);
+  for(const [cx,cz] of centers){const S2=COV_R*2+1;const p=new THREE.Mesh(new THREE.PlaneGeometry(S2,S2),fill);p.rotation.x=-Math.PI/2;p.position.set(cx-M/2,.05,cz-M/2);p.renderOrder=3;G.add(p);
+    for(const [dx,dz,w,h] of [[0,-S2/2,S2,.08],[0,S2/2,S2,.08],[-S2/2,0,.08,S2],[S2/2,0,.08,S2]]){const e=new THREE.Mesh(new THREE.PlaneGeometry(w,h),edge);e.rotation.x=-Math.PI/2;e.position.set(cx-M/2+dx,.06,cz-M/2+dz);e.renderOrder=3;G.add(e);}}
+  /* casas y locales sin cobertura: anillo rojo */
+  const ring=new THREE.MeshBasicMaterial({color:0xd6453a,transparent:true,opacity:.85,depthWrite:false});
+  for(const o of Object.values(OBJ)){const it=CAT[o.k];if(!it||!live(o)||!(it.cat==="casa"||it.cat==="local"))continue;const [x,z]=centerXZ(o);const ok=centers.some(([cx,cz])=>Math.max(Math.abs(cx-x),Math.abs(cz-z))<=COV_R);if(ok)continue;
+    const r=new THREE.Mesh(new THREE.RingGeometry(.45*wOf(o),.55*wOf(o),28),ring);r.rotation.x=-Math.PI/2;r.position.set(x-M/2,.07,z-M/2);r.renderOrder=4;G.add(r);}}
+let COV_INFO=null;
+{const _oi2=openInfo;openInfo=function(o){_oi2(o);COV_INFO=o&&COV_K[o.k]?o.k:null;};}
+setInterval(()=>{if(!S)return;let k=null,extra=null;if(tool==="place"&&COV_K[placeK]){k=placeK;const c=ghostCell||hover;if(c){const w=CAT[placeK].w||1;extra=[c[0]+w/2,c[1]+w/2];}}
+  else if(COV_INFO&&!$("#modal").hidden)k=COV_INFO;else COV_INFO=null;if(k)covShow(k,extra);else if(COV.grp)covHide();},200);
+/* botón en la ficha de comisaría y bomberos */
+{const _oi3=openInfo;openInfo=function(o){_oi3(o);if(!o||!COV_K[o.k]||$("#modal").hidden)return;const f=$("#modal .ifoot");const k=o.k,hs=Object.values(OBJ).filter(h=>{const it=CAT[h.k];return it&&live(h)&&(it.cat==="casa"||it.cat==="local");}),nc=hs.filter(h=>!covered(h,k)).length;
+  if(f)f.insertAdjacentHTML("beforebegin",`<div class="note ${nc?"bad":"good"}">${nc?`<b>${nc} ${nc>1?"edificios quedan":"edificio queda"} sin ${k==="comisaria"?"policía":"bomberos"}</b> (anillo rojo en el mapa).`:"Todas tus casas y locales están cubiertos."} El área pintada en el suelo es la que protege: ${COV_R} casillas a la redonda.</div>`);};}
+/* incendios y robos: con cobertura llegan solos; sin cobertura tienes 30 segundos */
+startEvent=function(k,o){const t=NOW(),nm=CAT[o.k].name;
+  if(k==="fuego"){o.fire=true;S.ev.cur={k,oid:o.id,until:t+30000};const st=nearestStation(o,"bomberos");const ag=st&&dispatch("firetruck",st,o,{siren:true,stay:6,onArrive:()=>{if(OBJ[o.id]&&o.fire)endEvent(o,true,"svc");}});
+    if(ag){S.ev.cur.svc=true;S.ev.cur.until=t+180000;toast(`¡Incendio en una ${nm}! Los bomberos van en camino.`,4200);}else toast(`¡Incendio en una ${nm} sin bomberos cerca! Tócalo en 30 segundos o se quemará.`,6000);}
+  else if(k==="robo"){o.thief=true;S.ev.cur={k,oid:o.id,until:t+30000};const st=nearestStation(o,"comisaria");const ag=st&&dispatch("police",st,o,{siren:true,stay:3,onArrive:()=>{if(OBJ[o.id]&&o.thief)endEvent(o,true,"svc");}});
+    if(ag){S.ev.cur.svc=true;S.ev.cur.until=t+180000;toast(`¡Un ladrón en una ${nm}! La policía va en camino.`,4200);}else toast(`¡Un ladrón en una ${nm} y no hay policía cerca! Tócalo en 30 segundos${o.ins?"":" o te multarán"}.`,6000);}
+  syncFx();save();};
+{const _ee=endEvent;endEvent=function(o,ok,by){const wasFire=!!o.fire,wasThief=!!o.thief,cov=wasFire?covered(o,"bomberos"):covered(o,"comisaria");
+  if(ok||!(wasFire||wasThief))return _ee(o,ok,by);
+  if(wasFire){_ee(o,false,by);if(!cov){o.burnt=true;drawObj(o);toast(`La ${CAT[o.k].name} se quemó por completo. Tócala para restaurarla o demuélela y construye otra.`,6500);news("fuego",`Sin bomberos cerca, una ${CAT[o.k].name} se quemó por completo.`,4);save();}return;}
+  /* robo sin atrapar */
+  o.thief=false;clearFx(o);if(S.ev.cur&&S.ev.cur.oid===o.id)S.ev.cur=null;S.ev.next=NOW()+rnd(8,14)*60000;
+  if(o.ins){toast(`El ladrón escapó, pero el seguro de la ${CAT[o.k].name} cubrió todo. No perdiste nada.`,5000);computeHappy();save();return;}
+  const [x,z]=centerXZ(o);S.moods.push({x,z,r:6,v:-12,until:NOW()+20*60000});let lost;if(isLocal(o)&&o.till>0){lost=Math.round(o.till);o.till=0;}else{lost=Math.min(S.coins,30+20*S.lvl);S.coins-=lost;}
+  let fine=0;if(!cov){fine=Math.min(S.coins,40+20*S.lvl);S.coins-=fine;}
+  toast(`El ladrón escapó con ${fmt(lost)} monedas.${fine?` Además la municipalidad te multó con ${fmt(fine)} por no tener policía cerca.`:""}`,6500);news("robo",fine?`Robo sin policía en el barrio: multa de ${fmt(fine)} monedas al alcalde.`:`Un ladrón escapó con ${fmt(lost)} monedas.`,3);hud();computeHappy();checkQuests();save();};}
+/* quemada: restaurar cuesta más; al reparar vuelve a la normalidad */
+{const _rc=repairCost;repairCost=function(o){const c=_rc(o);if(!o.burnt)return c;const it=CAT[o.k];return {c:Math.round((it.cost||100)*.6),mt:Math.ceil((it.mats||4)*1)+3};};}
+{const _rp=repair;repair=function(o){const was=o.burnt;_rp(o);if(was&&!o.dmg){o.burnt=false;save();}};}
+/* seguro contra robo: se paga una vez por edificio */
+const insCost=o=>Math.max(80,Math.round((CAT[o.k].cost||100)*.2));
+{const _rh=refHtml;refHtml=function(o){const h=_rh(o),it=CAT[o.k];if(!it||!(it.cat==="casa"||it.cat==="local")||o.build||o.dmg)return h;
+  if(o.ins)return h+`<div class="note good">Asegurado: si un ladrón escapa, el seguro cubre lo robado y la multa.</div>`;const c=insCost(o);
+  return h+`<div class="item"><div><b>Seguro contra robo</b><small>Si un ladrón escapa, no pierdes monedas ni te multan. Se paga una vez.</small></div><div class="cost"><span class="${S.coins<c?"short":""}">${ICON("coin")}${fmt(c)}</span></div><button class="btn sm go" data-act="insure" data-o="${o.id}" ${S.coins<c?"disabled":""}>Asegurar</button></div>`;};}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b||b.dataset.act!=="insure")return;e.stopPropagation();const o=OBJ[+b.dataset.o];if(!o||o.ins)return;const c=insCost(o);if(S.coins<c){toast("Te faltan monedas.");return;}
+  S.coins-=c;o.ins=true;stat("seguros");bonus("¡Asegurado!");hud();save();openInfo(o);},true);
+
+/* ---- Visitas: regalar 1 diamante y ayudar a cobrar arriendos (como los vecinos de CityVille) ---- */
+const GIFT_DAY=()=>todayStr();
+function giftKey(t,to){return "vr_g_"+t+"_"+to+"_"+GIFT_DAY();}
+function ownSave(){try{return JSON.parse(localStorage.getItem(SAVE_KEY)||"null");}catch(e){return null;}}
+async function giftSend(type,amount){if(!VISIT)return;if(!FB.user||!FB.db){toast("Conectando… intenta en unos segundos.");try{await fbLoad();}catch(e){}return;}
+  const me=FB.user.uid,to=VISIT.uid;if(me===to)return;const own=ownSave();if(!own){toast("No encontré tu partida.");return;}
+  try{if(localStorage.getItem(giftKey(type,to))){toast(type==="gem"?"Hoy ya le regalaste un diamante. ¡Mañana puedes otra vez!":"Hoy ya le ayudaste con los arriendos. ¡Vuelve mañana!",3500);return;}}catch(e){}
+  if(type==="gem"&&(own.gems||0)<1){toast("No tienes diamantes para regalar.");return;}
+  const doc={to,from:me,name:String(own.mayor||"Un amigo").slice(0,20),city:String(own.name||"").slice(0,32),type,amount,day:GIFT_DAY(),ts:Date.now()};
+  try{await FB.db.collection("gifts").doc(`${to}_${me}_${doc.day}_${type}`).set(doc);}catch(e){toast("No se pudo enviar. Intenta más tarde.",3500);console.warn("regalo",e&&e.code);return;}
+  try{localStorage.setItem(giftKey(type,to),"1");}catch(e){}
+  if(type==="gem"){own.gems=(own.gems||0)-1;try{localStorage.setItem(SAVE_KEY,JSON.stringify(own));}catch(e){}bonus("💎 ¡Regalado!");toast(`Le regalaste 1 diamante a ${VISIT.who}. Lo recibe la próxima vez que entre.`,4000);}
+  else{const mine=Math.min(600,Math.round(amount*.1)+10);try{const k="vr_vrew",r=JSON.parse(localStorage.getItem(k)||"{}");if(r.d!==todayStr()){r.d=todayStr();r.u=[];r.p=0;}r.c=(r.c||0)+mine;localStorage.setItem(k,JSON.stringify(r));}catch(e){}
+    for(const h of houses())if(!h.vac&&houseReady(h)){popup(objCenter(h),"+"+fmt(rentVal(h)),"#b88a12",1.2);h.t0=NOW();}
+    bonus("🏠 ¡Gracias!");toast(`Cobraste ${fmt(amount)} en arriendos para ${VISIT.who}. Tú ganas ${fmt(mine)} monedas al volver a tu ciudad.`,4500);}
+  visitBtns();}
+function visitBtns(){const bar=$("#visitBar");if(!bar)return;let w=bar.querySelector(".vgift");if(!w){w=document.createElement("span");w.className="vgift row";bar.insertBefore(w,bar.querySelector('[data-act="visitBack"]'));}
+  let g1=false,g2=false;try{g1=!!localStorage.getItem(giftKey("gem",VISIT.uid));g2=!!localStorage.getItem(giftKey("rent",VISIT.uid));}catch(e){}
+  const ready=houses().filter(h=>!h.vac&&houseReady(h)).length;
+  w.innerHTML=`<button class="btn sm" data-act="vGem" ${g1?"disabled":""}>${g1?"💎 Regalado":"💎 Regalar 1"}</button><button class="btn sm gold" data-act="vRent" ${g2||!ready?"disabled":""}>${g2?"🏠 Ayudaste":`🏠 Cobrar arriendos${ready?` (${ready})`:""}`}</button>`;}
+if(VISIT){const iv2=setInterval(()=>{if($("#visitBar")){clearInterval(iv2);visitBtns();setInterval(visitBtns,5000);}},500);
+  (function(){const st=document.createElement("style");st.textContent=`#visitBar{flex-wrap:wrap;justify-content:center}#visitBar .vgift{display:flex;gap:6px}`;document.head.appendChild(st);})();}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(a==="vGem"){e.stopPropagation();giftSend("gem",1);}
+  else if(a==="vRent"){e.stopPropagation();const hs=houses().filter(h=>!h.vac&&houseReady(h));const tot=hs.reduce((s,h)=>s+rentVal(h),0);if(!tot){toast("Sus casas todavía no tienen arriendo listo.");return;}giftSend("rent",tot);}},true);
+/* premio de monedas por ayudar, al volver a tu ciudad */
+if(!VISIT){const iv3=setInterval(()=>{if(!S||!$("#loading").hidden)return;clearInterval(iv3);try{const k="vr_vrew",r=JSON.parse(localStorage.getItem(k)||"{}");if(r.c>0){S.coins+=r.c;toast(`Por ayudar a tus amigos: +${fmt(r.c)} monedas.`,3500);bonus(`+${fmt(r.c)}`);r.c=0;localStorage.setItem(k,JSON.stringify(r));hud();save();}}catch(e){}},1700);}
+/* recibir regalos de amigos */
+async function giftsCheck(){if(VISIT||!FB.user||!FB.db||!S||window.__imp)return;let q;try{q=await FB.db.collection("gifts").where("to","==",FB.user.uid).get();}catch(e){return;}if(!q||!q.docs||!q.docs.length)return;
+  let gems=0,coins=0;const who=new Set();for(const d of q.docs){const g=d.data();if(g.type==="gem")gems+=1;else if(g.type==="rent"){const cap=houses().reduce((s,h)=>s+rentVal(h),0);let got=0;for(const h of houses())if(!h.vac&&houseReady(h)){got+=rentVal(h);h.t0=NOW();}coins+=Math.min(cap,Math.max(got,Math.round((+g.amount||0)*.5)));}
+    who.add(String(g.name||"Un amigo").slice(0,20));try{await d.ref.delete();}catch(e){}}
+  if(gems||coins){S.gems+=gems;S.coins+=coins;hud();save();const names=[...who].join(", ");
+    modalFn=null;openModal(head("¡Regalos de tus amigos!",`De: ${escA(names)}`)+`<div class="list">${gems?`<div class="item"><div><b>💎 ${gems} ${gems>1?"diamantes":"diamante"}</b><small>Te los regalaron al visitar tu ciudad.</small></div></div>`:""}${coins?`<div class="item"><div><b>🏠 ${fmt(coins)} monedas de arriendo</b><small>Te ayudaron a cobrar tus casas.</small></div></div>`:""}</div><div class="row"><button class="btn go" data-act="close">¡Gracias!</button></div>`);}}
+setInterval(()=>{if(typeof ACC!=="undefined"&&ACC.synced)giftsCheck();},60000);
+{const iv4=setInterval(()=>{if(typeof ACC!=="undefined"&&ACC.synced&&FB.user){clearInterval(iv4);setTimeout(giftsCheck,2500);}},1500);}
+
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
   const r0=rightOf(path[1][0]-path[0][0],path[1][1]-path[0][1]),c0=cellC(...path[0]);pts.push({p:new V3(c0.x+r0[0]*off,.02,c0.z+r0[1]*off)});
@@ -7603,7 +7687,7 @@ const hl=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial
 function setTool(t){tool=t;demoArm=null;if(gridLines)gridLines.visible=t!=="select";$("#sbRoad").setAttribute("aria-pressed",t==="road");$("#sbDemo").setAttribute("aria-pressed",t==="demolish");
   if(t!=="place"){placeK=null;if(ghost){scene.remove(ghost);ghost=null;}ghostCell=null;}renderMode();}
 function startPlace(k){closeModal();placeK=k;placeRot=null;tool="place";if(gridLines)gridLines.visible=true;if(ghost)scene.remove(ghost);
-  ghost=visual(k);ghost.traverse(m=>{if(m.isMesh){m.material=m.material.clone();m.material.transparent=true;m.material.opacity=.55;m.castShadow=false;}});ghost.visible=false;scene.add(ghost);renderMode();}
+  ghost=visual(k);ghost.traverse(m=>{if(m.isMesh){const gm=x=>{const c=x.clone();c.transparent=true;c.opacity=.55;return c;};m.material=Array.isArray(m.material)?m.material.map(gm):gm(m.material);m.castShadow=false;}});ghost.visible=false;scene.add(ghost);renderMode();}
 function renderMode(){const el=$("#mode");
   if(tool==="place"){const it=CAT[placeK];el.hidden=false;el.innerHTML=`<span>Colocando: <b>${it.name}</b>. Toca el mapa.</span>${ghostCell&&touchMode?`<button class="btn go sm" data-act="confirm">Colocar aquí</button>`:""}<button class="btn sm" data-act="rotate">Girar (R)</button><button class="btn sm" data-act="cancel">Cancelar</button>`;}
   else if(tool==="road"){el.hidden=false;el.innerHTML=`<span>Calles: toca o arrastra para trazar ($10 cada tramo).</span><button class="btn sm" data-act="cancel">Listo</button>`;}
@@ -7735,7 +7819,7 @@ function openInfo(o){modalFn=()=>openInfo(o);const it=itemOf(o);const b=bonusAt(
       `<div class="note">${ready?"Los trabajadores terminaron. Inaugúrala para que empiece a funcionar.":"Mientras se construye no produce nada."}</div>`+
       `<div class="acts">${ready?`<button class="btn go" data-act="inaug" data-o="${o.id}">${ICON("hammer")} Inaugurar · 1 energía</button>`:`<button class="btn gold" data-act="speed" data-o="${o.id}" ${S.gems<gm?"disabled":""}>Terminar ya · ${ICON("gem")} ${gm}</button>`}</div>`+footHtml(o,true);
     openModal(h);return;}
-  if(o.dmg){const rc=repairCost(o);h=infoHero(o,it,o.dmgBy==="sismo"?"Dañada por el sismo":"Dañada por un incendio")+
+  if(o.dmg){const rc=repairCost(o);h=infoHero(o,it,o.dmgBy==="sismo"?"Dañada por el sismo":o.burnt?"Se quemó: restáurala o demuélela":"Dañada por un incendio")+
       `<div class="tiles">${tile("hammer","Fuera de servicio","No produce ni recibe vecinos","bad")}</div><div class="acts"><button class="btn go" data-act="repair" data-o="${o.id}" ${S.coins<rc.c||S.mat<rc.mt?"disabled":""}>${ICON("hammer")} Reparar · <span class="cost">${costPill(rc)}</span></button><button class="btn gemb" data-act="repairg" data-o="${o.id}" ${S.gems<repairGems(o)?"disabled":""}>Reparar al instante · ${ICON("gem")} ${repairGems(o)}</button></div>`+footHtml(o);
     openModal(h);return;}
   let sub="",tiles="",prog="",acts="",extra="";
