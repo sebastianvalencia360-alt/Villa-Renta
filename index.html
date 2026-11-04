@@ -5345,23 +5345,23 @@ function claimEmg(i){const e=S.emg&&S.emg[i];if(!e||e.st!=="ok")return;S.coins+=
 
 /* ---- Misiones del día ---- */
 const DM_T=[
-  {k:"rent",t:n=>`Cobra el arriendo ${n} veces`,n:l=>6+l},
-  {k:"customers",t:n=>`Atiende a ${n} clientes en tus locales`,n:l=>12+3*l},
-  {k:"harvest",t:n=>`Cosecha ${n} veces`,n:l=>2+Math.floor(l/3)},
-  {k:"supply",t:n=>`Abastece locales ${n} veces`,n:l=>2+Math.floor(l/4)},
-  {k:"earned",t:n=>`Gana ${fmt(n)} monedas cobrando`,n:l=>150*l+200},
+  {k:"rent",t:n=>`Cobra el arriendo ${n} veces`,n:l=>2*(6+l)},
+  {k:"customers",t:n=>`Atiende a ${n} clientes en tus locales`,n:l=>2*(12+3*l)},
+  {k:"harvest",t:n=>`Cosecha ${n} veces`,n:l=>2*(2+Math.floor(l/3))},
+  {k:"supply",t:n=>`Abastece locales ${n} veces`,n:l=>2*(2+Math.floor(l/4))},
+  {k:"earned",t:n=>`Gana ${fmt(n)} monedas cobrando`,n:l=>2*(150*l+200)},
   {k:"built",t:n=>`Construye ${n} ${n>1?"edificios":"edificio"}`,n:l=>1+Math.floor(l/5)},
-  {k:"viajeros",t:n=>`Recibe ${n} viajeros de la carretera`,n:l=>3+Math.floor(l/2),ok:()=>S.lvl>=2},
+  {k:"viajeros",t:n=>`Recibe ${n} viajeros de la carretera`,n:l=>2*(3+Math.floor(l/2)),ok:()=>S.lvl>=2},
   {k:"diarios",t:()=>"Lee el diario",n:()=>1},
   {k:"refuerzos",t:()=>"Refuerza un edificio contra sismos",n:()=>1,ok:()=>S.lvl>=3},
   {k:"repairs",t:()=>"Repara un edificio o una falla",n:()=>1,ok:()=>Object.values(OBJ).some(o=>o.dmg||o.broken)},
   {k:"reqs",t:()=>"Cumple una petición vecinal",n:()=>1,ok:()=>!!S.req}];
 function dmMake(excl){const pool=DM_T.filter(d=>(!d.ok||d.ok())&&!excl.includes(d.k));const d=pool[Math.floor(Math.random()*pool.length)],n=d.n(S.lvl);
-  return {k:d.k,t:d.t(n),n,base:S.stats[d.k]||0,r:{c:Math.round((40+20*S.lvl)*(1+Math.random()*.5)),g:1},cl:false};}
-function dmTick(){const d=dayNum();if(S.dm&&S.dm.day===d)return;const list=[];for(let i=0;i<3;i++)list.push(dmMake(list.map(x=>x.k)));S.dm={day:d,list,bonus:false};if(S.paper)toast("Nuevas misiones del día en Metas.",3200);checkQuests();}
+  return {k:d.k,t:d.t(n),n,base:S.stats[d.k]||0,r:{c:Math.round((120+60*S.lvl)*(1+Math.random()*.5)),g:2},cl:false};}
+function dmTick(){const d=todayStr();if(S.dm&&S.dm.day===d)return;const list=[];for(let i=0;i<3;i++)list.push(dmMake(list.map(x=>x.k)));S.dm={day:d,list,bonus:false};if(S.paper)toast("Nuevas misiones del día en Metas.",3200);checkQuests();}
 const dmProg=m=>Math.min(m.n,(S.stats[m.k]||0)-m.base);
 function dmClaim(i){const m=S.dm&&S.dm.list[i];if(!m||m.cl||dmProg(m)<m.n)return;m.cl=true;S.coins+=m.r.c;S.gems+=m.r.g;addXP(10);stat("misiones");bonus("¡Misión cumplida!");
-  if(!S.dm.bonus&&S.dm.list.every(x=>x.cl)){S.dm.bonus=true;const c=100+50*S.lvl;S.coins+=c;S.gems+=3;setTimeout(()=>{bonus("¡Cofre del día!");toast(`¡Cumpliste las 3 misiones del día! Cofre: +${fmt(c)} monedas y +3 diamantes.`,4500);},900);}
+  if(!S.dm.bonus&&S.dm.list.every(x=>x.cl)){S.dm.bonus=true;const c=300+150*S.lvl;S.coins+=c;S.gems+=5;setTimeout(()=>{bonus("¡Cofre del día!");toast(`¡Cumpliste las 3 misiones del día! Cofre: +${fmt(c)} monedas y +5 diamantes.`,4500);},900);}
   checkQuests();save();openQuests();}
 function dmReroll(i){const m=S.dm&&S.dm.list[i];if(!m||m.cl)return;if(S.gems<1){toast("Te falta 1 diamante.");return;}S.gems-=1;stat("gemsUsed");S.dm.list[i]=dmMake(S.dm.list.map(x=>x.k));save();openQuests();}
 {const _cq=checkQuests;checkQuests=function(){_cq();if(!S)return;let n=0;if(S.dm)n+=S.dm.list.filter(m=>!m.cl&&dmProg(m)>=m.n).length;if(S.emg)n+=S.emg.filter(e=>e.st==="ok").length;
@@ -5375,7 +5375,7 @@ function openQuests(){modalFn=openQuests;const act=[];for(let i=0;i<QUESTS.lengt
   const allDone=S.dm&&S.dm.list.every(m=>m.cl);
   openModal(head("Metas y misiones",`${S.qDone.length} de ${QUESTS.length} metas cumplidas`)+`<div class="row"><button class="btn gold" data-act="ach">${ICON("star")} Logros · ${ACH.reduce((a,x)=>a+((S.ach||{})[x.k]||0),0)}/${ACH.length*3}</button><button class="btn" data-act="daily">${ICON("gem")} Recompensa diaria</button></div>`+
     (emg?`<div class="isec"><h4>${ICON("fire")} Emergencias <small>con tiempo límite</small></h4>${emg}</div>`:"")+
-    `<div class="isec"><h4>${ICON("star")} Misiones del día <small>${S.dm?(allDone?"¡Cofre cobrado! Mañana hay nuevas.":"Cumple las 3 y ganas un cofre: monedas y 3 diamantes"):""}</small></h4>${dm}</div>`+
+    `<div class="isec"><h4>${ICON("star")} Misiones del día <small>${S.dm?(allDone?"¡Cofre cobrado! Mañana hay nuevas.":"Cumple las 3 y ganas un cofre: monedas y 5 diamantes · se renuevan a medianoche"):""}</small></h4>${dm}</div>`+
     `<div class="isec"><h4>${ICON("people")} Metas del pueblo</h4>${goals||`<div class="note">¡Cumpliste todas las metas!</div>`}</div>`,true);}
 
 /* ---- Diamantes: dónde se usan ---- */
@@ -6224,8 +6224,8 @@ const TUT=[
     tgt:()=>{const s=needSupply();return s?{w:wTop(s)}:null;},done:()=>tutStat("supply")>0||!needSupply()},
   {t:"Construye una casa",p:()=>tool==="place"?"Toca un espacio libre al lado de una calle (se marca en verde) para construirla.":tutModal()&&$('#modal [data-act="buy"]')?"Elige la Cabaña: es la más barata.":"Más casas = más vecinos y más arriendo. Toca Construir.",
     tgt:()=>{if(tool==="place")return null;if(tutModal()){const c=$('#modal [data-act="buy"][data-k="cabana"]');return c?{el:c}:null;}return {el:$('#side [data-act="shop"]')};},done:()=>tutStat("build_casa")>0},
-  {t:"Haz una calle",p:()=>tool==="road"?"Toca o arrastra desde el final de una calle para alargarla. Después toca Listo.":"Los edificios necesitan calle al lado. Toca Calles para trazar una nueva.",
-    tgt:()=>tool==="road"?null:{el:$("#sbRoad")},done:()=>roads.size>(S.tut.b.roads||0)},
+  {t:"Haz una calle",p:()=>tool==="road"?(typeof RP!=="undefined"&&RP.cells.size?"Muy bien. Ahora toca <b>Aceptar</b> para construirla.":"Toca o arrastra desde el final de una calle para alargarla. Después toca Aceptar."):"Los edificios necesitan calle al lado. Toca Calles para trazar una nueva.",
+    tgt:()=>tool==="road"?(typeof RP!=="undefined"&&RP.cells.size?{el:$('#mode [data-act="rpOk"]')}:null):{el:$("#sbRoad")},done:()=>roads.size>(S.tut.b.roads||0)},
   {t:"Cosecha",p:()=>{const p=parcel();if(!p||!p.crop)return "Siembra algo en la parcela y cuando esté listo, tócalo para cosechar.";const st=cropStage(p);if(st>=2)return "¡Tu cultivo está listo! Tócalo para cosechar mercadería.";const cr=CROPS.find(c=>c.id===p.crop),left=Math.max(0,Math.ceil(cr.t-(NOW()-p.pt)/1000));return `Tu ${cr.name.toLowerCase()} está creciendo: falta ${dur(left)}. Cuando esté listo, tócalo para cosechar.`;},
     tgt:()=>{const p=parcel();return p?{w:wTop(p)}:null;},done:()=>tutStat("harvest")>0},
   {t:"Siembra en la parcela",p:()=>tutModal()&&$('#modal [data-act="plant"]')?"Elige el Trigo: cuesta 10 y crece en 1 minuto.":"La mercadería sale del campo. Toca la parcela para sembrar.",
@@ -6599,6 +6599,36 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
 setTimeout(()=>{if(!FB_CFG||inClaude()||!navigator.onLine)return;fbLoad().catch(()=>{});},4000);
 /* íconos dentro de botones (diamantes, monedas) siempre visibles */
 (function(){const st=document.createElement("style");st.textContent=`.btn>svg:not(.i){width:18px;height:18px;flex:none}`;document.head.appendChild(st);})();
+
+/* ---- Calles con vista previa: trazas, ves el total y tocas Aceptar. Construir: sale solo después de colocar ---- */
+const RP={cells:new Map(),erase:null,grp:null,geo:null,mat:null};
+const rpValid=(x,z)=>isOwned(x,z)&&!roads.has(idx(x,z))&&!occ[idx(x,z)];
+function rpMesh(i,on,x,z){if(!RP.grp){RP.grp=new THREE.Group();scene.add(RP.grp);RP.geo=new THREE.PlaneGeometry(.96,.96);RP.mat=new THREE.MeshBasicMaterial({color:0x5b6475,transparent:true,opacity:.78,depthWrite:false});}
+  const old=RP.grp.getObjectByName("r"+i);if(old)RP.grp.remove(old);if(!on)return;
+  const m=new THREE.Mesh(RP.geo,RP.mat);m.name="r"+i;m.rotation.x=-Math.PI/2;const c=cellC(x,z);m.position.set(c.x,.06,c.z);m.renderOrder=2;RP.grp.add(m);}
+function rpClear(){RP.cells.clear();if(RP.grp)while(RP.grp.children.length)RP.grp.remove(RP.grp.children[0]);}
+paintRoad=function(x,z){const i=idx(x,z);if(RP.erase===null)RP.erase=RP.cells.has(i);
+  if(RP.erase){if(RP.cells.delete(i)){rpMesh(i,false);renderMode();}return;}
+  if(RP.cells.has(i)||!rpValid(x,z))return;RP.cells.set(i,[x,z]);rpMesh(i,true,x,z);if(typeof sfx==="function")try{sfx("click");}catch(e){}renderMode();};
+addEventListener("pointerdown",()=>{RP.erase=null;},true);
+function rpAccept(){const list=[...RP.cells.values()].filter(([x,z])=>rpValid(x,z)),n=list.length,c=n*10;if(!n){toast("Traza al menos un tramo de calle.");return;}
+  if(S.coins<c){toast(`Te faltan ${fmt(c-S.coins)} monedas para estas calles.`,3000);return;}
+  for(const [x,z] of list){S.coins-=10;roads.add(idx(x,z));refreshRoadAround(x,z);addXP(.5);}
+  for(const o of Object.values(OBJ))if(o.lab)o.lab._k="";rpClear();rebuildCover();syncAgents();hud();save();
+  if(typeof sfx==="function")try{sfx("build");}catch(e){}toast(`¡Listo! ${n} ${n>1?"tramos":"tramo"} de calle por ${fmt(c)} monedas.`,2600);setTool("select");}
+{const _st3=setTool;setTool=function(t){if(tool==="road"&&t!=="road")rpClear();return _st3(t);};}
+{const _rm3=renderMode;renderMode=function(){_rm3();if(tool!=="road")return;const el=$("#mode"),n=RP.cells.size,c=n*10,short=S.coins<c;
+  el.innerHTML=n?`<span>Calles: <b>${n} ${n>1?"tramos":"tramo"}</b> · total <b class="${short?"bad":""}">${ICON("coin")} ${fmt(c)}</b>${short?" (te faltan monedas)":""}</span><button class="btn go sm" data-act="rpOk" ${short?"disabled":""}>✓ Aceptar</button><button class="btn sm" data-act="rpUndo">Borrar trazado</button><button class="btn sm danger" data-act="cancel">✕ Cancelar</button>`
+    :`<span>Calles: toca o arrastra para trazar · ${ICON("coin")} 10 cada tramo. Toca un tramo gris para quitarlo.</span><button class="btn sm danger" data-act="cancel">✕ Cancelar</button>`;};}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(a==="rpOk"){e.stopPropagation();rpAccept();}else if(a==="rpUndo"){e.stopPropagation();rpClear();renderMode();}},true);
+/* Construir: botón Cancelar bien visible y clic derecho para salir */
+{const _rm4=renderMode;renderMode=function(){_rm4();if(tool!=="place"&&tool!=="demolish")return;const c=$('#mode [data-act="cancel"]');if(c){c.classList.add("danger");c.textContent="✕ Cancelar";}};}
+let RCL=null;$("#cv").addEventListener("pointerdown",e=>{if(e.button===2)RCL=[e.clientX,e.clientY];});$("#cv").addEventListener("contextmenu",e=>{const still=RCL&&Math.hypot(e.clientX-RCL[0],e.clientY-RCL[1])<8;RCL=null;if(still&&tool!=="select")setTool("select");});
+/* después de colocar un edificio vuelves al modo normal (con Shift puedes seguir colocando) */
+let SHIFT=false;addEventListener("keydown",e=>{if(e.key==="Shift")SHIFT=true;});addEventListener("keyup",e=>{if(e.key==="Shift")SHIFT=false;});addEventListener("blur",()=>{SHIFT=false;});
+{const _pl3=place;place=function(k,x,z,rot){const was=tool==="place"&&!MOVE;const ok=_pl3(k,x,z,rot);if(ok&&was&&tool==="place"&&!SHIFT)setTimeout(()=>{if(tool==="place"&&!MOVE)setTool("select");},0);return ok;};}
+(function(){const st=document.createElement("style");st.textContent=`#mode .btn.danger{background:#ffe1dc;color:#9b2c1f}#mode b.bad{color:var(--bad)}#mode svg{width:16px;height:16px;vertical-align:-3px}`;document.head.appendChild(st);})();
 
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
