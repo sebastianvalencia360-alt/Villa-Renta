@@ -6464,6 +6464,47 @@ function personCard(r){const age=r.age<1?"bebé":r.age+" años",jobO=r.job&&OBJ[
   const L={libreria:35,restaurante:40,cine:45,discoteca:55,ropa:50,hotel:80,super:90,mall:150};
   for(const k in L)if(CAT[k])CAT[k].pay=L[k];})();
 
+/* ---- Cuenta con Google: tu partida guardada en la nube y en cualquier equipo ---- */
+const ACC={upT:0,upTs:0,busy:false,asked:false,ready:false};
+function accSaveJSON(){save();try{return localStorage.getItem(SAVE_KEY);}catch(e){}return null;}
+function accMeta(){return {lvl:S.lvl||1,city:String(S.name||"").slice(0,32),pop:popNow(),ts:S.ts||NOW()};}
+function accUpload(force){if(!FB.user||!FB.db||ACC.busy||!S)return Promise.resolve(false);if(!force&&(S.ts||0)<=ACC.upTs)return Promise.resolve(false);
+  const json=accSaveJSON();if(!json)return Promise.resolve(false);if(json.length>900000){console.warn("partida muy grande para la nube");return Promise.resolve(false);}
+  ACC.busy=true;const ts=S.ts||NOW();return FB.db.collection("saves").doc(FB.user.uid).set({data:json,...accMeta(),ts,v:1})
+    .then(()=>{ACC.upTs=ts;ACC.upT=NOW();return true;}).catch(e=>{console.warn("nube",e);return false;}).finally(()=>{ACC.busy=false;});}
+function accLoadRemote(d){try{window.__imp=true;localStorage.setItem(SAVE_KEY,d.data);localStorage.setItem("vr_imp","1");}catch(e){toast("Este navegador no deja cargar la partida.");return;}location.reload();}
+async function accSync(){if(!FB.user||!FB.db||ACC.asked)return;ACC.asked=true;let snap=null;try{snap=await FB.db.collection("saves").doc(FB.user.uid).get();}catch(e){return;}
+  if(!snap.exists){await accUpload(true);toast("¡Listo! Tu partida quedó guardada en tu cuenta de Google.",4000);if(rkOpen()||modalFn===openSettings)modalFn();return;}
+  const d=snap.data(),same=Math.abs((d.ts||0)-(S.ts||0))<5000;if(same){ACC.upTs=d.ts||0;return;}
+  modalFn=null;openModal(head("Tienes una partida en tu cuenta","Elige con cuál quieres seguir")+`<div class="acc2">
+    <button class="accopt" data-act="accUseCloud">${ICON("star")}<b>La de tu cuenta</b><small>${escA(d.city||"Ciudad")} · nivel ${d.lvl||1} · ${fmt(d.pop||0)} hab.</small><small>guardada ${new Date(d.ts||0).toLocaleString("es-CL",{dateStyle:"short",timeStyle:"short"})}</small></button>
+    <button class="accopt" data-act="accUseLocal">${ICON("people")}<b>La de este equipo</b><small>${escA(S.name)} · nivel ${S.lvl} · ${fmt(popNow())} hab.</small><small>reemplaza la de tu cuenta</small></button></div>`);ACC.remote=d;}
+function acctRow(){if(inClaude())return `<div class="switch"><span><b>Cuenta con Google</b><br><small class="note">Disponible en la página web del juego.</small></span></div>`;
+  if(!FB_CFG)return `<div class="switch"><span><b>Cuenta con Google</b><br><small class="note">Muy pronto podrás guardar tu partida en tu cuenta de Gmail.</small></span></div>`;
+  if(!FB.user)return `<div class="switch"><span><b>Cuenta con Google</b><br><small class="note">Guarda tu partida en tu Gmail y sigue en cualquier celular o computador.</small></span><button class="btn go sm" data-act="acctLogin">${GLOGO} Entrar</button></div>`;
+  const last=ACC.upT?`guardada hace ${dur(Math.max(1,Math.round((NOW()-ACC.upT)/1000)))}`:"conectada";
+  return `<div class="switch"><span><b>Cuenta con Google</b><br><small class="note"><span id="accMail"></span> · ${last}</small></span><span class="row"><button class="btn sm" data-act="acctUp">Guardar ahora</button><button class="btn sm" data-act="acctOut">Salir</button></span></div>`;}
+(function(){const st=document.createElement("style");st.textContent=`.acc2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}.accopt{display:grid;justify-items:center;gap:4px;padding:14px 10px;border:2px solid var(--line);border-radius:16px;background:var(--paper2);box-shadow:0 3px 0 var(--line);cursor:pointer;text-align:center}
+.accopt svg{width:30px;height:30px}.accopt b{font:800 16px var(--f-display)}.accopt small{color:var(--muted);font-size:12px}@media (max-width:420px){.acc2{grid-template-columns:1fr}}`;document.head.appendChild(st);})();
+{const _os=openSettings;openSettings=function(){_os();const sw=[...document.querySelectorAll("#modal .switch")].find(e=>/Tutorial/.test(e.textContent));if(sw)sw.insertAdjacentHTML("beforebegin",acctRow());
+  const m=$("#accMail");if(m&&FB.user)m.textContent=FB.user.email||FB.user.displayName||"tu cuenta";if(FB_CFG&&!inClaude()&&!FB.db)fbLoad().then(()=>{if(modalFn===openSettings)openSettings();}).catch(()=>{});};}
+function accLogin(){if(typeof firebase==="undefined"||!FB.db){toast("Conectando… intenta de nuevo en un segundo.");fbLoad().catch(()=>{});return;}
+  firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(()=>{try{localStorage.setItem("vr_fb","1");}catch(e){}}).catch(err=>{const c=err&&err.code||"";if(c!=="auth/popup-closed-by-user"&&c!=="auth/cancelled-popup-request")toast(c==="auth/popup-blocked"?"Tu navegador bloqueó la ventana de Google. Permite las ventanas emergentes e intenta de nuevo.":c==="auth/unauthorized-domain"?"Falta autorizar este sitio en Firebase.":"No se pudo entrar con Google. Intenta de nuevo.",5000);});}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(a==="acctLogin"){e.stopPropagation();accLogin();}
+  else if(a==="acctOut"){e.stopPropagation();accUpload(true).finally(()=>firebase.auth().signOut().then(()=>{try{localStorage.removeItem("vr_fb");}catch(e){}ACC.asked=false;toast("Saliste de tu cuenta. Tu partida sigue guardada en ella.",3500);if(modalFn===openSettings)openSettings();}));}
+  else if(a==="acctUp"){e.stopPropagation();accUpload(true).then(ok=>{toast(ok?"Partida guardada en tu cuenta.":"No se pudo guardar ahora. Revisa tu internet.");if(modalFn===openSettings)openSettings();});}
+  else if(a==="accUseCloud"){e.stopPropagation();if(ACC.remote)accLoadRemote(ACC.remote);}
+  else if(a==="accUseLocal"){e.stopPropagation();closeModal();accUpload(true).then(ok=>toast(ok?"Listo: tu cuenta ahora tiene la partida de este equipo.":"No se pudo guardar ahora."));}},true);
+/* engancha el inicio de sesión: al entrar, sincroniza la partida */
+{const _fl=fbLoad;fbLoad=function(){return _fl().then(r=>{if(!ACC.ready){ACC.ready=true;firebase.auth().onAuthStateChanged(u=>{if(u)accSync();else ACC.asked=false;});}return r;});};}
+setInterval(()=>{if(FB.user&&S&&!window.__imp&&NOW()-ACC.upT>3*60000)accUpload(false);},30000);
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&FB.user&&S&&!window.__imp)accUpload(false);});
+/* después del tutorial, invita a crear la cuenta (una sola vez) */
+setInterval(()=>{if(!S||!FB_CFG||inClaude()||S.accAsk||FB.user||!(S.tut&&S.tut.done)||!$("#modal").hidden)return;S.accAsk=1;save();
+  openModal(head("Guarda tu ciudad en tu cuenta","Con tu Gmail no pierdes tu partida y puedes seguir en otro equipo")+`<div class="note">Solo usamos tu cuenta para guardar la partida y para el ranking. En el ranking sale tu nombre de alcalde, nunca tu correo.</div><div class="row"><button class="btn go" data-act="acctLogin">${GLOGO} Entrar con Google</button><button class="btn" data-act="close">Ahora no</button></div>`);
+  fbLoad().catch(()=>{});},20000);
+
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
   const r0=rightOf(path[1][0]-path[0][0],path[1][1]-path[0][1]),c0=cellC(...path[0]);pts.push({p:new V3(c0.x+r0[0]*off,.02,c0.z+r0[1]*off)});
