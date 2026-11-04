@@ -6696,6 +6696,53 @@ setInterval(()=>{if(!SND.ready||!S||document.hidden||!sndCfg().s)return;const ob
 /* al colocar una obra: golpe de tablas */
 {const _plo=place;place=function(k,x,z,rot){const r=_plo(k,x,z,rot);if(r&&isObraItem(CAT[k])&&SND.ready&&sndCfg().s)setTimeout(()=>{const d=osDest(.9);if(d)OS_SND.tablas(d);},280);return r;};}
 
+/* ---- Visitar ciudades de otros jugadores (solo mirar, nada se guarda) ---- */
+const VISIT=(()=>{try{if(!/[?&]visita=1/.test(location.search))return null;const v=JSON.parse(localStorage.getItem("vr_visit")||"null");return v&&v.S?v:null;}catch(e){return null;}})();
+const CP={ts:0,busy:false,last:0};
+async function cpZip(str){if(typeof CompressionStream==="undefined")return {z:0,data:str};const cs=new Blob([str]).stream().pipeThrough(new CompressionStream("gzip"));const buf=new Uint8Array(await new Response(cs).arrayBuffer());
+  let bin="";for(let i=0;i<buf.length;i+=32768)bin+=String.fromCharCode.apply(null,buf.subarray(i,i+32768));return {z:1,data:btoa(bin)};}
+function cpUnzip(d){if(!d.z)return d.data;const bin=atob(d.data),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new TextDecoder().decode(window.vrGunzip(u));}
+/* tu ciudad se publica (comprimida) para que otros la puedan visitar */
+async function cityPush(force){if(VISIT||!FB.user||!FB.db||!S||!S.mayor||CP.busy||window.__imp)return;if(!force&&(S.ts||0)===CP.ts)return;if(!force&&NOW()-CP.last<4*60000)return;
+  CP.busy=true;try{save();const raw=localStorage.getItem(SAVE_KEY);if(!raw)return;const p=await cpZip(raw);if(p.data.length>900000)return;
+    await FB.db.collection("cities").doc(FB.user.uid).set({...p,name:String(S.mayor).slice(0,20),city:String(S.name||"").slice(0,32),lvl:S.lvl||1,pop:popNow(),ts:S.ts||NOW()});CP.ts=S.ts;CP.last=NOW();}
+  catch(e){console.warn("ciudad",e&&e.code||e);}finally{CP.busy=false;}}
+setInterval(()=>{cityPush(false);},60000);document.addEventListener("visibilitychange",()=>{if(document.hidden)cityPush(false);});
+{const _fp=fbPush;fbPush=function(f){if(VISIT)return;_fp(f);if(f)setTimeout(()=>cityPush(false),3000);};}
+{const _au2=accUpload;accUpload=function(f){if(VISIT)return Promise.resolve(false);return _au2(f);};}
+/* ir de visita: se baja la ciudad y se abre en modo visita */
+async function visitCity(uid,who){if(!FB.db){toast("Conectando… intenta de nuevo.");return;}toast(`Viajando a la ciudad de ${who}…`,2500);
+  let snap;try{snap=await FB.db.collection("cities").doc(uid).get();}catch(e){toast("No se pudo abrir esa ciudad. Intenta más tarde.",3500);return;}
+  if(!snap.exists){toast(`${who} todavía no ha compartido su ciudad. Aparece cuando vuelva a jugar.`,4000);return;}
+  let st;try{st=JSON.parse(cpUnzip(snap.data()));}catch(e){toast("Esa ciudad no se pudo abrir.",3000);return;}
+  save();try{localStorage.setItem("vr_visit",JSON.stringify({S:st,uid,who,mine:{gfx:S.gfx,snd:S.snd}}));}catch(e){toast("Tu navegador no tiene espacio para la visita.",3500);return;}
+  location.href=location.pathname+"?visita=1";}
+function visitBack(){try{localStorage.removeItem("vr_visit");}catch(e){}location.href=location.pathname;}
+if(VISIT){window.__imp=true;DAILY_SHOWN=true;
+  {const _ld=load;load=function(){const s=VISIT.S;if(s&&s.v===1&&s.objs){s.tut={on:false,done:true};s.accAsk=1;if(VISIT.mine){s.gfx=VISIT.mine.gfx||s.gfx;if(VISIT.mine.snd)s.snd=VISIT.mine.snd;}return s;}return _ld();};}
+  activate=function(o){const it=itemOf(o);toast(`${it.name} de ${VISIT.who}`,1800);};
+  openModal=(function(om){return function(h,w){if(window.__vAllow)return om(h,w);};})(openModal);
+  setTool=(function(st){return function(t){return st("select");};})(setTool);
+  (function(){const st=document.createElement("style");st.textContent=`body.visiting #hud,body.visiting #side,body.visiting #labels,body.visiting #capwarn,body.visiting #mode,body.visiting #tut{display:none!important}
+#visitBar{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);z-index:8;display:flex;align-items:center;gap:10px;padding:8px 10px 8px 14px;max-width:calc(100% - 20px)}
+#visitBar b{font:800 16px var(--f-display)}#visitBar small{display:block;color:var(--muted);font-size:12px}`;document.head.appendChild(st);})();
+  const showBar=()=>{if(!S||$("#visitBar"))return;document.body.classList.add("visiting");const bar=document.createElement("div");bar.id="visitBar";bar.className="toy";
+    bar.innerHTML=`<span style="font-size:22px">👀</span><div><b></b><small></small></div><button class="btn go sm" data-act="visitBack">Volver a mi ciudad</button>`;
+    bar.querySelector("b").textContent=`Visitando ${S.name||"una ciudad"}`;bar.querySelector("small").textContent=`de ${VISIT.who} · nivel ${S.lvl||1} · ${fmt(popNow())} habitantes`;document.body.appendChild(bar);
+    /* premio por visitar (se cobra al volver), hasta 5 ciudades distintas al día */
+    try{const k="vr_vrew",d=todayStr(),r=JSON.parse(localStorage.getItem(k)||"{}");if(r.d!==d){r.d=d;r.u=[];r.p=0;}if(!r.u.includes(VISIT.uid)&&r.u.length<5){r.u.push(VISIT.uid);r.p=(r.p||0)+1;localStorage.setItem(k,JSON.stringify(r));setTimeout(()=>toast("¡Gracias por visitar! Al volver a tu ciudad recibes un premio.",4000),1500);}}catch(e){}};
+  const iv=setInterval(()=>{if(S&&$("#loading").hidden){clearInterval(iv);showBar();}},300);}
+else{/* premio de visitas al volver */
+  const vrw=setInterval(()=>{if(!S||!$("#loading").hidden)return;clearInterval(vrw);try{const k="vr_vrew",r=JSON.parse(localStorage.getItem(k)||"{}");if(r.p>0){const c=(20+5*(S.lvl||1))*r.p;S.coins+=c;addXP(3*r.p);r.p=0;localStorage.setItem(k,JSON.stringify(r));hud();save();bonus(`+${fmt(c)} monedas`);toast(`Premio por visitar ciudades: +${fmt(c)} monedas.`,3500);}}catch(e){}},1500);}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(a==="visitBack"){e.stopPropagation();visitBack();}
+  else if(a==="visit"){e.stopPropagation();const r=FB.rows.find(x=>x.id===b.dataset.u);visitCity(b.dataset.u,String(r&&r.name||"otro alcalde").slice(0,20));}},true);
+/* botón Visitar en cada fila del ranking (menos la tuya) */
+{const _orV=openRanking;openRanking=async function(){await _orV();if(inClaude())return;const uid=FB.user&&FB.user.uid;
+  document.querySelectorAll("#modal .rkr").forEach((row,i)=>{const nm=row.querySelector("[data-rkn]");if(!nm)return;const idx=+nm.dataset.rkn;const f=RK_TABS[RK.tab][1];const rows=FB.rows.slice().sort((a,b)=>(b[f]||0)-(a[f]||0)||(b.score||0)-(a.score||0));const r=rows[idx];
+    if(!r||r.id===uid||row.querySelector(".rkv"))return;row.querySelector(".rks").insertAdjacentHTML("beforeend",`<button class="btn sm rkv" data-act="visit" data-u="${escA(r.id)}" title="Visitar su ciudad">👀 Visitar</button>`);});};}
+(function(){const st=document.createElement("style");st.textContent=`.rkv{margin-left:6px;padding:4px 8px!important;font-size:12px!important}`;document.head.appendChild(st);})();
+
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
   const r0=rightOf(path[1][0]-path[0][0],path[1][1]-path[0][1]),c0=cellC(...path[0]);pts.push({p:new V3(c0.x+r0[0]*off,.02,c0.z+r0[1]*off)});
