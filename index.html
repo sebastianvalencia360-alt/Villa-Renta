@@ -6370,7 +6370,7 @@ function fbPush(force){if(!FB.user||!FB.db||!S||!S.mayor||FB.writing)return;cons
   const tabs=`<div class="tabs" role="tablist">${Object.entries(RK_TABS).map(([k,v])=>`<button class="tab" role="tab" data-act="rkTab" data-t="${k}" aria-selected="${RK.tab===k}">${v[0]}</button>`).join("")}</div>`;
   let list;if(FB.err)list=`<div class="note">El ranking no está disponible ahora. Vuelve a abrirlo más tarde.</div>`;else if(!rows.length)list=`<div class="note">${FB.loading?"Cargando…":"Todavía no hay nadie. ¡Sé el primero!"}</div>`;
   else list=`<div class="rk">${rows.slice(0,50).map((r,i)=>`<div class="rkr${r.id===uid?" me":""}"><span class="rkp">${medal(i)}</span><span class="rka rki" data-rki="${i}"></span><div class="rkn"><b data-rkn="${i}"></b><small data-rkc="${i}"></small></div><div class="rks"><span>${ICON("star")} ${+r.lvl||1}</span><span>${ICON("people")} ${fmt(+r.pop||0)}</span><b>${fmt(+r[f]||0)}</b></div></div>`).join("")}</div>`;
-  const acc=FB.user&&FB.user.isAnonymous?`<div class="note good">${pos>=0?`Vas en el puesto <b>#${pos+1}</b> de ${rows.length}. `:""}Estás como invitado: crea tu cuenta con Google y no pierdes tu ciudad si cambias de celular.</div><div class="row"><button class="btn go" data-act="fbLogin">${GLOGO} Crear cuenta con Google</button></div>`:!FB.user?`<div class="note">Para aparecer en el ranking entra con tu cuenta de Google. Solo se muestra tu nombre de alcalde, nunca tu correo.</div><div class="row"><button class="btn go" data-act="fbLogin">${GLOGO} Entrar con Google</button></div>`
+  const acc=FB.user&&FB.user.isAnonymous?`<div class="note good">${pos>=0?`Vas en el puesto <b>#${pos+1}</b> de ${rows.length}. `:""}Estás como invitado. Entra con Google: <b>si ya tienes cuenta</b> recuperas tu ciudad; si no, se crea una con esta ciudad.</div><div class="row"><button class="btn go" data-act="fbLogin">${GLOGO} Entrar con Google</button></div>`:!FB.user?`<div class="note">Para aparecer en el ranking entra con tu cuenta de Google. Solo se muestra tu nombre de alcalde, nunca tu correo.</div><div class="row"><button class="btn go" data-act="fbLogin">${GLOGO} Entrar con Google</button></div>`
     :`<div class="note good">${pos>=0?`Vas en el puesto <b>#${pos+1}</b> de ${rows.length}. `:""}Conectado con Google como <b id="rkMe"></b>. <button class="btn sm" data-act="fbLogout">Salir</button></div>`;
   sh(tabs+list+acc+rkMine(me,pos));const box=$("#modal");
   rows.slice(0,50).forEach((r,i)=>{const nm=box.querySelector(`[data-rkn="${i}"]`),ct=box.querySelector(`[data-rkc="${i}"]`),av=box.querySelector(`[data-rki="${i}"]`);const n=String(r.name||"Alcalde").slice(0,20);
@@ -6591,13 +6591,18 @@ function anonOff(){try{return localStorage.getItem("vr_noanon")==="1";}catch(e){
 {const _as=accSync;accSync=function(){if(isAnon())return Promise.resolve();return _as();};}
 /* Ajustes: el invitado ve "Crear cuenta" */
 {const _ar=acctRow;acctRow=function(){if(!isAnon())return _ar();
-  return `<div class="switch"><span><b>Cuenta con Google</b><br><small class="note">Ya estás en el ranking como invitado. Crea tu cuenta para no perder tu ciudad si cambias de celular.</small></span><button class="btn go sm" data-act="acctLogin">${GLOGO} Crear cuenta</button></div>`;};}
+  return `<div class="switch"><span><b>Cuenta con Google</b><br><small class="note">Juegas como invitado. Entra con Google: si ya tienes cuenta recuperas tu ciudad; si no, se crea con esta.</small></span><button class="btn go sm" data-act="acctLogin">${GLOGO} Entrar</button></div>`;};}
 function gErr(err){const c=err&&err.code||"";if(c==="auth/popup-closed-by-user"||c==="auth/cancelled-popup-request")return;
-  toast(c==="auth/popup-blocked"?"Tu navegador bloqueó la ventana de Google. Permite las ventanas emergentes e intenta de nuevo.":c==="auth/unauthorized-domain"?"Falta autorizar este sitio en Firebase.":"No se pudo entrar con Google. Intenta de nuevo.",5000);}
+  if(inApp()||c==="auth/operation-not-supported-in-environment"||c==="auth/web-storage-unsupported"){inAppHelp();return;}
+  toast(c==="auth/popup-blocked"?"Tu navegador bloqueó la ventana de Google. Permite las ventanas emergentes e intenta de nuevo.":c==="auth/unauthorized-domain"?"Falta autorizar este sitio en Firebase.":c==="auth/network-request-failed"?"Sin conexión. Revisa tu internet e intenta de nuevo.":`No se pudo entrar con Google (${c.replace("auth/","")||"error"}). Intenta de nuevo.`,6000);}
+/* navegadores dentro de apps (Instagram, Facebook, TikTok…) no dejan entrar con Google */
+const inApp=()=>/FBAN|FBAV|FB_IAB|Instagram|Line\/|TikTok|musical_ly|Snapchat|Twitter|; wv\)/i.test(navigator.userAgent||"");
+function inAppHelp(){const url=location.origin+location.pathname;modalFn=null;openModal(head("Abre el juego en tu navegador","Google no deja iniciar sesión dentro de esta app")+`<div class="note">Estás viendo el juego dentro de otra app (por ejemplo Instagram o Facebook). Para entrar con Google, ábrelo en <b>Chrome</b> o <b>Safari</b>: toca los <b>tres puntos ⋯</b> de arriba y elige <b>"Abrir en el navegador"</b>, o copia el link.</div><div class="row"><button class="btn go" data-act="copyLink">Copiar link del juego</button></div><small class="note">${url}</small>`);}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b||b.dataset.act!=="copyLink")return;e.stopPropagation();const url=location.origin+location.pathname;(navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(()=>toast("Link copiado. Pégalo en Chrome o Safari.",3500)).catch(()=>toast(url,6000));},true);
 function gDone(msg){try{localStorage.setItem("vr_fb","1");localStorage.removeItem("vr_noanon");}catch(e){}if(msg)toast(msg,4000);
   if(rkOpen())openRanking();else if(modalFn===openSettings)openSettings();else if(!$("#modal").hidden&&$("#modal [data-act='acctLogin']"))closeModal();}
 /* entrar con Google: si era invitado, la cuenta se crea con el MISMO progreso y el mismo puesto en el ranking */
-accLogin=function(){if(typeof firebase==="undefined"||!FB.db){toast("Conectando… intenta de nuevo en un segundo.");fbLoad().catch(()=>{});return;}
+accLogin=function(){if(inApp()){inAppHelp();return;}if(typeof firebase==="undefined"||!FB.db){toast("Conectando… intenta de nuevo en un segundo.");fbLoad().catch(()=>{});return;}
   if(!S.mayor){openMayor();return;}
   const P=new firebase.auth.GoogleAuthProvider(),cu=firebase.auth().currentUser;
   if(cu&&cu.isAnonymous){cu.linkWithPopup(P).then(r=>{FB.user=r&&r.user||firebase.auth().currentUser;ACC.asked=true;
@@ -6605,7 +6610,7 @@ accLogin=function(){if(typeof firebase==="undefined"||!FB.db){toast("Conectando�
     .catch(err=>{const c=err&&err.code||"";if(c!=="auth/credential-already-in-use"&&c!=="auth/email-already-in-use")return gErr(err);
       /* esa cuenta de Google ya tenía partida: se entra con ella y se elige con cuál seguir */
       const cred=err.credential||(firebase.auth.GoogleAuthProvider.credentialFromError&&firebase.auth.GoogleAuthProvider.credentialFromError(err));const oldId=cu.uid;
-      FB.db.collection("ranking").doc(oldId).delete().catch(()=>{}).then(()=>cred?firebase.auth().signInWithCredential(cred):firebase.auth().signInWithPopup(P)).then(()=>gDone("")).catch(gErr);});return;}
+      FB.db.collection("cities").doc(oldId).delete().catch(()=>{});FB.db.collection("ranking").doc(oldId).delete().catch(()=>{}).then(()=>cred?firebase.auth().signInWithCredential(cred):firebase.auth().signInWithPopup(P)).then(()=>gDone("")).catch(gErr);});return;}
   firebase.auth().signInWithPopup(P).then(()=>gDone(`¡Listo, ${S.mayor}! Ya estás en el ranking.`)).catch(gErr);};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
   if(a==="acctOut"||a==="fbLogout"){try{localStorage.setItem("vr_noanon","1");}catch(er){}}},true);
