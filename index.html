@@ -5570,14 +5570,14 @@ function busModel(){const g=new THREE.Group(),y=mat("busy",{color:"#f2b632",roug
   const sg=new THREE.Mesh(new THREE.BoxGeometry(.12,.035,.01),mat("bussg",{color:"#1d2944",emissive:"#ffb000",emissiveIntensity:.8}));sg.position.set(0,.215,.332);g.add(sg);
   for(const [x,z] of [[-.13,.21],[.13,.21],[-.13,-.21],[.13,-.21]]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.03,12),wh);w.rotation.z=Math.PI/2;w.position.set(x,.045,z);g.add(w);}
   g.traverse(m=>{if(m.isMesh)m.castShadow=true;});addHeadlights(g);return g;}
-function busStops(){return liveK("paradero").filter(o=>roadCellOf(o)).sort((a,b)=>a.id-b.id);}
+function busStops(){const seen=new Set(),out=[];for(const o of liveK("paradero").filter(o=>roadCellOf(o)).sort((a,b)=>a.id-b.id)){const c=roadCellOf(o),k=c[0]+","+c[1];if(seen.has(k))continue;seen.add(k);out.push(o);}return out;}
 function busRoute(fromCell,idxNext){const st=busStops();if(st.length<2)return null;const k=idxNext%st.length,to=roadCellOf(st[k]);const path=bfs(fromCell,to);if(!path||path.length<2)return null;return {path,k};}
 function spawnBus(){const st=busStops();if(st.length<2)return;const start=roadCellOf(st[0]);const r=busRoute(start,1);if(!r)return;const obj=busModel();scene.add(obj);
   const ag={kind:"svc",civil:true,bus:true,obj,path:r.path,pts:lanePts(r.path),i:0,speed:1.2,back:false,wait:0,stay:3,stop:r.k,noReturn:false};obj.position.copy(ag.pts[0].p);
   ag.loop=a=>{const cell=a.path[a.path.length-1],nr=busRoute(cell,a.stop+1);if(!nr){a.dead=true;return;}a.stop=nr.k;a.path=nr.path;a.loopNext=[{p:a.obj.position.clone()}].concat(lanePts(nr.path));a.wait=3;stat("viajesMicro");};
   agents.push(ag);}
 function busTick(){const st=busStops().length,want=st<2?0:Math.min(4,1+Math.floor(st/3)),have=agents.filter(a=>a.bus);if(have.length<want)spawnBus();}
-const transitCut=()=>Math.min(.6,busStops().length*.15);
+const transitCut=()=>{const n=busStops().length;return n<2?0:Math.min(.6,n*.15);};
 /* ---- Tráfico ---- */
 const TRAF={ratio:0,n:0,hist:0};
 function trafficTick(){const cs=agents.filter(a=>(a.kind==="car"||(a.kind==="svc"&&a.civil))&&!a.bus);const st=cs.filter(a=>(a.blockT||0)>.4).length;TRAF.n=cs.length;TRAF.ratio=cs.length?st/cs.length:0;
@@ -6846,6 +6846,10 @@ DECO.central=g=>{utilBase(g,2,"#b9b4aa");const br=mat("c2brick",{color:"#b06a50"
     for(let k=0;k<4;k++)bx(g,.006,.14,.13,mat("c2fin",{color:"#5f6872"}),x-.083,.06,z-.0+0);}
   cy(g,.015,.015,.6,mat("c2pole",{color:"#7a5a3a"}),.86,.04,.75,6);bx(g,.3,.015,.015,mat("c2pole",{}),.86,.6,.75);fenceRing(g,.98);};
 
+/* ---- Paraderos: aviso cuando falta el segundo y cuando empieza a pasar el micro ---- */
+{const _plb=place;place=function(k,x,z,rot){const r=_plb(k,x,z,rot);if(r&&k==="paradero"){setTimeout(()=>{const n=liveK("paradero").length,ok=busStops().length;
+  if(n===1)toast("¡Primer paradero! Pon otro paradero junto a una calle para que empiece a pasar el micro.",5000);
+  else if(ok>=2&&n===ok)toast("¡Ya tienes ruta de micro! En unos segundos aparece el micro amarillo recorriendo tus paraderos.",5000);},400);}return r;};}
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
   const r0=rightOf(path[1][0]-path[0][0],path[1][1]-path[0][1]),c0=cellC(...path[0]);pts.push({p:new V3(c0.x+r0[0]*off,.02,c0.z+r0[1]*off)});
@@ -7562,7 +7566,7 @@ function openInfo(o){modalFn=()=>openInfo(o);const it=itemOf(o);const b=bonusAt(
   else if(o.k==="estacion"){const T=S.train||{};tiles=tile("bus",T.state==="docked"?"En el andén":T.state==="in"?"Llegando":T.state==="out"?"Saliendo":T.next?`En ${dur(Math.max(0,Math.ceil((T.next-NOW())/1000)))}`:"Pronto","próximo tren",T.state==="docked"?"good":"")+tile("people",fmt(S.stats.trenes||0),"trenes recibidos");extra=`<div class="note">Cada 6 a 10 minutos llega un tren por el viaducto: bajan pasajeros que recorren el pueblo y trae mercadería o materiales.</div>`;}
   else if(o.k==="deposito"){tiles=tile("trash",`${Math.round(o.load||0)}/${depCap()}`,"basura en el depósito",(o.load||0)>=depCap()?"bad":"")+tile("work",o.truck?"En ruta":"Listo","camión recolector");extra=`<div class="note">El camión recoge la basura de casas y locales a 22 casillas. ${hasK("reciclaje")?"La planta de reciclaje la convierte en materiales.":"Con una Planta de reciclaje la basura se convierte en materiales."} Si el depósito se llena, el camión deja de salir.</div>`;}
   else if(o.k==="reciclaje"){tiles=tile("logs",fmt(Math.floor((S.stats.reciclado||0)/8)),"materiales reciclados");extra=`<div class="note">Procesa 8 de basura por minuto desde los depósitos y la convierte en 1 material.</div>`;}
-  else if(o.k==="paradero"){tiles=tile("bus",busStops().length,"paraderos en la ruta")+tile("people",Math.round(transitCut()*100)+"%","menos viajes en auto")+tile("bus",agents.filter(a=>a.bus).length,"micros andando");extra=`<div class="note">Con 2 o más paraderos pasa un micro que recorre todos. Cada paradero reduce el uso del auto (hasta 60%). Tráfico: <b>${trafficTxt()}</b>.</div>`;}
+  else if(o.k==="paradero"){tiles=tile("bus",busStops().length,"paraderos en la ruta")+tile("people",Math.round(transitCut()*100)+"%","menos viajes en auto")+tile("bus",agents.filter(a=>a.bus).length,"micros andando");extra=(busStops().length<2?(liveK("paradero").length>=2?`<div class="note bad"><b>Pon el otro paradero más lejos.</b> Tus paraderos están en el mismo tramo de calle; el micro necesita al menos 2 paradas distintas.</div>`:`<div class="note bad"><b>Falta otro paradero.</b> El micro empieza a pasar cuando hay 2 paraderos al lado de una calle, conectados por calles.</div>`):"")+`<div class="note">Con 2 o más paraderos pasa un micro que recorre todos. Cada paradero reduce el uso del auto (hasta 60%). Tráfico: <b>${trafficTxt()}</b>.</div>`;}
   else if(it.b){tiles=tile("tree","+"+it.b+"%","arriendo y ventas")+tile("star",(it.r||2)+" casillas","alcance");extra=`<div class="note">Sube el arriendo y las ventas de los edificios cercanos. Las casas también lo cuentan como área verde.</div>`;}
   else if(it.desc)extra=`<div class="note">${it.desc}</div>`;
   if(it.cat!=="casa"&&slotsOf(o)>0)tiles+=tile("work",`${empOf(o)}/${slotsOf(o)}`,(PRODK(o)?`trabajadores · +${Math.round(20*(staffRate(o)||0))}%`:"trabajadores"),empOf(o)>=slotsOf(o)?"good":"");
