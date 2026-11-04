@@ -6343,7 +6343,7 @@ let MAYOR_ASKED=false;setInterval(()=>{if(MAYOR_ASKED||!S||S.mayor||(S.tut&&S.tu
 document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;if(b.dataset.act==="mayorSave"){e.stopPropagation();if(mayorFrom("mMayor","mCity")){closeModal();toast(`¡Listo, ${S.mayor}! Ese es tu nombre de alcalde.`,3500);}}},true);
 
 /* ---- Ranking en la página web (fuera de Claude): entrar con Google y tabla en Firebase ---- */
-const FB_CFG=null; /* se completa con la configuración del proyecto Firebase */
+const FB_CFG={apiKey:"AIzaSyAnQv5HZEKzyZUt3j764XBbAgoZMnVaIKg",authDomain:"villa-renta.firebaseapp.com",projectId:"villa-renta",storageBucket:"villa-renta.firebasestorage.app",messagingSenderId:"205569053000",appId:"1:205569053000:web:2147f289bc61725409637d"}; /* se completa con la configuración del proyecto Firebase */
 const FB={ready:null,user:null,db:null,rows:[],unsub:null,err:null,loading:false,lastW:0,lastScore:-1,writing:false};
 const inClaude=()=>!!(window.claude&&typeof window.claude.use==="function");
 function fbLoad(){if(FB.ready)return FB.ready;FB.ready=new Promise((res,rej)=>{const v="10.12.2",urls=["app","auth","firestore"].map(n=>`https://www.gstatic.com/firebasejs/${v}/firebase-${n}-compat.js`);let i=0;
