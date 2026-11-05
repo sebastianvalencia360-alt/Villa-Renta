@@ -278,7 +278,7 @@ button.res{cursor:pointer;font:800 16px/1 var(--f-display)}
   <button class="res toy" data-act="happy" title="Felicidad" id="hHapB"><svg class="i" viewBox="0 0 24 24"><use id="hFace" href="#ic-happy"/></svg><span class="num" id="hHap"></span></button>
   <button class="res toy" data-act="happy" title="Comida de la ciudad" id="hFoodB"><svg class="i" viewBox="0 0 24 24"><use href="#ic-food"/></svg><span class="num" id="hFood"></span></button>
   <button class="res toy" data-act="util" title="Agua y luz" id="hUtilB"><svg class="i" viewBox="0 0 24 24"><use href="#ic-drop"/></svg><span class="num" id="hW"></span><svg class="i" viewBox="0 0 24 24"><use href="#ic-bulb"/></svg><span class="num" id="hP"></span></button>
-  <button class="res toy" data-act="clima" title="Hora, clima y eventos" id="hClk"><svg class="i" viewBox="0 0 24 24"><use id="hWx" href="#ic-sun"/></svg><span class="num" id="hTime"></span></button>
+  <button class="res toy" data-act="clima" title="Hora, clima y eventos" id="hClk"><svg class="i" viewBox="0 0 24 24"><use id="hWx" href="#ic-sun"/></svg><span class="num" id="hTime"></span></button><button class="res toy" data-act="bag" title="Premios" id="hBagB" hidden><svg class="i" viewBox="0 0 24 24"><use href="#ic-gift"/></svg><span class="num" id="hBag"></span></button>
   <div class="spacer"></div>
   <div class="xpbox toy" title="Experiencia"><div class="xbar"><i id="hXb"></i><span id="hX"></span></div><div class="star"><svg viewBox="0 0 48 48"><path d="M24 3l6.3 13 14.2 2-10.3 10 2.4 14.2L24 35.5 11.4 42.2l2.4-14.2L3.5 18l14.2-2z" fill="#f5c33b" stroke="#1d2944" stroke-width="3" stroke-linejoin="round"/></svg><b id="hLv">1</b></div></div>
 </div>
@@ -312,7 +312,7 @@ button.res{cursor:pointer;font:800 16px/1 var(--f-display)}
   <symbol id="ic-gem" viewBox="0 0 24 24"><path d="M6 4h12l4 5-10 12L2 9z" fill="#4fd1a5" stroke="#1d2944" stroke-width="2" stroke-linejoin="round"/><path d="M2 9h20M9 4l3 17 3-17" fill="none" stroke="#1d2944" stroke-width="1.4"/></symbol>
   <symbol id="ic-bolt" viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h6L9.5 22 19 9.5h-6.2z" fill="#ffcf2e" stroke="#1d2944" stroke-width="2" stroke-linejoin="round"/></symbol>
   <symbol id="ic-crate" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2" fill="#d9a35b" stroke="#1d2944" stroke-width="2"/><path d="M3 10h18M8 5v15M16 5v15" stroke="#1d2944" stroke-width="1.6"/></symbol>
-  <symbol id="ic-steel" viewBox="0 0 24 24"><path d="M4 4h16v4h-5v8h5v4H4v-4h5V8H4z" fill="#a9b6c6" stroke="#1d2944" stroke-width="2" stroke-linejoin="round"/><path d="M6 6h12" stroke="#e8eef5" stroke-width="1.2"/></symbol><symbol id="ic-logs" viewBox="0 0 24 24"><rect x="2.5" y="12" width="19" height="6" rx="3" fill="#b5793f" stroke="#1d2944" stroke-width="2"/><rect x="5" y="6" width="14" height="6" rx="3" fill="#c98b4c" stroke="#1d2944" stroke-width="2"/><circle cx="19" cy="15" r="1.6" fill="#f0d29a"/><circle cx="16.5" cy="9" r="1.4" fill="#f0d29a"/></symbol>
+  <symbol id="ic-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="12" rx="2" fill="#e0604e" stroke="#1d2944" stroke-width="2"/><rect x="2" y="6" width="20" height="4.5" rx="1.5" fill="#f2786a" stroke="#1d2944" stroke-width="2"/><path d="M12 6v15" stroke="#f5c33b" stroke-width="3"/><path d="M12 6c-2-4-6-3-5-1s5 1 5 1zm0 0c2-4 6-3 5-1s-5 1-5 1z" fill="#f5c33b" stroke="#1d2944" stroke-width="1.6" stroke-linejoin="round"/></symbol><symbol id="ic-chest" viewBox="0 0 24 24"><path d="M3 10a6 5 0 0 1 18 0v2H3z" fill="currentColor" stroke="#1d2944" stroke-width="2" stroke-linejoin="round"/><rect x="3" y="12" width="18" height="9" rx="1.5" fill="currentColor" stroke="#1d2944" stroke-width="2"/><path d="M3 12h18" stroke="#1d2944" stroke-width="2"/><rect x="10" y="10.5" width="4" height="5" rx="1" fill="#f5c33b" stroke="#1d2944" stroke-width="1.6"/><path d="M6 6.5v14M18 6.5v14" stroke="#f5c33b" stroke-width="1.6" opacity=".9"/></symbol><symbol id="ic-steel" viewBox="0 0 24 24"><path d="M4 4h16v4h-5v8h5v4H4v-4h5V8H4z" fill="#a9b6c6" stroke="#1d2944" stroke-width="2" stroke-linejoin="round"/><path d="M6 6h12" stroke="#e8eef5" stroke-width="1.2"/></symbol><symbol id="ic-logs" viewBox="0 0 24 24"><rect x="2.5" y="12" width="19" height="6" rx="3" fill="#b5793f" stroke="#1d2944" stroke-width="2"/><rect x="5" y="6" width="14" height="6" rx="3" fill="#c98b4c" stroke="#1d2944" stroke-width="2"/><circle cx="19" cy="15" r="1.6" fill="#f0d29a"/><circle cx="16.5" cy="9" r="1.4" fill="#f0d29a"/></symbol>
   <symbol id="ic-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2" fill="#fff" stroke="#1d2944" stroke-width="1.8"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5z" fill="#fff" stroke="#1d2944" stroke-width="1.8"/><circle cx="16.5" cy="9" r="2.5" fill="#fff" stroke="#1d2944" stroke-width="1.8"/><path d="M15 14.2c2.8-.4 4.8 1.4 5.3 4.8h-4.6" fill="#fff" stroke="#1d2944" stroke-width="1.8"/></symbol>
   <symbol id="ic-build" viewBox="0 0 32 32"><path d="M5 27V13l11-7 11 7v14z" fill="#ffd9a0" stroke="#1d2944" stroke-width="2.4" stroke-linejoin="round"/><path d="M3 14 16 5l13 9" fill="none" stroke="#c94f3d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><rect x="13" y="18" width="6" height="9" fill="#7a4b2a" stroke="#1d2944" stroke-width="2"/><rect x="7.5" y="15" width="4" height="4" fill="#9fd6f5" stroke="#1d2944" stroke-width="1.6"/><rect x="20.5" y="15" width="4" height="4" fill="#9fd6f5" stroke="#1d2944" stroke-width="1.6"/></symbol>
   <symbol id="ic-road" viewBox="0 0 32 32"><path d="M10 3 5 29h22L22 3z" fill="#6b7489" stroke="#1d2944" stroke-width="2.4" stroke-linejoin="round"/><path d="M16 6v4M16 14v4M16 22v4" stroke="#ffd34d" stroke-width="2.4" stroke-linecap="round"/></symbol>
@@ -5387,13 +5387,13 @@ function dmMake(excl){const pool=DM_T.filter(d=>(!d.ok||d.ok())&&!excl.includes(
 function dmTick(){if(S.dm)for(const m of S.dm.list)if(m.r&&m.r.g)m.r.g=0;const d=todayStr();if(S.dm&&S.dm.day===d)return;const list=[];for(let i=0;i<3;i++)list.push(dmMake(list.map(x=>x.k)));S.dm={day:d,list,bonus:false};if(S.paper)toast("Nuevas misiones del día en Metas.",3200);checkQuests();}
 const dmProg=m=>Math.min(m.n,(S.stats[m.k]||0)-m.base);
 function dmClaim(i){const m=S.dm&&S.dm.list[i];if(!m||m.cl||dmProg(m)<m.n)return;m.cl=true;S.coins+=m.r.c;S.gems+=m.r.g;addXP(10);stat("misiones");bonus("¡Misión cumplida!");
-  if(!S.dm.bonus&&S.dm.list.every(x=>x.cl)){S.dm.bonus=true;const c=300+150*S.lvl;S.coins+=c;S.gems+=2;setTimeout(()=>{bonus("¡Cofre del día!");toast(`¡Cumpliste las 3 misiones del día! Cofre: +${fmt(c)} monedas y +2 diamantes.`,4500);},900);}
+  if(!S.dm.bonus&&S.dm.list.every(x=>x.cl)){S.dm.bonus=true;const c=300+150*S.lvl;S.coins+=c;bagAdd("chest_c",1);const wk=Math.floor((Date.now()/864e5+3)/7),gg=S.dmGemWk!==wk?2:0;if(gg){S.gems+=gg;S.dmGemWk=wk;}setTimeout(()=>{bonus("¡Cofre del día!");toast(`¡Cumpliste las 3 misiones del día! +${fmt(c)} monedas y un Cofre común${gg?" y +2 diamantes (1 vez por semana)":""}. Ábrelo en Premios 🎁`,5000);},900);}
   checkQuests();save();openQuests();}
 function dmReroll(i){const m=S.dm&&S.dm.list[i];if(!m||m.cl)return;if(S.gems<1){toast("Te falta 1 diamante.");return;}S.gems-=1;stat("gemsUsed");S.dm.list[i]=dmMake(S.dm.list.map(x=>x.k));save();openQuests();}
 {const _cq=checkQuests;checkQuests=function(){_cq();if(!S)return;let n=0;if(S.dm)n+=S.dm.list.filter(m=>!m.cl&&dmProg(m)>=m.n).length;if(S.emg)n+=S.emg.filter(e=>e.st==="ok").length;
   const b=$("#qBadge");if(!b)return;const base=b.hidden?0:(+b.textContent||0),tot=base+n;b.hidden=!tot;b.textContent=tot;};}
 function openQuests(){modalFn=openQuests;const rdy=[],pend=[];for(let i=0;i<QUESTS.length;i++){if(S.qDone.includes(i))continue;if(questProg(QUESTS[i])>=QUESTS[i].n)rdy.push(i);else if(pend.length<4)pend.push(i);}const act=rdy.concat(pend);
-  const gem=n=>`<span class="gemv">${ICON("gem")}${n}</span>`,rw=r=>`${r.c?`<span>${ICON("coin")}${fmt(r.c)}</span>`:""}${r.g?gem(r.g):""}`;
+  const gem=n=>`<span class="gemv">${ICON("gem")}${n}</span>`,rw=r=>`${r.c?`<span>${ICON("coin")}${fmt(r.c)}</span>`:""}${r.g?gem(r.g):""}${r.it?`<span>⭐ ${CAT[r.it].name}</span>`:""}${r.bx?`<span>${chestIc(r.bx)} ${BAG_T[r.bx].n}</span>`:""}`;
   const emg=(S.emg||[]).map((e,i)=>{const left=Math.max(0,Math.ceil((e.until-NOW())/1000));return `<div class="mq emg ${e.st}"><div><b>${e.t}</b><small>${e.st==="ok"?"¡Resuelta!":e.st==="fail"?"Se acabó el tiempo":`Quedan ${dur(left)}`}</small></div><div class="rw">${rw(e.r)}</div>${e.st==="ok"?`<button class="btn go sm" data-act="emc" data-i="${i}">Reclamar</button>`:""}</div>`;}).join("");
   const dm=S.dm?S.dm.list.map((m,i)=>{const p=dmProg(m),done=p>=m.n;return `<div class="mq${m.cl?" cl":""}"><div><b>${m.t}</b><small>${m.cl?"Cobrada":`${fmt(Math.max(0,p))} de ${fmt(m.n)}`}</small><div class="pbar"><i style="width:${Math.max(0,p)/m.n*100}%"></i></div></div><div class="rw">${rw(m.r)}</div>
       ${m.cl?`<span class="okb">✓</span>`:done?`<button class="btn go sm" data-act="dmc" data-i="${i}">Reclamar</button>`:`<button class="btn sm ghost" data-act="dmr" data-i="${i}" title="Cambiar esta misión por otra">Cambiar · ${gem(1)}</button>`}</div>`;}).join(""):"";
@@ -5705,10 +5705,10 @@ const todayStr=()=>{const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+
 const yestStr=()=>{const d=new Date(Date.now()-864e5);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();};
 let DAILY_SHOWN=false;function dailyCheck(){if(!S||DAILY_SHOWN)return;S.daily=S.daily||{last:"",streak:0};if(S.daily.last===todayStr())return;if($("#modal").hidden){DAILY_SHOWN=true;openDaily();}}
 function openDaily(){const D=S.daily,st=D.last===yestStr()?D.streak:0,day=st%7,today=D.last===todayStr();modalFn=null;
-  openModal(head("Recompensa diaria",today?"Ya la cobraste hoy. ¡Vuelve mañana!":`Día ${st+1} seguido · si faltas un día vuelves al día 1`)+`<div class="daily">${DAILY.map((r,i)=>{const rw=r.f();return `<div class="dday${i<day||today&&i<=((D.streak-1)%7)?" done":""}${i===day&&!today?" now":""}"><small>Día ${i+1}</small>${ICON(r.ic)}<b>${rw.c?fmt(rw.c):rw.mt?rw.mt:rw.mc?rw.mc:rw.g}</b><span>${r.t}</span></div>`;}).join("")}</div>
+  openModal(head("Recompensa diaria",today?"Ya la cobraste hoy. ¡Vuelve mañana!":`Día ${st+1} seguido · si faltas un día vuelves al día 1`)+`<div class="daily">${DAILY.map((r,i)=>{const rw=r.f();return `<div class="dday${i<day||today&&i<=((D.streak-1)%7)?" done":""}${i===day&&!today?" now":""}"><small>Día ${i+1}</small>${ICON(r.ic)}<b>${rw.c?fmt(rw.c):rw.mt?rw.mt:rw.mc?rw.mc:rw.g?rw.g:"×1"}</b><span>${r.t}</span></div>`;}).join("")}</div>
     ${today?"":`<button class="btn go" data-act="dailyClaim">Cobrar día ${day+1}</button>`}`);}
-function claimDaily(){const D=S.daily;if(D.last===todayStr())return;const st=D.last===yestStr()?D.streak:0,day=st%7,rw0=DAILY[day].f(),dd=new Date(),xm=dd.getMonth()===11&&(dd.getDate()===24||dd.getDate()===25)?2:1,rw={};for(const k in rw0)rw[k]=k==='sp'?rw0[k]:rw0[k]*xm;
-  S.coins+=rw.c||0;S.mat+=rw.mt||0;S.merc=Math.min(storeCap(),S.merc+(rw.mc||0));S.gems+=rw.g||0;if(rw.sp){const k=SPECIALS[Math.floor(Math.random()*SPECIALS.length)];S.inv[k]=(S.inv[k]||0)+1;setTimeout(()=>toast(`El cofre trae un objeto especial: ${CAT[k].name}. Búscalo en Construir → Especiales.`,5000),800);}
+function claimDaily(){const D=S.daily;if(D.last===todayStr())return;const st=D.last===yestStr()?D.streak:0,day=st%7,rw0=DAILY[day].f(),dd=new Date(),xm=dd.getMonth()===11&&(dd.getDate()===24||dd.getDate()===25)?2:1,rw={};for(const k in rw0)rw[k]=(k==='sp'||k==='bag'||k==='chest')?rw0[k]:rw0[k]*xm;
+  S.coins+=rw.c||0;S.mat+=rw.mt||0;S.merc=Math.min(storeCap(),S.merc+(rw.mc||0));S.gems+=rw.g||0;if(rw.bag)bagAdd(rw.bag,1,true);if(rw.chest)bagAdd("chest_"+rw.chest,1,true);if(rw.sp){const k=SPECIALS[Math.floor(Math.random()*SPECIALS.length)];S.inv[k]=(S.inv[k]||0)+1;setTimeout(()=>toast(`El cofre trae un objeto especial: ${CAT[k].name}. Búscalo en Construir → Especiales.`,5000),800);}
   D.last=todayStr();D.streak=st+1;stat("diasSeguidos");bonus(`¡Día ${day+1}!`);save();closeModal();checkQuests();}
 /* ---- Logros ---- */
 const ACH=[
@@ -5729,7 +5729,7 @@ const ACH=[
   {k:"diasSeguidos",t:"Alcalde fiel",d:"Recompensas diarias",v:()=>S.stats.diasSeguidos||0,n:[3,14,60]},
   {k:"lvl",t:"Gran ciudad",d:"Nivel de la ciudad",v:()=>S.lvl,n:[5,12,20]}];
 const MEDAL=[["Bronce","#cd7f32",1],["Plata","#b8c2cc",2],["Oro","#f2c230",4]];
-function achCheck(){if(!S)return;S.ach=S.ach||{};for(const a of ACH){const got=S.ach[a.k]||0;if(got>=3)continue;const v=a.v();if(v>=a.n[got]){S.ach[a.k]=got+1;const m=MEDAL[got];S.gems+=m[2];bonus(`¡Logro ${m[0]}!`);toast(`Logro desbloqueado: ${a.t} (${m[0]}). +${m[2]} ${m[2]>1?"diamantes":"diamante"}.`,4500);news("nivel",`El pueblo ganó el logro "${a.t}" (${m[0]}).`,2);save();break;}}}
+function achCheck(){if(!S)return;S.ach=S.ach||{};for(const a of ACH){const got=S.ach[a.k]||0;if(got>=3)continue;const v=a.v();if(v>=a.n[got]){S.ach[a.k]=got+1;const m=MEDAL[got];const pz=achPrize(a,got);bonus(`¡Logro ${m[0]}!`);toast(`Logro desbloqueado: ${a.t} (${m[0]}). Premio: ${pz}.`,5000);news("nivel",`El pueblo ganó el logro "${a.t}" (${m[0]}).`,2);save();break;}}}
 function openAch(){modalFn=openAch;S.ach=S.ach||{};const tot=ACH.length*3,got=ACH.reduce((s,a)=>s+(S.ach[a.k]||0),0);
   openModal(head("Logros",`${got} de ${tot} medallas`)+`<div class="achs">${ACH.map(a=>{const g=S.ach[a.k]||0,v=a.v(),nx=a.n[Math.min(g,2)],p=g>=3?1:Math.min(1,v/nx);
     return `<div class="ach"><div class="medals">${MEDAL.map((m,i)=>`<span class="md${i<g?" on":""}" style="--mc:${m[1]}"></span>`).join("")}</div><b>${a.t}</b><small>${a.d}: ${fmt(v)}${g>=3?" · ¡completo!":` / ${fmt(nx)}`}</small><div class="pbar"><i style="width:${p*100}%"></i></div></div>`;}).join("")}</div>
@@ -7534,6 +7534,182 @@ DECO.monumento_oro=g=>{const p=new THREE.Mesh(new THREE.CylinderGeometry(.48,.48
 /* metas del puerto */
 {const q=QUESTS.find(q=>q.k==="ship");if(q){q.t="Construye el puerto y completa tu primer barco";q.r={c:1500,g:1};}}
 
+/* ---- PREMIOS NUEVOS: cofres, impulsos, energía de reserva, decoraciones exclusivas, colores de casa y títulos ---- */
+def("especial",[
+  {id:"pileta_oro",name:"Pileta dorada",w:1,special:true,rwd:true,b:12,r:3},
+  {id:"kiosco",name:"Kiosco de la plaza",w:1,special:true,rwd:true,b:11,r:3},
+  {id:"estatua_alcalde",name:"Estatua del alcalde",w:1,special:true,rwd:true,b:13,r:4}
+]);
+const RWD_DECO=["pileta_oro","kiosco","estatua_alcalde"];
+const PAINTS={pastel:{n:"Pastel",wall:"#f6cdd6",roof:"#6fa9cf",trim:"#ffffff",door:"#a8d4ec"},colonial:{n:"Colonial",wall:"#f1dfb8",roof:"#9c3d2a",trim:"#2f5d3a",door:"#2f5d3a"},moderno:{n:"Moderno",wall:"#e7ecf0",roof:"#2e3439",trim:"#2b2f33",door:"#e0a43a"}};
+const TITLES={capitan:"Capitán del puerto"};
+const titleName=k=>TITLES[k]||(k.startsWith("ach_")?((ACH.find(a=>"ach_"+a.k===k)||{}).t||k):k);
+const BAG_T={
+  chest_c:{n:"Cofre común",col:"#b5793f",d:"Monedas y algo de mercadería o materiales. A veces un impulso."},
+  chest_r:{n:"Cofre raro",col:"#2f7fd6",d:"Bastantes monedas, materiales y un impulso seguro."},
+  chest_e:{n:"Cofre épico",col:"#8a4fd6",d:"Gran premio: decoración exclusiva o color de casa, impulsos y muy rara vez 1 diamante."},
+  b_rent:{n:"Arriendo ×2",ic:"coin",bk:"rent",min:30,d:"Por 30 minutos tus casas pagan el doble."},
+  b_sales:{n:"Ventas ×2",ic:"shop",bk:"sales",min:60,d:"Por 1 hora cada cliente paga el doble en tus locales."},
+  b_harv:{n:"Cosecha doble",ic:"wheat",bk:"harv",min:30,d:"Por 30 minutos cada cosecha da el doble de mercadería."},
+  b_build:{n:"Obra instantánea",ic:"hammer",d:"Termina al tiro la obra a la que le falta más tiempo."},
+  e_res:{n:"Energía de reserva",ic:"bolt",d:"+10 de energía, para usarla cuando te falte."}};
+const BOOSTS=["b_rent","b_sales","b_harv"];
+const bagN=()=>{const b=S.bag||{};return Object.values(b).reduce((s,v)=>s+(v||0),0);};
+const boostOn=k=>!!(S&&S.boost&&S.boost[k]>NOW());
+function bagAdd(k,n=1,say){S.bag=S.bag||{};S.bag[k]=(S.bag[k]||0)+n;if(say)setTimeout(()=>toast(`🎁 Ganaste: ${BAG_T[k].n}${n>1?" ×"+n:""}. Búscalo en Premios (arriba, junto a la hora).`,4500),900);hud();}
+function giveReward(R){const out=[];if(R.c){S.coins+=R.c;out.push([ICON("coin"),fmt(R.c),"monedas"]);}
+  if(R.mc){const a=Math.min(R.mc,Math.max(0,storeCap()-S.merc));S.merc+=a;if(a)out.push([ICON("crate"),a,"mercadería"]);}
+  if(R.mt){S.mat+=R.mt;out.push([ICON("logs"),R.mt,"materiales"]);}if(R.st){S.steel=(S.steel||0)+R.st;out.push([ICON("steel"),R.st,"acero"]);}
+  if(R.g){S.gems+=R.g;out.push([ICON("gem"),R.g,R.g>1?"diamantes":"diamante"]);}
+  for(const k of [].concat(R.bag||[])){bagAdd(k,1);const t=BAG_T[k];out.push([t.ic?ICON(t.ic):chestIc(k),"×1",t.n]);}
+  if(R.it){S.inv[R.it]=(S.inv[R.it]||0)+1;out.push([ICON("star"),"¡Exclusivo!",CAT[R.it].name]);}
+  if(R.paint){S.paints=S.paints||[];if(!S.paints.includes(R.paint))S.paints.push(R.paint);out.push(["🎨","Color",`Casas «${PAINTS[R.paint].n}»`]);}
+  if(R.title){S.titles=S.titles||[];if(!S.titles.includes(R.title))S.titles.push(R.title);out.push(["🏅","Título",titleName(R.title)]);}
+  hud();return out;}
+const chestIc=k=>`<svg class="i" viewBox="0 0 24 24" style="color:${(BAG_T[k]||BAG_T.chest_c).col}"><use href="#ic-chest"/></svg>`;
+function missingPaint(){const own=S.paints||[];const m=Object.keys(PAINTS).filter(p=>!own.includes(p));return m.length?pick(m):null;}
+function chestRoll(t){const L=S.lvl,R={};
+  if(t==="c"){R.c=Math.round((150+70*L)*(1+Math.random()*.6));const x=Math.random();if(x<.4)R.mc=15+3*L;else if(x<.7)R.mt=5+L;if(Math.random()<.15)R.bag=pick(BOOSTS);}
+  else if(t==="r"){R.c=Math.round((400+150*L)*(1+Math.random()*.5));R.mt=10+2*L;R.bag=pick(BOOSTS.concat(["b_build","e_res"]));if(L>=7)R.st=5+L;if(Math.random()<.2){const p=missingPaint();if(p)R.paint=p;}}
+  else{R.c=Math.round((1000+300*L)*(1+Math.random()*.4));R.mt=20+3*L;R.bag=[pick(BOOSTS),pick(["b_build","e_res",pick(BOOSTS)])];if(L>=7)R.st=15+L;
+    const p=missingPaint();if(p&&Math.random()<.45)R.paint=p;else R.it=pick(RWD_DECO);if(Math.random()<.1)R.g=1;}
+  return R;}
+function rewardShow(title,out,sub){modalFn=null;openModal(head(title,sub||"")+`<div class="rwgot">${out.map((o,i)=>`<div class="rwi" style="animation-delay:${i*.12}s"><span>${o[0]}</span><b>${o[1]}</b><small>${o[2]}</small></div>`).join("")}</div><div class="row"><button class="btn go" data-act="bag">Ver mis premios</button><button class="btn" data-act="close">Listo</button></div>`);}
+function bagUse(k){S.bag=S.bag||{};if(!(S.bag[k]>0))return;const t=BAG_T[k];
+  if(k.startsWith("chest_")){S.bag[k]--;const out=giveReward(chestRoll(k.slice(6)));sfx&&sfx("coin");bonus(`¡${t.n}!`);save();rewardShow(`${t.n} abierto`,out);return;}
+  if(t.bk){S.boost=S.boost||{};const now=NOW();S.boost[t.bk]=Math.max(now,S.boost[t.bk]||0)+t.min*60000;S.bag[k]--;bonus(`¡${t.n}!`);toast(`${t.n} activo por ${dur(Math.round((S.boost[t.bk]-now)/1000))}.`,3500);hud();save();openBag();return;}
+  if(k==="b_build"){const ob=Object.values(OBJ).filter(o=>o.build&&obraProg(o)<1).sort((a,b)=>(1-obraProg(b))*b.build.d-(1-obraProg(a))*a.build.d);
+    if(!ob.length){toast("No tienes obras en construcción. Guárdalo para la próxima.",3500);return;}const o=ob[0];o.build.t0=NOW()-o.build.d*1000-1000;S.bag[k]--;const c=objCenter(o);cam.tx=c.x;cam.tz=c.z;
+    closeModal();bonus("¡Obra lista!");toast(`${CAT[o.k].name} quedó lista: tócala para inaugurarla.`,4000);save();return;}
+  if(k==="e_res"){syncEnergy();const room=Math.floor(eMax()-energyNow());if(room<=0){toast("Tu energía está llena. Úsala cuando te falte.",3200);return;}S.energy=Math.min(eMax(),S.energy+10);S.eTs=NOW();S.bag[k]--;bonus("+"+Math.min(10,room)+" energía");hud();save();openBag();return;}}
+/* ---- ventana de Premios ---- */
+function openBag(){modalFn=openBag;const B=S.bag||{},now=NOW(),act=Object.entries(S.boost||{}).filter(([k,v])=>v>now);
+  const tile=(k)=>{const t=BAG_T[k],n=B[k]||0;return `<div class="bgi${n?"":" off"}"><span class="bgic">${t.ic?ICON(t.ic):chestIc(k)}${t.bk?`<i>×2</i>`:""}</span><div><b>${t.n}${n>1?` <em>×${n}</em>`:""}</b><small>${t.d}</small></div>${n?`<button class="btn go sm" data-act="bagUse" data-k="${k}">${k.startsWith("chest_")?"Abrir":"Usar"}</button>`:`<span class="bg0">0</span>`}</div>`;};
+  const bkN={rent:"Arriendo ×2",sales:"Ventas ×2",harv:"Cosecha doble"};
+  let h=head(`${ICON("gift")} Premios`,"Cofres, impulsos y cosas exclusivas que vas ganando");
+  if(act.length)h+=`<div class="bgact">${act.map(([k,v])=>`<span class="chip">⚡ ${bkN[k]} · ${dur(Math.ceil((v-now)/1000))}</span>`).join("")}</div>`;
+  h+=`<h4 class="rnh">Cofres</h4><div class="bgl">${["chest_c","chest_r","chest_e"].map(tile).join("")}</div>`;
+  h+=`<h4 class="rnh">Impulsos</h4><div class="bgl">${["b_rent","b_sales","b_harv","b_build","e_res"].map(tile).join("")}</div>`;
+  const ps=S.paints||[];h+=`<h4 class="rnh">🎨 Colores de casa</h4><div class="note">${ps.length?`Tienes: <b>${ps.map(p=>PAINTS[p].n).join(", ")}</b>. Abre una casa y toca <b>Pintar</b>.`:"Todavía no tienes. Salen en cofres raros y épicos, y en los logros de plata."}</div>`;
+  const ex=RWD_DECO.filter(k=>S.inv[k]>0);h+=`<h4 class="rnh">⭐ Decoraciones exclusivas</h4><div class="note">${ex.length?`Para colocar: <b>${ex.map(k=>`${CAT[k].name} ×${S.inv[k]}`).join(", ")}</b> (Construir → Especiales).`:"Pileta dorada, Kiosco y Estatua del alcalde: salen en cofres épicos, logros de oro y metas grandes."}</div>`;
+  const ts=S.titles||[];h+=`<h4 class="rnh">🏅 Títulos para el ranking</h4>`+(ts.length?`<div class="bgts">${[""].concat(ts).map(t=>`<button class="chip${(S.title||"")===t?" on":""}" data-act="bagTitle" data-t="${t}">${t?titleName(t):"Sin título"}</button>`).join("")}</div>`:`<div class="note">Se ganan con los logros de oro y completando la colección del puerto.</div>`);
+  h+=`<details class="bghow"><summary>¿Cómo consigo más?</summary><div class="note">• Recompensa diaria: día 3 Arriendo ×2, día 5 Energía de reserva, día 7 Cofre raro.<br>• Misiones del día: al cumplir las 3, Cofre común (y 2 💎 una vez por semana).<br>• Logros: bronce impulso, plata color de casa, oro decoración exclusiva + título.<br>• Cada 5 niveles: Cofre épico.<br>• Barcos del puerto: a veces dejan un Cofre raro.<br>• Metas grandes: decoraciones exclusivas y cofres.</div></details>`;
+  openModal(h);}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(a==="bag"){e.stopPropagation();openBag();}else if(a==="bagUse"){e.stopPropagation();bagUse(b.dataset.k);}
+  else if(a==="bagTitle"){e.stopPropagation();S.title=b.dataset.t||"";save();openBag();toast(S.title?`Ahora apareces como «${titleName(S.title)}» en el ranking.`:"Quitaste tu título.",3000);}
+  else if(a==="paint"){e.stopPropagation();openPaint(OBJ[+b.dataset.o]);}
+  else if(a==="paintSet"){e.stopPropagation();const o=OBJ[+b.dataset.o];if(!o)return;o.paint=b.dataset.p||undefined;if(!o.paint)delete o.paint;drawObj(o);save();sfx&&sfx("build");openInfo(o);}},true);
+/* ---- impulsos en el juego ---- */
+{const _rv=rentVal;rentVal=function(o){const v=_rv(o);return boostOn("rent")?v*2:v;};}
+{const _np=nightPay;nightPay=function(o){return _np(o)*(boostOn("sales")?2:1);};}
+{const _hv5=harvest;harvest=function(o){const before=S.merc;_hv5(o);const got=S.merc-before;if(got>0&&boostOn("harv")){const add=Math.min(got,Math.max(0,storeCap()-S.merc));if(add){S.merc+=add;setTimeout(()=>popup(objCenter(o),`+${add} cosecha doble`,"#3aa856",1.2),400);}}};}
+/* reserva de energía en la ventana de energía */
+{const _oe=openEnergy;openEnergy=function(){_oe();const n=(S.bag&&S.bag.e_res)||0;if(!n)return;const l=$("#modal .list");if(l)l.insertAdjacentHTML("afterbegin",`<div class="item"><div><b>Energía de reserva ×${n}</b><small>+10 energía gratis que ganaste</small></div><button class="btn go sm" data-act="bagUse" data-k="e_res">Usar</button></div>`);};}
+/* ---- pintar casas ---- */
+function openPaint(o){if(!o)return;modalFn=()=>openPaint(o);const ps=S.paints||[];const it=CAT[o.k];
+  openModal(head("🎨 Pintar casa",it.name)+`<div class="pnts">${[["","Original",HSKIN[o.k]]].concat(ps.map(p=>[p,PAINTS[p].n,PAINTS[p]])).map(([k,n,c])=>`<button class="pnt${(o.paint||"")===k?" on":""}" data-act="paintSet" data-o="${o.id}" data-p="${k}"><span class="sw" style="background:linear-gradient(180deg,${c.roof} 0 38%,${c.wall} 38% 82%,${c.door} 82%)"></span><b>${n}</b></button>`).join("")}</div>`+
+    (ps.length<3?`<div class="note">Más colores salen en cofres y logros de plata.</div>`:""));}
+{const _oi5=openInfo;openInfo=function(o){_oi5(o);if(!o||$("#modal").hidden)return;const it=CAT[o.k];if(!it||it.cat!=="casa"||!it.m||it.m.startsWith("building")||!(S.paints&&S.paints.length))return;
+  const f=$("#modal .ifoot");if(f&&!f.querySelector('[data-act="paint"]'))f.insertAdjacentHTML("afterbegin",`<button class="btn ghost" data-act="paint" data-o="${o.id}">🎨 Pintar</button>`);};}
+/* ---- dónde se ganan ---- */
+/* recompensa diaria: día 3 arriendo ×2, día 5 energía de reserva, día 7 cofre */
+DAILY[2]={t:"Arriendo ×2",ic:"coin",f:()=>({bag:"b_rent"})};DAILY[4]={t:"Energía de reserva",ic:"bolt",f:()=>({bag:"e_res"})};DAILY[6]={t:"Cofre raro",ic:"gift",f:()=>({chest:"r"})};
+/* logros: premio según medalla */
+function achPrize(a,got){if(got===0){const k=pick(BOOSTS);giveReward({bag:k});return BAG_T[k].n;}
+  if(got===1){const p=missingPaint();if(p){giveReward({paint:p});return `color de casa «${PAINTS[p].n}»`;}giveReward({bag:"chest_r"});return "Cofre raro";}
+  const d=RWD_DECO[(Object.values(S.ach||{}).filter(v=>v>=3).length)%3];giveReward({it:d,title:"ach_"+a.k});return `${CAT[d].name} y el título «${a.t}»`;}
+/* cada 5 niveles: cofre épico */
+{const _ax5=addXP;addXP=function(n){const lv=S.lvl;_ax5(n);if(Math.floor(S.lvl/5)>Math.floor(lv/5)){bagAdd("chest_e",1);setTimeout(()=>{bonus("¡Cofre épico!");toast(`Por llegar al nivel ${S.lvl} ganaste un Cofre épico. Ábrelo en Premios 🎁`,5000);},3200);}};}
+/* barcos: a veces un cofre raro */
+{const _pf=portFinish;portFinish=function(p){_pf(p);if(Math.random()<.15){bagAdd("chest_r",1);setTimeout(()=>toast("¡El barco dejó además un Cofre raro! Ábrelo en Premios 🎁",4500),7000);}};}
+/* metas grandes: decoraciones exclusivas y cofres en vez de diamantes */
+{const M5={build_muelle:"kiosco",pop:"pileta_oro",cruceros:"chest_r",misiones:"chest_r",islas:"chest_e"};
+  for(const q of QUESTS){if(!q.r||!(q.r.g>=5))continue;const v=q.k==="muni"?(q.n>=4?"estatua_alcalde":"chest_e"):M5[q.k];if(!v)continue;delete q.r.g;if(String(v).startsWith("chest_"))q.r.bx=v;else q.r.it=v;}}
+function questExtra(q){if(q.r.it)giveReward({it:q.r.it});if(q.r.bx)bagAdd(q.r.bx,1);}
+{const _cl=claim;claim=function(i){const q=QUESTS[i],was=S.qDone.includes(i);_cl(i);if(!was&&S.qDone.includes(i)){questExtra(q);if(q.r.it||q.r.bx)toast(`Premio: ${q.r.it?CAT[q.r.it].name+" (Construir → Especiales)":BAG_T[q.r.bx].n+" (en Premios 🎁)"}.`,4500);save();}};}
+/* HUD: botón de premios con contador o impulso activo */
+{const _hud5=hud;hud=function(){_hud5();const b=$("#hBagB");if(!b||!S)return;b.hidden=S.lvl<2&&!bagN();const n=$("#hBag");if(!n)return;const now=NOW(),a=Object.values(S.boost||{}).filter(v=>v>now);
+  if(a.length){n.textContent="×2 "+Math.ceil((Math.min(...a)-now)/60000)+"m";b.classList.add("bgon");}else{b.classList.remove("bgon");n.textContent=bagN()||"";}b.classList.toggle("bghas",bagN()>0);};}
+/* ---- decoraciones exclusivas ---- */
+DECO.pileta_oro=g=>{const G=mat("gold",{color:"#d9b45a",roughness:.35,metalness:.7});const p=new THREE.Mesh(new THREE.CylinderGeometry(.46,.48,.08,28),mat("stoneped",{map:stoneTex("#d6d0c4")}));p.position.y=.04;p.castShadow=p.receiveShadow=true;g.add(p);
+  const w=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,.01,28),mat("fwater",{color:"#6fb6d6",roughness:.15,metalness:.1,transparent:true,opacity:.85}));w.position.y=.085;g.add(w);(g.userData.anim=g.userData.anim||[]).push({t:"ripple",o:w});
+  cy(g,.06,.08,.3,G,0,.08,0,14);const b1=cy(g,.2,.12,.05,G,0,.36,0,20);cy(g,.035,.045,.16,G,0,.41,0,12);cy(g,.11,.07,.04,G,0,.56,0,18);const s=new THREE.Mesh(new THREE.SphereGeometry(.05,14,10),G);s.position.y=.64;s.castShadow=true;g.add(s);
+  const jw=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.01,20),mat("fwater",{}));jw.position.y=.405;g.add(jw);lampGlow(g,0,.5,0,.7,0);for(const [x,z] of [[.4,.4],[-.4,-.4]])lamp(g,x,z,.4);};
+DECO.kiosco=g=>{const p=new THREE.Mesh(new THREE.CylinderGeometry(.44,.46,.06,8),mat("stoneped",{map:stoneTex("#d6d0c4")}));p.position.y=.03;p.castShadow=p.receiveShadow=true;g.add(p);
+  const W=mat("kwhite",{color:"#f7f4ee"}),R=mat("kroof",{color:"#3f8a5a"}),Gd=mat("gold",{color:"#d9b45a",roughness:.35,metalness:.7});
+  for(let i=0;i<8;i++){const a=i/8*Math.PI*2;cy(g,.018,.018,.34,W,Math.cos(a)*.36,.06,Math.sin(a)*.36,8);}
+  const rail=new THREE.Mesh(new THREE.TorusGeometry(.36,.012,6,24),W);rail.rotation.x=Math.PI/2;rail.position.y=.18;g.add(rail);
+  const rf=new THREE.Mesh(new THREE.ConeGeometry(.46,.22,8),R);rf.position.y=.51;rf.castShadow=true;g.add(rf);const tp=new THREE.Mesh(new THREE.SphereGeometry(.035,10,8),Gd);tp.position.y=.64;g.add(tp);
+  const sg=signMesh("♪ RETRETA","#3f8a5a","#fff",.34,.08);sg.position.set(0,.45,.37);g.add(sg);flowerRing(g,.47,8,.07);};
+DECO.estatua_alcalde=g=>{const p=new THREE.Mesh(new THREE.CylinderGeometry(.48,.48,.03,28),mat("plaza",{map:stoneTex("#d8d1c3")}));p.position.y=.015;p.receiveShadow=true;g.add(p);
+  const y=pedestal(g,.38,.08,3),G=mat("gold",{color:"#d9b45a",roughness:.35,metalness:.7}),f=new THREE.Group();f.position.y=y;g.add(f);
+  for(const x of [-.03,.03])cy(f,.024,.028,.2,G,x,0,0,10);cy(f,.075,.06,.25,G,0,.2,0,12);const hd=new THREE.Mesh(new THREE.SphereGeometry(.05,14,10),G);hd.position.y=.5;hd.castShadow=true;f.add(hd);
+  const sash=bx(f,.02,.2,.13,mat("sash",{color:"#c0392b"}),0,.22,0);sash.rotation.y=.6;const arm=cy(f,.02,.02,.2,G,0,0,0,8);arm.position.set(.08,.5,0);arm.rotation.z=-.9;
+  const sg=signMesh("ALCALDE","#7a5a12","#ffe7a3",.3,.07);sg.position.set(0,.13,.2);g.add(sg);for(const [x,z] of [[.38,.38],[-.38,.38],[.38,-.38],[-.38,-.38]])lamp(g,x,z,.4);flowerRing(g,.3,6,.08);};
+/* estilos */
+(function(){const st=document.createElement("style");st.textContent=`
+.rwgot{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin:6px 0 12px}
+.rwi{display:grid;justify-items:center;gap:2px;padding:10px 6px;border:2px solid var(--line);border-radius:14px;background:linear-gradient(180deg,#fff,#fff6d8);text-align:center}
+.rwi span{font-size:26px;line-height:1}.rwi span svg{width:30px;height:30px}.rwi b{font:800 16px/1.1 var(--f-display)}.rwi small{color:var(--muted);font-size:12px}
+@keyframes rwpop{from{transform:scale(.4)}to{transform:none}}
+.bgl{display:grid;gap:7px;margin-bottom:8px}.bgi{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 10px;border:2px solid var(--line);border-radius:14px;background:#fff}
+.bgi.off{background:var(--paper2);opacity:.75}.bgi small{display:block;color:var(--muted);font-size:12px;line-height:1.25}.bgi em{font-style:normal;color:var(--blue)}
+.bgic{position:relative;display:grid;place-items:center}.bgic svg{width:34px;height:34px}.bgic i{position:absolute;right:-4px;bottom:-4px;font:800 11px/1 var(--f-display);background:var(--gold);border:1.5px solid var(--line);border-radius:8px;padding:2px 3px;font-style:normal}
+.bg0{font:700 13px var(--f-display);color:var(--muted);padding:0 8px}.bgact{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 6px}.bgact .chip{background:#fff3c4}
+.bgts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.bgts .chip{cursor:pointer}.bgts .chip.on{background:var(--gold)}
+.bghow summary{cursor:pointer;font:700 14px var(--f-display);margin:8px 0 4px}
+#hBagB.bghas{animation:bgpulse 2.2s ease-in-out infinite}#hBagB.bgon{background:#fff3c4}@keyframes bgpulse{50%{transform:scale(1.07)}}
+.pnts{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin:6px 0 10px}.pnt{display:grid;justify-items:center;gap:6px;padding:10px;border:2px solid var(--line);border-radius:14px;background:#fff;cursor:pointer}
+.pnt.on{background:#fff3c4;box-shadow:0 0 0 3px var(--gold)}.pnt .sw{width:60px;height:60px;border-radius:10px;border:2px solid var(--line)}
+`;document.head.appendChild(st);})();
+/* ---- MENÚ CONSTRUIR rediseñado ---- */
+const TAB_IC={casa:"build",local:"shop",granja:"wheat",servicios:"police",comunidad:"people",ocio:"party",deco:"tree",especial:"star"};
+let SHOP_ALL=false;
+const shopIsNew=c=>!c.special&&(c.req||1)>1&&(c.req||1)<=S.lvl&&!(S.seenK&&S.seenK[c.id]);
+const shopVis=c=>!((c.port||c.rwd)&&!(S.inv[c.id]>0));
+function shopChips(it){const C=(ic,t)=>`<span>${/^[a-z]+$/.test(ic)?ICON(ic):ic}${t}</span>`,a=[];
+  if(it.cat==="casa"){a.push(C("people",`+${it.pop}`));a.push(C("coin",`${fmt(it.rent)} <i>por cobro</i>`));a.push(C("⏱",dur(it.t)));}
+  else if(it.cat==="local"){a.push(C("people",`${it.cap} clientes`));a.push(C("coin",`${fmt(it.pay)} <i>c/u</i>`));a.push(C("crate",`usa ${it.sup}`));}
+  else if(it.water)a.push(C("drop",`agua ${fmt(it.water)} pers.`));else if(it.power)a.push(C("bulb",`luz ${fmt(it.power)} pers.${it.solar?" (día)":""}`));
+  else if(SVC&&SVC[it.id])a.push(C("star",`alcance ${SVC[it.id].base}`));
+  else if(it.cat==="comunidad"&&it.cap)a.push(C("people",`+${fmt(it.cap)} cupos`));
+  else if(it.b)a.push(C("happy",`+${it.b}% cerca`));
+  return a.length?`<div class="bst">${a.join("")}</div>`:`<small>${statLine(it)}</small>`;}
+function shopPrice(it){if(it.special)return `<span class="bprice ok">Gratis · tienes ${S.inv[it.id]||0}</span>`;
+  const P=[],miss=[];const add=(ic,need,have,nm)=>{if(!need)return;const s=have<need;P.push(`<span class="${s?"short":""}">${ICON(ic)}${fmt(need)}</span>`);if(s)miss.push(`${fmt(need-have)} ${nm}`);};
+  if(it.gems)add("gem",it.gems,S.gems,"💎");else add("coin",it.cost||0,S.coins,"monedas");add("logs",it.mats,S.mat,"mat.");add("steel",it.steel,S.steel||0,"acero");
+  return `<span class="bprice ${miss.length?"no":"ok"}"><span class="bpr">${P.join("")||"Gratis"}</span>${miss.length?`<small>Faltan ${miss.join(" · ")}</small>`:""}</span>`;}
+openShop=function(){modalFn=openShop;if(!S.seenK){S.seenK={};for(const c of Object.values(CAT))if((c.req||1)<S.lvl)S.seenK[c.id]=1;}
+  const all=Object.values(CAT).filter(c=>c.cat===shopTab&&shopVis(c)),open=all.filter(c=>c.special||(c.req||1)<=S.lvl),locked=all.filter(c=>!c.special&&(c.req||1)>S.lvl).sort((a,b)=>a.req-b.req);
+  const nw=open.filter(shopIsNew),rest=open.filter(c=>!shopIsNew(c));
+  const card=it=>{const n=shopIsNew(it),none=it.special&&!(S.inv[it.id]>0),own=it.unique&&Object.values(OBJ).some(o=>o.k===it.id);
+    return `<button class="card bc${n?" isnew":""}" data-act="buy" data-k="${it.id}" ${none||own?"disabled":""}>${n?`<span class="bnew">¡Nuevo!</span>`:""}<img alt="" src="${thumb(it.id)}"><b>${it.name}</b>${shopChips(it)}${own?`<span class="bprice own">Ya lo tienes</span>`:shopPrice(it)}</button>`;};
+  const lk=SHOP_ALL?locked:locked.slice(0,2);
+  const lockH=locked.length?`<div class="blk"><h4>${ICON("star")} Próximos desbloqueos</h4><div class="blkl">${lk.map(it=>`<div class="blki"><img alt="" src="${thumb(it.id)}"><div><b>${it.name}</b><small>Nivel ${it.req}</small></div></div>`).join("")}</div>${locked.length>2?`<button class="ptlink" data-act="shopAll">${SHOP_ALL?"Ver menos":`Ver todos (${locked.length})`}</button>`:""}</div>`:"";
+  const pn=popNow(),pc=popCap(),full=pn>=pc*.9;
+  const top=`<div class="btop"><span class="chip">${ICON("people")} ${fmt(pn)} / ${fmt(pc)}</span><span class="chip">${ICON("crate")} ${fmt(S.merc)} / ${fmt(storeCap())}</span><span class="chip">${ICON("coin")} ${fmt(S.coins)}</span></div>`+
+    (full&&shopTab!=="comunidad"?`<div class="bwarn">⚠️ Tu ciudad está casi llena (${fmt(pn)} de ${fmt(pc)}). Las casas nuevas no se llenarán si no hay cupo. <button class="btn sm gold" data-act="tab" data-t="comunidad">Ver Comunidad</button></div>`:"");
+  const tabs=`<div class="tabs btabs" role="tablist">${Object.entries(TAB_N).map(([k,v])=>{const dot=Object.values(CAT).some(c=>c.cat===k&&shopIsNew(c));return `<button class="tab" role="tab" data-act="tab" data-t="${k}" aria-selected="${shopTab===k}">${ICON(TAB_IC[k]||"star")}<span>${v}</span>${dot?`<i class="tdot"></i>`:""}</button>`;}).join("")}</div>`;
+  openModal(head("Construir","")+top+tabs+`<div class="cards bcs">${nw.concat(rest).map(card).join("")||`<div class="note">Todavía no hay nada aquí.</div>`}</div>`+lockH,true);
+  for(const c of open)S.seenK[c.id]=1;};
+document.addEventListener("click",e=>{const b=e.target.closest('[data-act="shopAll"]');if(!b)return;e.stopPropagation();SHOP_ALL=!SHOP_ALL;openShop();},true);
+(function(){const st=document.createElement("style");st.textContent=`
+.btop{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}.btop .chip{display:inline-flex;align-items:center;gap:4px;font-size:13px}.btop svg{width:16px;height:16px}
+.bwarn{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:2px solid #e9963a;border-radius:12px;background:#fff1de;font-size:13px;margin-bottom:8px}
+.btabs .tab{display:inline-flex;align-items:center;gap:5px;position:relative}.btabs .tab svg{width:18px;height:18px}.tdot{position:absolute;top:-4px;right:-4px;width:11px;height:11px;border-radius:50%;background:var(--bad);border:2px solid #fff}
+.cards.bcs{margin-top:10px}.card.bc{position:relative;padding:8px 8px 6px}.card.bc.isnew{box-shadow:0 0 0 3px var(--gold),0 2px 0 var(--line)}
+.bnew{position:absolute;top:-8px;left:-6px;z-index:1;background:var(--bad);color:#fff;font:800 11.5px/1 var(--f-display);padding:4px 7px;border-radius:9px;border:2px solid var(--line);transform:rotate(-6deg)}
+.bst{display:flex;flex-wrap:wrap;gap:3px 8px;font:700 12px/1.2 var(--f-body);color:var(--ink)}.bst span{display:inline-flex;align-items:center;gap:3px}.bst svg{width:14px;height:14px}.bst i{font-style:normal;color:var(--muted);font-weight:600}
+.bprice{display:grid;gap:2px;justify-items:center;margin-top:3px;padding:6px 6px;border-radius:10px;border:2px solid var(--line);font:800 13.5px/1 var(--f-display);text-align:center}
+.bprice.ok{background:#d9f3dd;box-shadow:inset 0 -3px 0 #8fd29b}.bprice.no{background:#ffe1dc;box-shadow:inset 0 -3px 0 #f0a59c}.bprice.own{background:var(--paper2);color:var(--muted)}
+.bpr{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.bpr span{display:inline-flex;align-items:center;gap:3px}.bpr svg{width:15px;height:15px}.bpr .short{color:#c9362b}.bprice small{font:700 11px/1.1 var(--f-body);color:#c9362b}
+.blk{margin-top:12px;padding:10px;border:2px dashed #b6c0d0;border-radius:14px;background:var(--paper2)}.blk h4{display:flex;gap:6px;align-items:center;margin:0 0 6px;font-size:14px}.blk h4 svg{width:16px;height:16px}
+.blkl{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px}.blki{display:grid;grid-template-columns:40px 1fr;gap:8px;align-items:center;padding:4px 6px;border-radius:10px;background:#fff;border:1.5px solid #c9d1dd}
+.blki img{width:40px;height:40px;filter:grayscale(1) opacity(.6)}.blki b{font:700 13px/1.1 var(--f-display)}.blki small{color:var(--bad);font-weight:700;font-size:11.5px}
+@media (max-width:560px){.cards.bcs{grid-template-columns:repeat(2,minmax(0,1fr))}.btabs .tab span{font-size:12.5px}}
+`;document.head.appendChild(st);})();
+
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
   const r0=rightOf(path[1][0]-path[0][0],path[1][1]-path[0][1]),c0=cellC(...path[0]);pts.push({p:new V3(c0.x+r0[0]*off,.02,c0.z+r0[1]*off)});
@@ -7654,7 +7830,7 @@ function visual(k,o){
     const s=fitScale(name,1.8,1.3)*.92,m=put(g,name,0,-.16,Math.PI,s);g.userData.main=m;g.userData.mainName=name;comSkin(m,CSKIN.muni);muniFront(g,m,name,s,lv);if(festOn())festDecor(g);return g;}
   if(it.cat==="casa"){const isB=it.m.startsWith("building"),s=fitScale(it.m,it.w,it.w===2?1.35:1)*(isB?.92:1),m=put(g,it.m,0,isB?-.04:0,isB?Math.PI:0,s);g.userData.main=m;g.userData.mainName=it.m;
     if(isB){comSkin(m,CSKIN[k]);walkSetup();const sl=slab(it.w,"#d8d4cc",.02);sl.material=walkMat;g.add(sl);const H=it.w/2-.07;planter(g,-H+.04,H-.03,.1);planter(g,H-.04,H-.03,.1);if(it.w===2){lamp(g,-H,-H,.42);putH(g,"n_CommonTree_5",H-.02,-H+.02,0,.7);}}
-    else{houseSkin(m,HSKIN[k]);yard(g);putH(g,"n_CommonTree_5",.72,-.72,srand((o?o.id:1)*3)*6,.85);putH(g,"n_Pine_5",-.74,-.72,0,.8);putH(g,"n_Bush_Common_Flowers",-.78,.78,0,.2);putH(g,"n_Bush_Common",-.56,.84,1,.15);
+    else{houseSkin(m,(o&&o.paint&&typeof PAINTS!=="undefined"&&PAINTS[o.paint])||HSKIN[k]);yard(g);putH(g,"n_CommonTree_5",.72,-.72,srand((o?o.id:1)*3)*6,.85);putH(g,"n_Pine_5",-.74,-.72,0,.8);putH(g,"n_Bush_Common_Flowers",-.78,.78,0,.2);putH(g,"n_Bush_Common",-.56,.84,1,.15);
       if(o&&srand(o.id*13)<.55){const cars=["sedan","van","taxi","suv"],cm=cars[Math.floor(srand(o.id*5)*4)];const c=put(g,cm,.64,.8,Math.PI,.14);c.position.y=.01;g.userData.car=c;g.userData.carModel=cm;if(o.carOut)c.visible=false;}
       else{putH(g,"n_Flower_3_Group",.78,.8,0,.12);putH(g,"n_Flower_4_Group",.6,.86,1,.12);}}
     return g;}
@@ -8168,7 +8344,7 @@ function statLine(it){
   return it.desc||"";}
 const TAB_N={casa:"Casas",local:"Comercio",granja:"Granja",servicios:"Servicios",comunidad:"Comunidad",ocio:"Panoramas",deco:"Decoración",especial:"Especiales"};
 function openShop(){modalFn=openShop;
-  const items=Object.values(CAT).filter(c=>c.cat===shopTab&&!(c.port&&!(S.inv[c.id]>0)));
+  const items=Object.values(CAT).filter(c=>c.cat===shopTab&&!((c.port||c.rwd)&&!(S.inv[c.id]>0)));
   const cards=items.map(it=>{const lock=!it.special&&S.lvl<it.req;const none=it.special&&!(S.inv[it.id]>0);const own=it.unique&&Object.values(OBJ).some(o=>o.k===it.id);
     return `<button class="card" data-act="buy" data-k="${it.id}" ${lock||none||own?"disabled":""}><img alt="" src="${thumb(it.id)}"><b>${it.name}</b>${lock?`<span class="lock">Nivel ${it.req}</span>`:own?`<span class="lock">Ya lo tienes</span>`:costHtml(it)}<small>${statLine(it)}</small></button>`;}).join("");
   openModal(head("Construir",`Población ${fmt(popNow())} / ${fmt(popCap())} · Mercadería ${fmt(S.merc)} / ${fmt(storeCap())}`)+
@@ -8402,7 +8578,7 @@ document.addEventListener("click",e=>{
     case "muniup":upgradeMuni();break;
     case "deliver":deliver(+b.dataset.i);break;
     case "claim":claim(+b.dataset.i);break;
-    case "claimAll":{const ids=QUESTS.map((q,i)=>i).filter(i=>!S.qDone.includes(i)&&questProg(QUESTS[i])>=QUESTS[i].n);let c=0,g=0;for(const i of ids){const q=QUESTS[i];S.qDone.push(i);c+=q.r.c||0;g+=q.r.g||0;S.coins+=q.r.c||0;S.gems+=q.r.g||0;addXP(20);}if(ids.length){bonus(`¡${ids.length} metas!`);toast(`Reclamaste ${ids.length} metas: +${fmt(c)} monedas${g?` y +${g} diamantes`:""}.`,3500);}checkQuests();save();openQuests();break;}
+    case "claimAll":{const ids=QUESTS.map((q,i)=>i).filter(i=>!S.qDone.includes(i)&&questProg(QUESTS[i])>=QUESTS[i].n);let c=0,g=0;for(const i of ids){const q=QUESTS[i];S.qDone.push(i);c+=q.r.c||0;g+=q.r.g||0;S.coins+=q.r.c||0;S.gems+=q.r.g||0;questExtra(q);addXP(20);}if(ids.length){bonus(`¡${ids.length} metas!`);toast(`Reclamaste ${ids.length} metas: +${fmt(c)} monedas${g?` y +${g} diamantes`:""}.`,3500);}checkQuests();save();openQuests();break;}
     case "buysector":buySector(+b.dataset.s);break;
     case "ebuy":{const g=+b.dataset.g;if(S.gems<g){toast("Te faltan diamantes.");break;}syncEnergy();S.gems-=g;S.energy=Math.min(eMax(),S.energy+(+b.dataset.n));bonus("¡Energía!");save();openEnergy();break;}
     case "ebuyc":{const c=+b.dataset.c;if(S.coins<c){toast("Te faltan monedas.");break;}syncEnergy();S.coins-=c;S.energy=Math.min(eMax(),S.energy+3);save();openEnergy();break;}
