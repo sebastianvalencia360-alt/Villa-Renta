@@ -6509,6 +6509,8 @@ async function accSync(){if(!FB.user||!FB.db||ACC.asked||(typeof VISIT!=="undefi
   const legacySame=!d.dev&&!last&&String(d.city||"")===String(S.name||"")&&(d.lvl||1)<=(S.lvl||1);
   if(mine||known||legacySame){if(lts>(d.ts||0))accUpload(true);else accLast(d.ts||0);return;}
   if(last&&lts<=last+90000){toast("Cargando tu partida más reciente de tu cuenta…",2500);setTimeout(()=>accLoadRemote(d),900);return;}
+  /* la partida de este equipo es nueva o va más atrás que la de tu cuenta: se carga la de la cuenta sin preguntar */
+  if((S.lvl||1)<(d.lvl||1)&&popNow()<=(d.pop||0)){toast(`Cargando tu ciudad ${d.city||""} (nivel ${d.lvl||1}) desde tu cuenta…`,3000);setTimeout(()=>accLoadRemote(d),900);return;}
   modalFn=null;openModal(head("Tienes una partida en tu cuenta","Elige con cuál quieres seguir")+`<div class="acc2">
     <button class="accopt" data-act="accUseCloud">${ICON("star")}<b>La de tu cuenta</b><small>${escA(d.city||"Ciudad")} · nivel ${d.lvl||1} · ${fmt(d.pop||0)} hab.</small><small>guardada ${new Date(d.ts||0).toLocaleString("es-CL",{dateStyle:"short",timeStyle:"short"})}</small></button>
     <button class="accopt" data-act="accUseLocal">${ICON("people")}<b>La de este equipo</b><small>${escA(S.name)} · nivel ${S.lvl} · ${fmt(popNow())} hab.</small><small>reemplaza la de tu cuenta</small></button></div>`);ACC.remote=d;}
