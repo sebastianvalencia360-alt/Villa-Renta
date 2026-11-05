@@ -1,5 +1,11 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>Villa Renta</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#2f7fd6"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Villa Renta">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Rubik:wght@400;500;600;700&display=swap">
@@ -7827,6 +7833,161 @@ function starDecor(g,k,o){const it=CAT[k];if(!it||!o)return;const s=o.s||1;if(s<
   (g.userData.anim=g.userData.anim||[]).push({t:"icon",o:st,ph:(o.id||0)*.7});}
 {const _vis6=visual;visual=function(k,o){const g=_vis6(k,o);try{if(o&&(o.s||1)>=2&&!o.build)starDecor(g,k,o);}catch(e){}return g;};}
 
+/* =================== LOTE 7: resumen al volver, app, ayuda de amigos, eventos, medallas, barrios y desafíos de la Municipalidad =================== */
+
+/* ---- 7. "Mientras no estabas" ---- */
+const AWAY={shown:false};
+function awaySummary(){if(AWAY.shown||!S||(typeof VISIT!=="undefined"&&VISIT))return;const t0=window.__loadTs||0,gone=NOW()-t0;AWAY.shown=true;if(!t0||gone<15*60000)return;
+  const hs=houses().filter(h=>!h.vac&&houseReady(h)),rent=hs.reduce((s,h)=>s+rentVal(h),0),shops=Object.values(OBJ).filter(o=>CAT[o.k]&&CAT[o.k].cat==="local"&&(o.till||0)>=1),till=shops.reduce((s,o)=>s+Math.round(o.till),0);
+  const crops=Object.values(OBJ).filter(o=>o.k==="parcela"&&o.crop&&cropStage(o)>=2).length,saws=Object.values(OBJ).filter(o=>o.k==="aserradero"&&live(o)&&sawReady(o)).length,obras=Object.values(OBJ).filter(o=>o.build&&obraReady(o)).length;
+  const P=S.port,ship=P&&P.state==="docked",emp=(S.dm&&S.dm.day===todayStr()&&!S.dm.list.some(m=>m.cl))?3:0;
+  const L=[];const it=(ic,t,s)=>L.push(`<div class="awi"><span>${/^[a-z]+$/.test(ic)?ICON(ic):ic}</span><div><b>${t}</b>${s?`<small>${s}</small>`:""}</div></div>`);
+  if(hs.length)it("coin",`${hs.length} ${hs.length>1?"casas listas":"casa lista"} para cobrar`,`≈ ${fmt(rent)} monedas de arriendo`);
+  if(shops.length)it("shop",`${shops.length} ${shops.length>1?"locales vendieron":"local vendió"}`,`${fmt(till)} monedas en caja`);
+  if(crops)it("wheat",`${crops} ${crops>1?"cosechas listas":"cosecha lista"}`,"Tus parcelas esperan");if(saws)it("logs",`${saws} ${saws>1?"aserraderos listos":"aserradero listo"}`,"Recoge tus materiales");
+  if(obras)it("hammer",`${obras} ${obras>1?"obras terminadas":"obra terminada"}`,"Tócalas para inaugurar");
+  if(ship)it("anchor",P.gold?"✨ Hay un barco dorado en el puerto":"Hay un barco en el puerto",`Zarpa en ${dur(Math.ceil(Math.max(0,P.leave-NOW())/1000))}`);
+  if(S.cruise&&S.cruise.state==="docked")it("people","Llegó un crucero con turistas","Están paseando por tu ciudad");
+  if(bagN())it("gift",`Tienes ${bagN()} ${bagN()>1?"premios":"premio"} sin usar`,"Míralos en Premios 🎁");
+  if(energyNow()>=eMax())it("bolt","Tu energía está llena",`${eMax()} de ${eMax()} · ¡aprovéchala!`);
+  const h=Math.floor(gone/3600000),m=Math.round((gone%3600000)/60000),txt=h>=24?`${Math.floor(h/24)} ${Math.floor(h/24)>1?"días":"día"}`:h?`${h} h ${m} min`:`${m} min`;
+  modalFn=null;openModal(head(`¡Bienvenido de vuelta, ${escA(S.mayor||"alcalde")}!`,`Estuviste fuera ${txt}. Esto pasó en ${escA(S.name||"tu ciudad")}:`)+`<div class="awl">${L.join("")}</div><div class="row"><button class="btn go" data-act="close">¡A trabajar!</button></div>`);}
+{const iv=setInterval(()=>{if(!S||!$("#loading").hidden||(typeof CV!=="undefined"&&!CV.done))return;if(!$("#modal").hidden)return;clearInterval(iv);setTimeout(()=>{if($("#modal").hidden)awaySummary();else AWAY.shown=true;},1200);},700);}
+
+/* ---- 8. Instalar como app (PWA) ---- */
+const PWA={ev:null};
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();PWA.ev=e;});
+if("serviceWorker" in navigator&&/github\.io$|villarenta\.cl$/.test(location.hostname)){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{});});}
+const isStandalone=()=>{try{return matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;}catch(e){return false;}};
+function installApp(){if(PWA.ev){PWA.ev.prompt();PWA.ev.userChoice.then(r=>{if(r&&r.outcome==="accepted"){toast("¡Listo! Villa Renta quedó en tu pantalla de inicio.",3500);S.pwa=1;save();}PWA.ev=null;});return;}
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  openModal(head("📲 Instalar Villa Renta","Juega como una app, a pantalla completa")+`<div class="note">${ios?"En iPhone: abre el juego en <b>Safari</b>, toca <b>Compartir</b> (el cuadrado con flecha) y elige <b>Agregar a pantalla de inicio</b>.":"En Android: abre el menú del navegador (⋮) y elige <b>Instalar aplicación</b> o <b>Agregar a pantalla de inicio</b>."}</div><div class="row"><button class="btn go" data-act="close">Entendido</button></div>`);}
+{const _os=openSettings;openSettings=function(){_os();if(isStandalone())return;const sh=$("#modal .sheet");if(sh)sh.insertAdjacentHTML("beforeend",`<div class="isec"><h4>📲 App</h4><div class="row"><span class="note">Instala Villa Renta en tu celular o computador para abrirla como una app.</span><button class="btn go sm" data-act="pwaInstall">Instalar</button></div></div>`);};}
+/* aviso suave una sola vez, desde nivel 4 */
+setInterval(()=>{if(!S||S.pwaAsk||S.lvl<4||isStandalone()||!PWA.ev||!$("#modal").hidden||(typeof VISIT!=="undefined"&&VISIT))return;S.pwaAsk=1;save();
+  openModal(head("📲 ¿Instalar Villa Renta?","Ábrela desde tu pantalla de inicio, sin buscar el enlace")+`<div class="row"><button class="btn go" data-act="pwaInstall">Instalar</button><button class="btn" data-act="close">Ahora no</button></div>`);},20000);
+
+/* ---- 9. Pedir ayuda a los amigos (1 vez al día) ---- */
+const helpAmt=need=>need==="steel"?2+Math.floor(S.lvl/5):4+Math.ceil(S.lvl/2);
+function helpAsk(need){if(!FB.user||FB.user.isAnonymous){toast("Para pedir ayuda entra con tu cuenta de Google.",3500);return;}const d=todayStr();if(S.helpReq&&S.helpReq.day===d){toast("Hoy ya pediste ayuda. ¡Mañana puedes otra vez!",3000);return;}
+  S.helpReq={day:d,need,n:helpAmt(need)*5,got:0};save();try{cityPush(true);}catch(e){}badgePush(true);bonus("🤝 ¡Pedido enviado!");
+  const txt=`¡Ayúdame en Villa Renta! Necesito ${need==="steel"?"acero":"materiales"} para mi ciudad ${S.name}. Entra, abre el Ranking, busca a ${S.mayor} y toca 👀 Visitar → 🤝 Ayudar.`,url=location.origin+location.pathname;
+  openModal(head("🤝 Pediste ayuda","Tus amigos la ven al visitar tu ciudad (Ranking → 👀 Visitar)")+`<div class="note">Cada amigo que te ayude te da <b>${helpAmt(need)} de ${need==="steel"?"acero":"materiales"}</b> (hasta 5 amigos hoy). Ellos también ganan monedas por ayudarte.</div><div class="row"><button class="btn go" data-act="helpShare">Avisar a mis amigos</button><button class="btn" data-act="close">Listo</button></div>`);
+  PWA.share={title:"Villa Renta",text:txt,url};}
+async function helpGive(){if(!VISIT||!VISIT.S||!VISIT.S.helpReq)return;const R=VISIT.S.helpReq;if(R.day!==todayStr()){toast("Ese pedido de ayuda ya venció.");return;}
+  if(!FB.user||!FB.db){toast("Conectando… intenta en unos segundos.");return;}const me=FB.user.uid,to=VISIT.uid;if(me===to)return;const k="vr_g_help_"+to+"_"+todayStr();try{if(localStorage.getItem(k)){toast("Hoy ya lo ayudaste. ¡Gracias!");return;}}catch(e){}
+  const own=ownSave()||{};const doc={to,from:me,name:String(own.mayor||"Un amigo").slice(0,20),city:String(own.name||"").slice(0,32),type:"help",amount:1,day:todayStr(),ts:Date.now()};
+  try{await FB.db.collection("gifts").doc(`${to}_${me}_${doc.day}_help`).set(doc);}catch(e){toast("No se pudo enviar la ayuda ahora. Intenta más tarde.",3500);console.warn("ayuda",e&&e.code);return;}
+  try{localStorage.setItem(k,"1");const r=JSON.parse(localStorage.getItem("vr_vrew")||"{}");if(r.d!==todayStr()){r.d=todayStr();r.u=[];r.p=0;}r.c=(r.c||0)+80+20*(own.lvl||1);localStorage.setItem("vr_vrew",JSON.stringify(r));}catch(e){}
+  bonus("🤝 ¡Ayudaste!");toast(`Le mandaste ${R.need==="steel"?"acero":"materiales"} a ${VISIT.who}. Tú ganas ${fmt(80+20*(own.lvl||1))} monedas al volver a tu ciudad.`,4500);visitBtns();}
+if(typeof VISIT!=="undefined"&&VISIT){const _vb=visitBtns;visitBtns=function(){_vb();const w=$("#visitBar .vgift");if(!w)return;const R=VISIT.S&&VISIT.S.helpReq;if(!R||R.day!==todayStr())return;let done=false;try{done=!!localStorage.getItem("vr_g_help_"+VISIT.uid+"_"+todayStr());}catch(e){}
+  w.insertAdjacentHTML("afterbegin",`<button class="btn sm go" data-act="helpGive" ${done?"disabled":""}>${done?"🤝 Ayudaste":`🤝 Ayudar (${R.need==="steel"?"acero":"materiales"})`}</button>`);};}
+/* recibir: se procesa junto con los regalos */
+{const _gc=giftsCheck;giftsCheck=async function(){if(VISIT||!FB.user||!FB.db||!S||window.__imp)return;let q;try{q=await FB.db.collection("gifts").where("to","==",FB.user.uid).where("type","==","help").get();}catch(e){return _gc();}
+  if(q&&q.docs&&q.docs.length){const R=S.helpReq||{need:"mat",n:999,got:0},per=helpAmt(R.need);let got=0;const who=[];for(const d of q.docs){const g=d.data();if((R.got||0)+got+per<=(R.n||999)||!S.helpReq)got+=per;who.push(String(g.name||"Un amigo").slice(0,20));try{await d.ref.delete();}catch(e){}}
+    if(got){if(R.need==="steel")S.steel=(S.steel||0)+got;else S.mat+=got;if(S.helpReq)S.helpReq.got=(S.helpReq.got||0)+got;hud();save();
+      modalFn=null;openModal(head("🤝 ¡Tus amigos te ayudaron!",`De: ${escA(who.join(", "))}`)+`<div class="list"><div class="item"><div><b>${ICON(R.need==="steel"?"steel":"logs")} +${got} ${R.need==="steel"?"de acero":"materiales"}</b><small>Gracias a ${who.length} ${who.length>1?"amigos":"amigo"}.</small></div></div></div><div class="row"><button class="btn go" data-act="close">¡Gracias!</button></div>`);}}
+  return _gc();};}
+/* botón en la ayuda de materiales y acero */
+{const _orh=openRes;openRes=function(r){_orh(r);if(r!=="mat"&&r!=="steel")return;const l=$("#modal .list");if(!l)return;const d=S.helpReq&&S.helpReq.day===todayStr();
+  l.insertAdjacentHTML("beforeend",rnWay("people","Pide ayuda a tus amigos",`1 vez al día: cada amigo que visite tu ciudad y te ayude te da ${helpAmt(r)} ${r==="steel"?"de acero":"materiales"}.`,d?`<span class="rnok">Pedido hoy${S.helpReq.got?` · +${S.helpReq.got}`:""}</span>`:`<button class="btn sm go" data-act="helpAsk" data-r="${r}">Pedir</button>`));};}
+
+/* ---- 11. Medallas y títulos en el ranking ---- */
+const BADGE={map:{},t:0};
+async function badgePush(force){if(!FB.user||!FB.db||!S||FB.user.isAnonymous||(typeof VISIT!=="undefined"&&VISIT))return;const help=S.helpReq&&S.helpReq.day===todayStr()?S.helpReq.need:"";const key=(S.title||"")+"|"+help+"|"+rkStats().ach;if(!force&&key===BADGE.last)return;
+  try{await FB.db.collection("badges").doc(FB.user.uid).set({title:String(S.title?titleName(S.title):"").slice(0,30),help,hday:help?todayStr():"",gold:Object.values(S.ach||{}).filter(v=>v>=3).length,t:Date.now()});BADGE.last=key;}catch(e){}}
+setInterval(()=>badgePush(false),5*60000);
+async function badgeLoad(){if(!FB.db||Date.now()-BADGE.t<60000)return;BADGE.t=Date.now();try{const q=await FB.db.collection("badges").get();const m={};q.docs.forEach(d=>m[d.id]=d.data());BADGE.map=m;}catch(e){}}
+{const _orB=openRanking;openRanking=async function(){await _orB();if(inClaude())return;await badgeLoad();badgePush(false);const f=RK_TABS[RK.tab][1];const rows=FB.rows.slice().sort((a,b)=>(b[f]||0)-(a[f]||0)||(b.score||0)-(a.score||0));
+  document.querySelectorAll("#modal .rkr").forEach(row=>{const nm=row.querySelector("[data-rkn]");if(!nm||row.dataset.bd)return;row.dataset.bd=1;const r=rows[+nm.dataset.rkn];if(!r)return;const b=BADGE.map[r.id]||{};
+    const c=row.querySelector("[data-rkc]");const ach=+r.ach||0;const chips=`${b.title?`<span class="rkt">🏅 ${escA(b.title)}</span>`:""}${ach?`<span class="rkm" title="Medallas de logros">🎖️ ${ach}</span>`:""}${b.help&&b.hday===todayStr()?`<span class="rkh">🤝 Pide ${b.help==="steel"?"acero":"materiales"}</span>`:""}`;
+    if(chips)(row.querySelector(".rkn")||row).insertAdjacentHTML("beforeend",`<div class="rkbd">${chips}</div>`);});};}
+
+/* ---- 12. Barrios: 3 o más casas iguales juntas = barrio con nombre y +10% de arriendo ---- */
+const BARRIO={map:new Map(),list:[],key:""},B_N1=["Villa","Barrio","Población","Condominio","Paseo"],B_N2=["Los Aromos","Las Rosas","El Roble","Los Pinos","Las Camelias","El Mirador","Los Olivos","La Pradera","Las Acacias","El Sauce","Los Copihues","La Quebrada","Los Boldos","El Peumo","Las Araucarias","La Ribera"];
+function barrioCalc(){const pn=performance.now();if(pn-(BARRIO.t||0)<800&&BARRIO.key)return;BARRIO.t=pn;const hs=houses().filter(h=>!h.build);const key=hs.map(h=>h.id+":"+h.k+":"+h.x+","+h.z).join("|");if(key===BARRIO.key)return;BARRIO.key=key;BARRIO.map=new Map();BARRIO.list=[];const seen=new Set();
+  for(const h of hs){if(seen.has(h.id))continue;const grp=[],st=[h];seen.add(h.id);while(st.length){const a=st.pop();grp.push(a);const [ax,az]=centerXZ(a);for(const b of hs){if(seen.has(b.id)||b.k!==a.k)continue;const [bx2,bz]=centerXZ(b);if(Math.max(Math.abs(ax-bx2),Math.abs(az-bz))<=3.6){seen.add(b.id);st.push(b);}}}
+    if(grp.length>=3){const id=Math.min(...grp.map(g=>g.id)),nm=B_N1[id%B_N1.length]+" "+B_N2[(id*7)%B_N2.length];const B={id,name:nm,k:h.k,n:grp.length,ids:grp.map(g=>g.id)};BARRIO.list.push(B);for(const g of grp)BARRIO.map.set(g.id,B);}}}
+const barrioOf=o=>{barrioCalc();return BARRIO.map.get(o.id)||null;};
+{const _rvb=rentVal;rentVal=function(o){const v=_rvb(o);return barrioOf(o)?Math.round(v*1.1):v;};}
+{const _oib=openInfo;openInfo=function(o){_oib(o);if(!o||$("#modal").hidden||!CAT[o.k]||CAT[o.k].cat!=="casa")return;const B=barrioOf(o),f=$("#modal .ifoot");if(!f)return;
+  f.insertAdjacentHTML("beforebegin",B?`<div class="note good">🏘️ <b>${B.name}</b>: ${B.n} casas iguales juntas · <b>+10% de arriendo</b>.</div>`:`<div class="note">🏘️ Pon 3 o más <b>${CAT[o.k].name}</b> juntas para formar un barrio con nombre: <b>+10% de arriendo</b>.</div>`);};}
+/* letreros de los barrios sobre el mapa */
+setInterval(()=>{if(!S||typeof toScreen!=="function")return;barrioCalc();const L=$("#labels");if(!L)return;const keep=new Set();
+  for(const B of BARRIO.list){let el=document.getElementById("brr"+B.id);if(!el){el=document.createElement("div");el.id="brr"+B.id;el.className="brr";L.appendChild(el);}keep.add(el.id);el.textContent="🏘️ "+B.name;
+    const pts=B.ids.map(i=>OBJ[i]).filter(Boolean).map(o=>objCenter(o));if(!pts.length)continue;const c=pts.reduce((a,p)=>a.add(p),new V3()).multiplyScalar(1/pts.length);c.y=1.9;const s=toScreen(c);
+    el.style.display=s&&cam.dist<34?"":"none";if(s){el.style.left=s[0]+"px";el.style.top=s[1]+"px";}}
+  L.querySelectorAll(".brr").forEach(e=>{if(!keep.has(e.id))e.remove();});},120);
+
+/* ---- 13. Desafíos de la Municipalidad (3 por nivel) ---- */
+const MOBJ=[[40,60,3000],[120,65,10000],[250,70,30000],[450,75,80000],[750,80,200000],[1200,85,500000]];
+function muniObj(){const lv=Math.min(S.muni||1,6);let M=S.mobj;if(!M||M.lv!==lv){M=S.mobj={lv,base:S.stats.earned||0,done:[0,0,0],all:0};}const T=MOBJ[lv-1];
+  return {M,lv,items:[{t:`Llega a ${fmt(T[0])} habitantes`,v:popNow(),n:T[0],ic:"people"},{t:`Llega a ${T[1]}% de felicidad`,v:S.happy||0,n:T[1],ic:"happy"},{t:`Gana ${fmt(T[2])} monedas en este nivel`,v:(S.stats.earned||0)-M.base,n:T[2],ic:"coin"}]};}
+function mobjHtml(){const {M,lv,items}=muniObj(),pr=["chest_c","chest_r","chest_r"];
+  return `<div class="isec mobj"><h4>${ICON("trophy")} Desafíos de la Municipalidad · nivel ${lv}</h4><div class="list">${items.map((x,i)=>{const ok=x.v>=x.n;return `<div class="item"><div><b>${ICON(x.ic)} ${x.t}</b><small>${fmt(Math.min(x.v,x.n))} de ${fmt(x.n)} · premio: ${fmt(500*lv)} monedas + ${BAG_T[pr[i]].n}</small><div class="pbar"><i style="width:${Math.min(100,x.v/x.n*100)}%"></i></div></div>${M.done[i]?`<span class="rnok">✓</span>`:ok?`<button class="btn go sm" data-act="mobjClaim" data-i="${i}">Reclamar</button>`:""}</div>`;}).join("")}</div>
+  <div class="note">${M.all?"¡Completaste los 3 desafíos de este nivel!":`Completa los 3 y gana un <b>Cofre épico</b>. Al mejorar la Municipalidad empiezan desafíos nuevos.`}</div></div>`;}
+function mobjClaim(i){const {M,lv,items}=muniObj();if(M.done[i]||items[i].v<items[i].n)return;M.done[i]=1;const pr=["chest_c","chest_r","chest_r"][i];S.coins+=500*lv;bagAdd(pr,1);bonus("¡Desafío cumplido!");
+  if(M.done.every(Boolean)&&!M.all){M.all=1;bagAdd("chest_e",1);setTimeout(()=>{bonus("¡Cofre épico!");toast("¡Completaste los 3 desafíos de la Municipalidad! Ganaste un Cofre épico 🎁",5000);},1200);}else toast(`+${fmt(500*lv)} monedas y ${BAG_T[pr].n} (en Premios 🎁).`,3500);hud();save();if(modalFn)modalFn();}
+{const _om=openMuni;openMuni=function(){_om();const sh=$("#modal .sheet");if(sh){const f=sh.querySelector(".ifoot");(f?f:sh).insertAdjacentHTML(f?"beforebegin":"beforeend",mobjHtml());}};}
+
+/* ---- 10. Eventos de temporada ---- */
+const EVENTS=[
+  {id:"primavera",n:"🌸 Mes de la primavera",from:[11,1],to:[11,30],it:"arco_flores",ms:[["harvest",15,"Cosecha 15 veces"],["build_deco",4,"Pon 4 decoraciones"],["rent",40,"Cobra 40 arriendos"]]},
+  {id:"navidad",n:"🎄 Navidad en la villa",from:[12,10],to:[1,6],it:"arbol_navidad",ms:[["rent",50,"Cobra 50 arriendos"],["supply",15,"Abastece 15 locales"],["customers",200,"Atiende 200 clientes"]]},
+  {id:"verano",n:"☀️ Verano en la costa",from:[1,7],to:[2,28],it:"sombrillas",ms:[["harvest",20,"Cosecha 20 veces"],["customers",250,"Atiende 250 clientes"],["ship",1,"Completa 1 barco del puerto"]]},
+  {id:"patrias",n:"🇨🇱 Fiestas Patrias",from:[9,10],to:[9,25],it:"fonda",ms:[["supply",15,"Abastece 15 locales"],["customers",250,"Atiende 250 clientes"],["rent",40,"Cobra 40 arriendos"]]},
+  {id:"halloween",n:"🎃 Noche de brujas",from:[10,24],to:[11,2],it:"calabaza",ms:[["harvest",12,"Cosecha 12 veces"],["rent",35,"Cobra 35 arriendos"],["emergencias",2,"Resuelve 2 emergencias"]]}];
+function evNow(){const d=new Date(),m=d.getMonth()+1,day=d.getDate(),v=m*100+day;for(const E of EVENTS){const a=E.from[0]*100+E.from[1],b=E.to[0]*100+E.to[1];if(a<=b?(v>=a&&v<=b):(v>=a||v<=b)){const y=d.getFullYear()-(a>b&&v<=b?1:0);return {E,key:E.id+y,end:new Date(y+(a>b?1:0),E.to[0]-1,E.to[1],23,59)};}}return null;}
+function evState(){const ev=evNow();if(!ev)return null;let V=S.ev;if(!V||V.key!==ev.key){V=S.ev={key:ev.key,base:{},done:[0,0,0],prize:0};for(const [k] of ev.E.ms)V.base[k]=S.stats[k]||0;if(S.lvl>=2)setTimeout(()=>toast(`¡Empezó el evento ${ev.E.n}! Mira las misiones en Metas.`,5000),4000);}return {ev,V};}
+function evHtml(){const x=evState();if(!x)return "";const {ev,V}=x,E=ev.E,left=Math.max(0,ev.end-Date.now());
+  return `<div class="evbox"><div class="evhd"><b>${E.n}</b><small>Termina en ${left>48*3600000?Math.ceil(left/864e5)+" días":dur(Math.ceil(left/1000))}</small></div><div class="evms">${E.ms.map(([k,n,t],i)=>{const v=Math.min(n,(S.stats[k]||0)-(V.base[k]||0));return `<div class="evm${V.done[i]?" ok":""}"><span>${t}</span><div class="pbar"><i style="width:${v/n*100}%"></i></div><small>${fmt(v)} / ${fmt(n)}</small>${V.done[i]?"<b>✓</b>":v>=n?`<button class="btn go sm" data-act="evClaim" data-i="${i}">Reclamar</button>`:""}</div>`;}).join("")}</div>
+    <div class="evpz">${(()=>{try{return `<img src="${thumb(E.it)}" alt="">`;}catch(e){return "";}})()}<div><small>Premio del evento (solo durante el evento)</small><b>${CAT[E.it].name}</b><span>${V.prize?"¡Ya lo ganaste! Búscalo en Construir → Especiales.":"Completa las 3 misiones · + Cofre raro"}</span></div></div></div>`;}
+function evClaim(i){const x=evState();if(!x)return;const {ev,V}=x,[k,n]=ev.E.ms[i];if(V.done[i]||(S.stats[k]||0)-(V.base[k]||0)<n)return;V.done[i]=1;const c=300+100*S.lvl;S.coins+=c;bonus("¡Misión del evento!");
+  if(V.done.every(Boolean)&&!V.prize){V.prize=1;S.inv[ev.E.it]=(S.inv[ev.E.it]||0)+1;bagAdd("chest_r",1);setTimeout(()=>{bonus("¡Premio del evento!");toast(`Ganaste ${CAT[ev.E.it].name} (exclusivo del evento) y un Cofre raro.`,5000);},900);}else toast(`+${fmt(c)} monedas.`,2500);hud();save();openQuests();}
+{const _oq=openQuests;openQuests=function(){_oq();const h=evHtml();if(!h)return;const sh=$("#modal .sheet .shead");if(sh)sh.insertAdjacentHTML("afterend",h);};}
+setInterval(()=>{if(S&&!(typeof VISIT!=="undefined"&&VISIT))evState();},30000);
+/* decoraciones de los eventos */
+def("especial",[{id:"arco_flores",name:"Arco de flores",w:1,special:true,rwd:true,b:11,r:3},{id:"arbol_navidad",name:"Árbol de Navidad gigante",w:1,special:true,rwd:true,b:12,r:3},
+  {id:"sombrillas",name:"Rincón de playa",w:1,special:true,rwd:true,b:10,r:3},{id:"fonda",name:"Fonda dieciochera",w:1,special:true,rwd:true,b:12,r:3},{id:"calabaza",name:"Calabaza gigante",w:1,special:true,rwd:true,b:10,r:3}]);
+DECO.arco_flores=g=>{bx(g,.9,.015,.9,mat("gravel",{map:stoneTex("#e3dccb"),color:"#f0ead9"}),0,0,0);const W=mat("kwhite",{color:"#f7f4ee"});for(const x of [-.32,.32])cy(g,.03,.035,.55,W,x,0,0,8);
+  const arc=new THREE.Mesh(new THREE.TorusGeometry(.32,.035,8,20,Math.PI),mat("archg",{color:"#5aa83a",roughness:1}));arc.position.y=.55;g.add(arc);
+  const cols=["#f08ab0","#ffffff","#f2c443","#e0604e","#c79bf2"];for(let i=0;i<16;i++){const a=i/15*Math.PI,f=new THREE.Mesh(new THREE.SphereGeometry(.035,8,6),mat("flw"+(i%5),{color:cols[i%5]}));f.position.set(Math.cos(a)*.32,.55+Math.sin(a)*.32,(i%2?.03:-.03));g.add(f);}
+  flowerRing(g,.42,8,.08);putH(g,"n_Bush_Common_Flowers",-.32,.3,0,.14);putH(g,"n_Bush_Common_Flowers",.32,.3,0,.14);};
+DECO.arbol_navidad=g=>{const p=new THREE.Mesh(new THREE.CylinderGeometry(.44,.46,.04,24),mat("snowb",{color:"#f4f7fb"}));p.position.y=.02;g.add(p);cy(g,.05,.06,.12,mat("trunk",{color:"#6b4428"}),0,.04,0,8);
+  const G=mat("xtree",{color:"#2f7a45",roughness:.9});for(let i=0;i<4;i++){const c=new THREE.Mesh(new THREE.ConeGeometry(.36-i*.07,.3,12),G);c.position.y=.28+i*.18;c.castShadow=true;g.add(c);}
+  const cols=["#e0604e","#f2c443","#2f7fd6","#ffffff"];for(let i=0;i<18;i++){const a=i*2.4,h=.2+(i/18)*.62,r=(.33-(h-.2)*.38),b=new THREE.Mesh(new THREE.SphereGeometry(.025,8,6),nightMat(mat("xb"+(i%4),{color:cols[i%4],emissive:cols[i%4],emissiveIntensity:.15}),.15,1.5));b.position.set(Math.cos(a)*r,h,Math.sin(a)*r);g.add(b);}
+  const st=new THREE.Mesh(starGeo(),mat("starGold",{color:"#ffd34d",metalness:.4,roughness:.3,emissive:"#b07a00",emissiveIntensity:.45}));st.position.y=1.0;g.add(st);lampGlow(g,0,1.0,0,.6,0);
+  for(const [x,z,c] of [[.26,.2,"#e0604e"],[-.24,.24,"#2f7fd6"],[.1,.32,"#3f8a5a"]]){bx(g,.1,.08,.1,mat("gift"+c,{color:c}),x,.04,z);bx(g,.11,.015,.02,mat("gold",{}),x,.12,z);}};
+DECO.sombrillas=g=>{bx(g,.92,.02,.92,mat("sandb",{color:"#f2e2b8",roughness:1}),0,0,0);putH(g,"detail_parasol_a",-.2,-.1,0,.55);putH(g,"detail_parasol_a",.25,.15,1,.5);
+  for(const [x,z,c] of [[-.2,.25,"#e0604e"],[.25,-.25,"#2f7fd6"]]){const t=bx(g,.14,.02,.3,mat("towel"+c,{color:c}),x,.02,z);t.rotation.y=.4;}const ball=new THREE.Mesh(new THREE.SphereGeometry(.05,12,10),mat("bball",{color:"#f2c443"}));ball.position.set(.05,.07,-.32);g.add(ball);};
+DECO.fonda=g=>{bx(g,.92,.015,.92,mat("gravel",{map:stoneTex("#e3dccb"),color:"#f0ead9"}),0,0,0);const W=mat("fwood",{map:woodTex("#8a6440")});for(const [x,z] of [[-.38,-.3],[.38,-.3],[-.38,.3],[.38,.3]])cy(g,.02,.02,.5,W,x,0,z,6);
+  const roof=bx(g,.86,.03,.7,mat("fondaRoof",{color:"#c9a66b",roughness:1}),0,.5,0);roof.rotation.z=.05;bx(g,.6,.2,.12,W,0,0,-.2);
+  const fl=["#d52b1e","#ffffff","#0039a6"];for(let i=0;i<9;i++){const f=bx(g,.07,.06,.005,mat("chf"+(i%3),{color:fl[i%3]}),-.36+i*.09,.42,.36);}const sg=signMesh("FONDA","#d52b1e","#fff",.36,.09);sg.position.set(0,.56,.37);g.add(sg);};
+DECO.calabaza=g=>{bx(g,.9,.015,.9,mat("leafb",{color:"#a07a3a",roughness:1}),0,0,0);const O=mat("pump",{color:"#e8782a",roughness:.6});for(let i=0;i<8;i++){const s=new THREE.Mesh(new THREE.SphereGeometry(.2,14,10),O);s.scale.set(.55,1,1);s.position.set(Math.cos(i/8*Math.PI*2)*.11,.22,Math.sin(i/8*Math.PI*2)*.11);s.rotation.y=-i/8*Math.PI*2;s.castShadow=true;g.add(s);}
+  cy(g,.03,.04,.12,mat("stem",{color:"#4f7a2a"}),0,.4,0,8);const face=nightMat(mat("pface",{color:"#3a2410",emissive:"#ffb02e",emissiveIntensity:.1}),.1,1.6);for(const x of [-.08,.08]){const e=new THREE.Mesh(new THREE.ConeGeometry(.035,.05,3),face);e.rotation.x=Math.PI/2;e.position.set(x,.27,.215);g.add(e);}
+  const m=bx(g,.16,.03,.01,face,0,.15,.22);};
+/* estilos */
+(function(){const st=document.createElement("style");st.textContent=`
+.mobj .item b svg,.mobj h4 svg{width:18px;height:18px;vertical-align:-3px}.awl{display:grid;gap:7px;margin:4px 0 12px}.awi{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;padding:8px 10px;border:2px solid var(--line);border-radius:14px;background:var(--paper2)}.awi span{font-size:22px;display:grid;place-items:center}.awi svg{width:28px;height:28px}.awi small{display:block;color:var(--muted);font-size:12.5px}
+.rkbd{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}.rkbd span{font:700 11px/1 var(--f-body);padding:3px 6px;border-radius:8px;border:1.5px solid var(--line);background:#fff}.rkt{background:#fff3c4!important}.rkh{background:#dff3e3!important}
+.brr{position:absolute;transform:translate(-50%,-100%);pointer-events:none;font:800 12px/1 var(--f-display);color:#fff;background:rgba(29,41,68,.72);padding:4px 8px;border-radius:10px;white-space:nowrap}
+.evbox{margin:4px 0 12px;padding:10px;border:2px solid var(--line);border-radius:16px;background:linear-gradient(135deg,#ffe9f2,#fff8e1)}.evhd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}.evhd b{font:800 16px var(--f-display)}.evhd small{color:var(--muted)}
+.evms{display:grid;gap:6px}.evm{display:grid;grid-template-columns:minmax(0,1fr) 90px auto auto;gap:8px;align-items:center;font-size:13px}.evm.ok{opacity:.7}.evm b{color:var(--green)}
+.evpz{display:grid;grid-template-columns:56px 1fr;gap:10px;align-items:center;margin-top:8px;padding:6px;border-radius:12px;background:#fff;border:1.5px solid var(--line)}.evpz img{width:56px;height:56px}.evpz small{color:var(--muted);font-size:11.5px}.evpz b{display:block}.evpz span{font-size:12px;color:var(--muted)}
+@media (max-width:560px){.evm{grid-template-columns:1fr auto;}.evm .pbar{grid-column:1/-1}}
+`;document.head.appendChild(st);})();
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(a==="pwaInstall"){e.stopPropagation();closeModal();installApp();}
+  else if(a==="helpAsk"){e.stopPropagation();helpAsk(b.dataset.r==="steel"?"steel":"mat");}
+  else if(a==="helpShare"){e.stopPropagation();const sh=PWA.share;if(!sh)return;if(navigator.share)navigator.share(sh).catch(()=>{});else{try{navigator.clipboard.writeText(sh.text+" "+sh.url);toast("Mensaje copiado: pégalo en WhatsApp o donde quieras.",3500);}catch(err){}}}
+  else if(a==="helpGive"){e.stopPropagation();helpGive();}
+  else if(a==="mobjClaim"){e.stopPropagation();mobjClaim(+b.dataset.i);}
+  else if(a==="evClaim"){e.stopPropagation();evClaim(+b.dataset.i);}},true);
+
+/* barra lateral: en pantallas bajas los botones se achican para que quepan todos */
+setInterval(()=>{const s=$("#side");if(!s||s.hidden)return;const top=s.getBoundingClientRect().top,btns=[...s.querySelectorAll(".sb")].filter(b=>!b.hidden&&b.offsetParent!==null),n=btns.length;if(!n)return;
+  const avail=innerHeight-top-82,per=avail/n,sz=per>=66?"":Math.max(36,Math.floor(per-12))+"px";if(s._sz===sz)return;s._sz=sz;s.style.gap=sz?"10px":"";
+  for(const b of btns){b.style.width=b.style.height=sz;const v=b.querySelector("svg");if(v)v.style.width=v.style.height=sz?Math.round(parseInt(sz)*.52)+"px":"";}},700);
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
   const r0=rightOf(path[1][0]-path[0][0],path[1][1]-path[0][1]),c0=cellC(...path[0]);pts.push({p:new V3(c0.x+r0[0]*off,.02,c0.z+r0[1]*off)});
