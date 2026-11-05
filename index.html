@@ -6689,7 +6689,6 @@ function openRes(r){modalFn=()=>openRes(r);let h="";
     `<div class="note">Se usan en edificios grandes, para mejorar la Municipalidad, comprar islas y reparar.</div><h4 class="rnh">Cómo conseguirlos</h4><div class="list">`+
     rnWay("logs","Aserradero",`Produce ${a.mat} materiales cada ${dur(a.t)}. Tócalo para recogerlos (1 energía). <b>Es la forma principal.</b>`,rnState("aserradero"))+
     rnWay("gem","Recompensa diaria","Uno de los días de la racha regala materiales. Entra todos los días.",`<button class="btn sm" data-act="daily">Ver</button>`)+
-    rnWay("trash","Planta de reciclaje","Convierte la basura de los depósitos en materiales.",rnState("reciclaje"))+
     rnWay("bus","Estación de tren","Cada tren trae mercadería o materiales.",rnState("estacion"))+`</div>`;}
   else if(r==="merc"){const np=rnHave("parcela");
     h=head(`${ICON("crate")} Mercadería`,`Tienes ${fmt(S.merc)} de ${fmt(storeCap())} · productos para tus locales`)+
@@ -7373,10 +7372,167 @@ const starSteel=o=>(SVC[o.k]||o.k==="central"||o.k==="reciclaje")?[0,10,25][o.s|
 {const _or=openRes;openRes=function(r){if(r!=="steel")return _or(r);modalFn=()=>openRes(r);
   openModal(head(`${ICON("steel")} Acero`,`Tienes ${fmt(S.steel||0)} · para las obras grandes`)+`<div class="note">Se usa en las torres, el estadio, el hospital, la universidad, la central y para mejorar los servicios a ★★ y ★★★.</div><h4 class="rnh">Cómo conseguirlo</h4><div class="list">`+
     rnWay("trash","Planta de reciclaje","Los camiones le llevan basura de los depósitos y la convierte en acero (6 de basura = 1 acero).",rnState("reciclaje"))+
-    rnWay("bus","Tren de carga","Elige \"Carga de acero\" en la estación.",rnState("estacion"))+rnWay("anchor","Barcos del puerto","Algunos barcos pagan con acero.",rnState("muelle"))+`</div>`);};}
+    rnWay("bus","Tren de carga","Elige \"Carga de acero\" en la estación.",rnState("estacion"))+rnWay("anchor","Barcos del puerto","Con reputación 3 del puerto, cada barco completo te paga acero.",rnState("muelle"))+`</div>`);};}
 setTimeout(()=>{const el=$("#hSteelB");if(el){el.dataset.act="rinfo";el.dataset.r="steel";el.setAttribute("role","button");el.style.cursor="pointer";}hud&&S&&hud();},500);
 /* tren: opción de carga de acero desde nivel 7 */
 TR_C.steel={n:"Carga de acero",d:"Trae acero para obras grandes.",ic:"steel"};
+
+/* ---- PUERTO 2.0: barcos de 2 h, cargas parciales, premio visible, colección y reputación ---- */
+const PORT_PAY={merc:15,mat:40,steel:60};
+const PORT_RES={merc:["crate","Mercadería","Se consigue cosechando las parcelas."],mat:["logs","Materiales","Se consiguen en el Aserradero."],steel:["steel","Acero","Sale de la Planta de reciclaje."]};
+const PORT_REP=[0,2,5,9,14];/* barcos completos para cada nivel de reputación */
+const PORT_COLL=[["estatua",1],["jardin",1],["anillo",1],["velero",2],["mercado_pez",2],["ancla",3],["faro_ant",4],["pirata",5]];
+const PORT_STAY=2*3600000,PORT_BACK=3600000;
+/* objetos exclusivos nuevos (solo los traen los barcos) */
+def("especial",[
+  {id:"velero",name:"Velero en exhibición",w:1,special:true,port:true,b:10,r:3},
+  {id:"mercado_pez",name:"Mercado de pescado",w:1,special:true,port:true,b:11,r:3},
+  {id:"ancla",name:"Ancla gigante",w:1,special:true,port:true,b:11,r:3},
+  {id:"faro_ant",name:"Faro antiguo",w:1,special:true,port:true,b:13,r:4},
+  {id:"pirata",name:"Barco pirata",w:1,special:true,port:true,b:15,r:4},
+  {id:"monumento_oro",name:"Monumento dorado del puerto",w:1,special:true,port:true,b:18,r:5}
+]);
+CAT.muelle.desc="Va en la orilla. Llegan barcos que compran tu mercadería y materiales, y traen objetos exclusivos que no se consiguen de otra forma.";
+const repOf=()=>{const n=(S.port&&S.port.n)||0;let r=1;for(let i=1;i<PORT_REP.length;i++)if(n>=PORT_REP[i])r=i+1;return r;};
+const repMul=()=>1+.05*(repOf()-1);
+const portHas=k=>!!((S.pcoll&&S.pcoll[k])||(S.inv[k]>0)||Object.values(OBJ).some(o=>o.k===k));
+function portPrize(gold){const rep=repOf(),all=PORT_COLL.map(c=>c[0]),open=PORT_COLL.filter(c=>c[1]<=rep).map(c=>c[0]);
+  const miss=(gold?all:open).filter(k=>!portHas(k));if(miss.length&&(gold||Math.random()<.7))return gold?miss[0]:miss[Math.floor(Math.random()*miss.length)];
+  return open[Math.floor(Math.random()*open.length)];}
+function portOrders(gold){const L=S.lvl,r5=v=>Math.max(5,Math.round(v/5)*5),m=gold?1.3:1,rep=repOf();
+  const o=[{ty:"merc",q:r5((25+L*8)*m)},{ty:"mat",q:r5((6+L*2)*m)}];
+  if(rep>=2&&L>=7&&Math.random()<.45)o.push({ty:"steel",q:r5((4+L*.8)*m)});else if(Math.random()<.5)o.push({ty:"merc",q:r5((35+L*10)*m)});else o.push({ty:"mat",q:r5((9+L*3)*m)});
+  o.forEach(x=>{x.got=0;x.done=false;});return o;}
+function portMigrate(p){if(p.orders)for(const o of p.orders){if(o.got==null)o.got=o.done?o.q:0;}if(p.state==="docked"&&!p.prize)p.prize=portPrize(false);if(p.n==null)p.n=(S.stats&&S.stats.ship)||0;}
+portTick=function(){const p=S.port;if(!p||(typeof VISIT!=="undefined"&&VISIT))return;const t=NOW(),po=portObj();if(!po||po.build)return;portMigrate(p);
+  if(p.state==="away"&&t>=p.next){const gold=Math.random()<.06+.03*repOf();p.gold=gold;p.orders=portOrders(gold);p.prize=portPrize(gold);p.state="docked";p.arr=t;p.leave=t+PORT_STAY;p.paid=0;
+    if(typeof sfx==="function")sfx("ship");toast(gold?"✨ ¡Llegó un BARCO DORADO al puerto! Trae un premio raro y 3 diamantes.":"🚢 ¡Llegó un barco al puerto! Se queda 2 horas.",4500);}
+  else if(p.state==="docked"&&t>=p.leave){p.state="away";p.depT=t;p.next=t+PORT_BACK;p.gold=false;toast("El barco zarpó. El próximo llega en 1 hora.",3500);}};
+function portFinish(p){const gold=!!p.gold,rep0=repOf(),bon=Math.round((p.paid||0)*.5),g=gold?3:1,k=p.prize;
+  S.coins+=bon;S.gems+=g;S.inv[k]=(S.inv[k]||0)+1;S.pcoll=S.pcoll||{};const isNew=!S.pcoll[k];S.pcoll[k]=1;let st=0;if(rep0>=3&&S.lvl>=7){st=5+rep0*3;S.steel=(S.steel||0)+st;}
+  p.n=(p.n||0)+(gold?2:1);stat("ship");p.state="away";p.depT=NOW();p.next=NOW()+PORT_BACK;p.gold=false;
+  const rep1=repOf();bonus(gold?"¡Barco dorado completo!":"¡Barco completo!");popup(portPos(),"+"+fmt(bon),"#b88a12",1.9);
+  let msg=`Premio: ${CAT[k].name}${isNew?" (¡nuevo en tu colección!)":""}, ${g} ${g>1?"diamantes":"diamante"} y ${fmt(bon)} de bono${st?` y ${st} de acero`:""}. Colócalo desde Construir → Especiales.`;
+  if(rep1>rep0)msg+=` ⭐ ¡Tu puerto subió a reputación ${rep1}!`;
+  if(PORT_COLL.every(c=>S.pcoll[c[0]]||portHas(c[0]))&&!S.pcollDone){S.pcollDone=1;S.inv.monumento_oro=(S.inv.monumento_oro||0)+1;S.titles=S.titles||[];if(!S.titles.includes("capitan"))S.titles.push("capitan");
+    setTimeout(()=>{bonus("¡Colección del puerto completa!");toast("Completaste la colección: ganaste el Monumento dorado y el título «Capitán del puerto».",6000);},2600);}
+  toast(msg,6500);checkQuests();}
+deliver=function(i){const p=S.port;if(!p||p.state!=="docked")return;const o=p.orders[i];if(!o||o.done)return;
+  const key=o.ty==="merc"?"merc":o.ty==="mat"?"mat":"steel",have=Math.floor(S[key]||0),n=Math.min(have,o.q-o.got);
+  if(n<=0){openRes(key);return;}
+  S[key]-=n;o.got+=n;const c=Math.round(n*PORT_PAY[o.ty]*repMul());S.coins+=c;p.paid=(p.paid||0)+c;addXP(Math.max(1,Math.round(n/2)));popup(portPos(),"+"+fmt(c),"#b88a12",1.5);if(typeof sfx==="function")sfx("coin");
+  if(o.got>=o.q){o.done=true;}
+  if(p.orders.every(q=>q.done))portFinish(p);
+  hud();save();openPort();};
+/* ---- menú del puerto ---- */
+const portStars=r=>"★".repeat(r)+"☆".repeat(5-r);
+const REP_TXT=["Barcos con pedidos de mercadería y materiales.","+5% de pago · pedidos de acero (nivel 7) · Velero y Mercado de pescado.","+10% de pago · más barcos dorados · el barco te paga acero · Ancla gigante.","+15% de pago · Faro antiguo.","+20% de pago · Barco pirata."];
+function portRepHtml(){const r=repOf(),n=(S.port&&S.port.n)||0,nx=PORT_REP[r];
+  return `<div class="isec"><h4>${ICON("star")} Reputación del puerto</h4><div class="prog"><div class="ptrep"><b class="ptstars">${portStars(r)}</b><span>Nivel ${r}</span></div>`+
+  (nx!=null?`<div class="pbar"><i style="width:${Math.min(100,(n-PORT_REP[r-1])/(nx-PORT_REP[r-1])*100)}%"></i></div><small>${n-PORT_REP[r-1]} de ${nx-PORT_REP[r-1]} barcos para el nivel ${r+1} (el dorado cuenta doble)</small>`:`<small>¡Reputación máxima!</small>`)+
+  `<small><b>Ahora:</b> ${REP_TXT[r-1]}</small>${r<5?`<small><b>Próximo:</b> ${REP_TXT[r]}</small>`:""}</div></div>`;}
+function portCollHtml(){const got=PORT_COLL.filter(c=>portHas(c[0])).length,r=repOf();
+  return `<div class="isec"><h4>${ICON("trophy")} Colección del puerto · ${got} de 8</h4><div class="ptcoll">`+PORT_COLL.map(([k,rq])=>{const h=portHas(k);let img="";try{img=thumb(k);}catch(e){}
+    return `<div class="ptc${h?" on":""}" title="${CAT[k].name}"><img src="${img}" alt=""><small>${h?CAT[k].name:rq>r?`Reputación ${rq}`:"???"}</small></div>`;}).join("")+
+  `</div><small class="ptnote">Junta los 8 y gana el <b>Monumento dorado</b> y el título <b>«Capitán del puerto»</b> en el ranking.</small></div>`;}
+openPort=function(){modalFn=openPort;const p=S.port,po=portObj();
+  const hero=(t,sub,gold)=>`<div class="ihero${gold?" ptgold":""}" style="--c1:${gold?"#fff3c4":"#d9ecff"};--c2:${gold?"#d9a520":"#2f7fd6"}"><div class="ithumb">${(()=>{try{return `<img src="${thumb("muelle")}" alt="">`;}catch(e){return "";}})()}</div><div class="ihd"><span class="ichip">Puerto</span><h2>${t}</h2><div class="isub"><span>${sub}</span></div></div><button class="x" data-act="close" aria-label="Cerrar">×</button></div>`;
+  if(!po){openModal(hero("Todavía no tienes muelle","Nivel 6")+`<div class="note">Construye el <b>Muelle</b> en la orilla (Construir → Especiales, nivel 6). Los barcos compran tu mercadería y materiales a buen precio y traen <b>objetos exclusivos</b> que no se consiguen de otra forma.</div>`+portCollHtml());return;}
+  if(!p){openModal(hero("Puerto en obra","")+`<div class="note">Termina el muelle para que lleguen barcos.</div>`);return;}portMigrate(p);
+  let body="";
+  if(p.state==="docked"){const left=Math.max(0,p.leave-NOW()),fr=left/PORT_STAY,k=p.prize,isNew=!portHas(k);let img="";try{img=thumb(k);}catch(e){}
+    const done=p.orders.filter(o=>o.done).length,st=repOf()>=3&&S.lvl>=7?5+repOf()*3:0;
+    body+=`<div class="pttime">${ICON("anchor")}<div><b>Zarpa en ${dur(Math.ceil(left/1000))}</b><div class="pbar"><i style="width:${fr*100}%;background:${fr<.2?"var(--bad)":"var(--blue)"}"></i></div></div></div>`;
+    body+=`<div class="ptprize${p.gold?" gold":""}"><div class="ptimg"><img src="${img}" alt=""></div><div><small>${p.gold?"✨ Premio del barco dorado":"Premio del barco"}</small><b>${CAT[k].name}</b><span>${isNew?"¡Nuevo para tu colección! · ":""}Solo lo traen los barcos · +${CAT[k].b}% cerca</span>`+
+      `<div class="ptchips"><span class="chip">${ICON("gem")} +${p.gold?3:1}</span><span class="chip">${ICON("coin")} +50% bono</span>${st?`<span class="chip">${ICON("steel")} +${st}</span>`:""}</div></div></div>`;
+    body+=`<h4 class="rnh">Pedidos · ${done} de 3 listos</h4><div class="ptords">`+p.orders.map((o,i)=>{const [ic,nm,how]=PORT_RES[o.ty],key=o.ty,have=Math.floor(S[key]||0),need=o.q-o.got,n=Math.min(have,need),pr=Math.round(PORT_PAY[o.ty]*repMul());
+      return `<div class="ptord${o.done?" done":""}"><span class="ti">${ICON(ic)}</span><div class="ptmid"><b>${o.q} de ${nm.toLowerCase()}</b><small>Paga ${pr} c/u · ${fmt(o.q*pr)} en total</small><div class="pbar"><i style="width:${o.got/o.q*100}%"></i></div><small>${o.done?"Cargado completo ✓":`Cargado ${o.got} de ${o.q} · tienes <b class="${have<need?"bad":""}">${fmt(have)}</b>`}</small></div>`+
+        `<div class="ptbtn">${o.done?`<span class="ptok">✓</span>`:n>0?`<button class="btn go sm" data-act="deliver" data-i="${i}">Cargar ${n}</button>`:`<button class="btn sm ptno" data-act="rinfo" data-r="${key}">Te falta</button>`}${o.done?"":`<button class="ptlink" data-act="rinfo" data-r="${key}">¿Cómo consigo?</button>`}</div></div>`;}).join("")+`</div>`;
+    body+=`<div class="note">Puedes cargar de a poco: cada carga se paga al tiro. Al completar los 3 pedidos el barco te deja el premio y un <b>50% extra</b> de todo lo que te pagó.</div>`;}
+  else{const left=Math.max(0,(p.next||0)-NOW()),fr=1-left/PORT_BACK;
+    body+=`<div class="pttime">${ICON("anchor")}<div><b>${left>0?`El próximo barco llega en ${dur(Math.ceil(left/1000))}`:"Un barco está por llegar…"}</b><div class="pbar"><i style="width:${Math.max(0,Math.min(1,fr))*100}%"></i></div></div></div>`+
+      `<div class="note">Mientras tanto junta <b>mercadería</b> (parcelas) y <b>materiales</b> (aserradero): el barco te los compra a buen precio. Cada barco se queda 2 horas.</div>`;}
+  openModal(hero(p.state==="docked"?(p.gold?"✨ Barco dorado":"Barco mercante"):"Puerto",`${portStars(repOf())} · ${(p.n||0)} barcos completados`,p.state==="docked"&&p.gold)+body+portRepHtml()+portCollHtml());};
+(function(){const st=document.createElement("style");st.textContent=`
+.pttime{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;padding:8px 12px;border:2px solid var(--line);border-radius:14px;background:#fff;margin:2px 0 10px}
+.pttime>svg{width:28px;height:28px;color:var(--blue)}.pttime b{display:block;margin-bottom:5px}
+.ptprize{display:grid;grid-template-columns:86px 1fr;gap:12px;align-items:center;padding:10px;border:2px solid var(--line);border-radius:16px;background:linear-gradient(135deg,#eaf4ff,#fff);margin-bottom:10px;position:relative;overflow:hidden}
+.ptprize.gold{background:linear-gradient(135deg,#fff3c4,#ffe08a 60%,#fff6d8)}.ptprize.gold::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.75) 45%,transparent 60%);animation:ptshine 2.6s infinite;pointer-events:none}
+@keyframes ptshine{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.ptimg{width:86px;height:86px;border-radius:14px;background:#fff;border:2px solid var(--line);display:grid;place-items:center;animation:ptbob 2.4s ease-in-out infinite}.ptimg img{width:80px;height:80px}
+@keyframes ptbob{50%{transform:translateY(-3px) rotate(-2deg)}}
+.ptprize small{color:var(--muted);font-weight:700}.ptprize b{display:block;font-size:17px}.ptprize span{display:block;font-size:12.5px;color:var(--muted)}
+.ptchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.ptchips .chip{display:inline-flex;align-items:center;gap:4px}.ptchips svg{width:14px;height:14px}
+.ptords{display:grid;gap:8px;margin-bottom:10px}
+.ptord{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border:2px solid var(--line);border-radius:14px;background:var(--paper2)}
+.ptord.done{background:#e3f6e6}.ptord .ti svg{width:30px;height:30px}.ptmid{display:grid;gap:3px;min-width:0}.ptmid small{color:var(--muted);font-size:12px}.ptmid .bad{color:var(--bad)}
+.ptbtn{display:grid;gap:4px;justify-items:center}.ptok{font:800 22px/1 var(--f-body);color:var(--green)}
+.ptno{background:#ffe3e0!important;color:var(--bad)!important}.ptlink{background:none;border:0;color:var(--blue);font:700 11.5px/1.1 var(--f-body);text-decoration:underline;cursor:pointer;padding:2px}
+.ptrep{display:flex;justify-content:space-between;align-items:center}.ptstars{color:#e0a20a;font-size:18px;letter-spacing:1px}
+.ptcoll{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.ptc{display:grid;justify-items:center;gap:2px;padding:5px 3px;border:2px solid var(--line);border-radius:12px;background:#fff;text-align:center}
+.ptc img{width:52px;height:52px;filter:brightness(0) opacity(.25)}.ptc.on img{filter:none}.ptc small{font-size:10.5px;line-height:1.1;color:var(--muted)}.ptc.on{background:#fff8e1}
+.ptnote{display:block;margin-top:6px;color:var(--muted)}
+.ihero.ptgold .ithumb{box-shadow:0 0 0 3px #ffd34d}
+`;document.head.appendChild(st);})();
+/* ---- barco: atraca por el lado del agua, llega y zarpa navegando; el dorado brilla ---- */
+let shipGold=null,shipFlag=null;
+function goldify(g){g.traverse(m=>{if(m.isMesh){const a=Array.isArray(m.material)?m.material:[m.material];const b=a.map(x=>{const c=x.clone();c.color=new THREE.Color(x.color).lerp(new THREE.Color("#ffcf3a"),.88);c.metalness=.55;c.roughness=.28;if(c.emissive)c.emissive=new THREE.Color("#8a5a00");c.emissiveIntensity=.35;return c;});m.material=Array.isArray(m.material)?b:b[0];}});}
+const sideOf=P=>[Math.sin(P.rot),Math.cos(P.rot)];
+updateShip=function(){const p=S.port,po=portObj();const hide=()=>{if(ship)ship.visible=false;if(shipGold)shipGold.visible=false;};
+  if(!p||!po||po.build){hide();return;}
+  const t=NOW(),dep=p.state==="away"&&p.depT&&t-p.depT<12000;if(p.state!=="docked"&&!dep){hide();return;}
+  if(!ship){ship=mk("ship_cargo_a");ship.scale.setScalar(.2);ship.traverse(c=>{if(c.isMesh)c.castShadow=true;});scene.add(ship);}
+  const wantGold=p.state==="docked"&&p.gold;if(wantGold&&!shipGold){shipGold=mk("ship_cargo_a");shipGold.scale.setScalar(.2);goldify(shipGold);for(let i=0;i<4;i++)lampGlow(shipGold,0,9,-4+i*3,7,0);scene.add(shipGold);}
+  const S0=wantGold?shipGold:ship,S1=wantGold?ship:shipGold;if(S1)S1.visible=false;
+  const P=cruisePlan(po);if(!P.dock){S0.visible=false;return;}S0.visible=true;const sd=sideOf(P),dock=new V3(P.dock.x-sd[0]*2.6,-.3,P.dock.z-sd[1]*2.6);
+  const far=P.far?new V3(P.far.x-sd[0]*2.6,-.3,P.far.z-sd[1]*2.6):null;
+  let f;if(dep){const e=Math.min(1,(t-p.depT)/12000);f=1-e*e;}else{const e=Math.min(1,(t-p.arr)/10000);f=1-Math.pow(1-e,3);}
+  if(far){S0.position.lerpVectors(far,dock,f);const dx=dock.x-far.x,dz=dock.z-far.z,hd=Math.atan2(dx,dz),tt=Math.max(0,Math.min(1,(f-.75)/.25));let da=((P.rot-hd+Math.PI*3)%(Math.PI*2))-Math.PI;S0.rotation.y=hd+da*tt+(dep&&f<.75?Math.PI:0);}
+  else{S0.position.copy(dock);S0.rotation.y=P.rot;S0.scale.setScalar(.2*Math.max(.01,f));}
+  S0.position.y=-.3+Math.sin(performance.now()/800)*.025;S0.rotation.z=Math.sin(performance.now()/1100)*.015;};
+/* el crucero se corre un poco para dejar sitio al carguero */
+{const _uc=updateCruise;updateCruise=function(){_uc();if(cruiseShip&&cruiseShip.visible&&CR2.dock){const sd=sideOf(CR2);cruiseShip.position.x+=sd[0]*1.6;cruiseShip.position.z+=sd[1]*1.6;}};}
+/* ---- antes de tener puerto: un barco pasa por el horizonte ---- */
+const HZ={m:null,a:null,b:null,t0:0};
+function hzRoute(){const tx=cam.tx||0,tz=cam.tz||0;const D=[[1,0],[-1,0],[0,1],[0,-1],[.7,.7],[-.7,.7],[.7,-.7],[-.7,-.7]];let best=null;
+  for(const d of D){for(let k=6;k<=45;k+=1.5){const x=tx+d[0]*k,z=tz+d[1]*k;if(!deepAt(x,z))continue;const cx=x+d[0]*5,cz=z+d[1]*5,s=[-d[1],d[0]];let ok=true;
+      for(let t=-22;t<=22&&ok;t+=2)if(!deepAt(cx+s[0]*t,cz+s[1]*t))ok=false;if(ok&&(!best||k<best.k))best={k,a:new V3(cx-s[0]*22,-.32,cz-s[1]*22),b:new V3(cx+s[0]*22,-.32,cz+s[1]*22)};break;}}return best;}
+setInterval(()=>{if(!S||(typeof VISIT!=="undefined"&&VISIT))return;const t=NOW();
+  if(HZ.m&&HZ.m.visible){const e=(t-HZ.t0)/45000;if(e>=1){HZ.m.visible=false;return;}HZ.m.position.lerpVectors(HZ.a,HZ.b,e);return;}
+  if(portObj()||S.lvl<3)return;if(!S.hzNext){S.hzNext=t+60000;return;}if(t<S.hzNext)return;S.hzNext=t+15*60000;
+  const r=hzRoute();if(!r)return;if(!HZ.m){HZ.m=mk("ship_cargo_a");HZ.m.scale.setScalar(.2);scene.add(HZ.m);}HZ.a=r.a;HZ.b=r.b;HZ.t0=t;HZ.m.visible=true;HZ.m.position.copy(r.a);HZ.m.rotation.y=Math.atan2(r.b.x-r.a.x,r.b.z-r.a.z);
+  toast(S.lvl>=6?"🚢 Un barco mercante pasa frente a tu costa. Construye el Muelle para comerciar con ellos y conseguir objetos exclusivos.":"🚢 Un barco mercante pasa frente a tu costa. En el nivel 6 podrás construir un Muelle y comerciar con ellos.",5500);},250);
+/* ---- decoraciones de los objetos exclusivos ---- */
+const darkW=()=>mat("pwdark",{map:woodTex("#4a3220")}),ironM=()=>mat("piron",{color:"#3b3f46",metalness:.7,roughness:.4});
+function poolBase(g,r){const p=new THREE.Mesh(new THREE.CylinderGeometry(r+.06,r+.08,.08,28),mat("stoneped",{map:stoneTex("#d6d0c4")}));p.position.y=.04;p.castShadow=p.receiveShadow=true;g.add(p);
+  const w=new THREE.Mesh(new THREE.CylinderGeometry(r,r,.01,28),mat("fwater",{color:"#6fb6d6",roughness:.15,metalness:.1,transparent:true,opacity:.85}));w.position.y=.085;g.add(w);(g.userData.anim=g.userData.anim||[]).push({t:"ripple",o:w});return w;}
+DECO.velero=g=>{poolBase(g,.4);const b=putH(g,"boat_sail_a",0,0,.6,.85);b.position.y=.07;bx(g,.06,.06,.06,darkW(),-.12,.07,.05);bx(g,.06,.06,.06,darkW(),.12,.07,-.05);
+  const sg=signMesh("VELERO","#2f7fd6","#fff",.34,.08);sg.position.set(0,.13,.47);g.add(sg);lamp(g,-.4,.4,.36);lamp(g,.4,-.4,.36);};
+DECO.mercado_pez=g=>{bx(g,.92,.02,.92,mat("pmfloor",{map:stoneTex("#c9d6dc")}),0,0,0);const s=putW(g,"t_stall",0,-.1,0,.62);
+  const fishM=mat("pfish",{color:"#8fb3c9",metalness:.4,roughness:.35});for(let i=0;i<5;i++){const f=new THREE.Mesh(new THREE.SphereGeometry(.035,10,8),fishM);f.scale.set(2.2,.7,1);f.position.set(-.18+i*.09,.245,.02);f.rotation.y=.3*(i%2?1:-1);g.add(f);}
+  for(const [x,z] of [[-.34,.3],[.34,.3]]){bx(g,.16,.1,.12,mat("picebox",{color:"#e9f4fb"}),x,0,z);bx(g,.15,.02,.11,mat("pice",{color:"#bfe3f2",roughness:.1}),x,.1,z);}
+  putH(g,"f_barrel",.38,-.32,0,.16);putH(g,"f_barrel",.25,-.38,1,.16);const sg=signMesh("🐟 PESCADO","#1f6fa8","#fff",.44,.1);sg.position.set(0,.62,.0);g.add(sg);lamp(g,-.42,-.42,.34);};
+DECO.ancla=g=>{const rb=putH(g,"rock_largeA",0,0,.4,.16);const I=ironM(),y0=.14;cy(g,.028,.028,.5,I,0,y0,0,10);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(.06,.016,8,18),I);ring.position.set(0,y0+.56,0);ring.castShadow=true;g.add(ring);
+  const stock=cy(g,.022,.022,.36,mat("pwood2",{map:woodTex("#7a5232")}),0,0,0,8);stock.rotation.z=Math.PI/2;stock.position.set(0,y0+.45,0);
+  const arc=new THREE.Mesh(new THREE.TorusGeometry(.2,.026,8,20,Math.PI),I);arc.rotation.z=Math.PI;arc.position.set(0,y0+.2,0);arc.castShadow=true;g.add(arc);
+  for(const s of [-1,1]){const fl=new THREE.Mesh(new THREE.ConeGeometry(.05,.11,4),I);fl.position.set(s*.2,y0+.24,0);fl.rotation.z=-s*.5;fl.castShadow=true;g.add(fl);}
+  const rope=new THREE.Mesh(new THREE.TorusGeometry(.1,.025,8,20),mat("prope",{color:"#c9a66b",roughness:1}));rope.rotation.x=Math.PI/2;rope.position.set(.3,.03,.3);g.add(rope);
+  flowerRing(g,.42,6,.08);};
+DECO.faro_ant=g=>{putH(g,"rock_largeA",0,0,0,.14);putH(g,"rock_smallA",.32,.3,1,.1);const R=mat("pfred",{color:"#c0392b"}),W=mat("pfwht",{map:stoneTex("#f2eee6")});
+  for(let i=0;i<5;i++){const r0=.17-i*.016;cy(g,r0-.016,r0,.16,i%2?R:W,0,.12+i*.16,0,18);}
+  const top=.12+5*.16;cy(g,.17,.13,.03,mat("pfgal",{color:"#2c3138",metalness:.5}),0,top,0,18);
+  const glass=cy(g,.08,.08,.12,mat("pfglass",{color:"#fff3b0",emissive:"#ffd54a",emissiveIntensity:.8,transparent:true,opacity:.85}),0,top+.03,0,12);
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(.1,.1,12),R);roof.position.set(0,top+.2,0);roof.castShadow=true;g.add(roof);lampGlow(g,0,top+.09,0,.9,0);};
+DECO.pirata=g=>{poolBase(g,.44);const H=new THREE.Group();H.position.y=.07;g.add(H);const D=darkW();
+  bx(H,.26,.12,.66,D,0,0,0);bx(H,.22,.04,.62,mat("pwdeck",{map:woodTex("#8a6440")}),0,.12,0);bx(H,.26,.12,.14,D,0,.12,-.26);const bow=new THREE.Mesh(new THREE.ConeGeometry(.13,.2,4),D);bow.rotation.x=Math.PI/2;bow.rotation.y=Math.PI/4;bow.position.set(0,.07,.42);H.add(bow);
+  const SA=mat("psail",{color:"#2b2b30",side:THREE.DoubleSide,roughness:1});for(const [z,h] of [[.12,.56],[-.12,.46]]){cy(H,.012,.014,h,D,0,.14,z,8);const s=new THREE.Mesh(new THREE.PlaneGeometry(.3,h*.55),SA);s.position.set(0,.14+h*.55,z);H.add(s);}
+  const fl=signMesh("☠","#111","#fff",.12,.08);fl.position.set(0,.76,.12);H.add(fl);
+  for(const s of [-1,1])for(const z of [-.12,.08]){const c=cy(H,.018,.018,.08,ironM(),0,0,0,8);c.rotation.z=Math.PI/2;c.position.set(s*.15,.07,z);}};
+DECO.monumento_oro=g=>{const p=new THREE.Mesh(new THREE.CylinderGeometry(.48,.48,.03,28),mat("plaza",{map:stoneTex("#d8d1c3")}));p.position.y=.015;p.receiveShadow=true;g.add(p);
+  const y=pedestal(g,.42,.08,3);const sh=putW(g,"ship_cargo_a",0,0,.5,.42);sh.position.y=y;goldify(sh);for(const [x,z] of [[.38,.38],[-.38,.38],[.38,-.38],[-.38,-.38]])lamp(g,x,z,.42);flowerRing(g,.32,6,.08);lampGlow(g,0,y+.2,0,.8,0);};
+/* metas del puerto */
+{const q=QUESTS.find(q=>q.k==="ship");if(q){q.t="Construye el puerto y completa tu primer barco";q.r={c:1500,g:1};}}
 
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
@@ -8012,7 +8168,7 @@ function statLine(it){
   return it.desc||"";}
 const TAB_N={casa:"Casas",local:"Comercio",granja:"Granja",servicios:"Servicios",comunidad:"Comunidad",ocio:"Panoramas",deco:"Decoración",especial:"Especiales"};
 function openShop(){modalFn=openShop;
-  const items=Object.values(CAT).filter(c=>c.cat===shopTab);
+  const items=Object.values(CAT).filter(c=>c.cat===shopTab&&!(c.port&&!(S.inv[c.id]>0)));
   const cards=items.map(it=>{const lock=!it.special&&S.lvl<it.req;const none=it.special&&!(S.inv[it.id]>0);const own=it.unique&&Object.values(OBJ).some(o=>o.k===it.id);
     return `<button class="card" data-act="buy" data-k="${it.id}" ${lock||none||own?"disabled":""}><img alt="" src="${thumb(it.id)}"><b>${it.name}</b>${lock?`<span class="lock">Nivel ${it.req}</span>`:own?`<span class="lock">Ya lo tienes</span>`:costHtml(it)}<small>${statLine(it)}</small></button>`;}).join("");
   openModal(head("Construir",`Población ${fmt(popNow())} / ${fmt(popCap())} · Mercadería ${fmt(S.merc)} / ${fmt(storeCap())}`)+
