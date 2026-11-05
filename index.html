@@ -4244,14 +4244,14 @@ function computeHappy(){utilCalc();jobsCalc();
   for(const o of houses()){
     const miss=[];let sc=40;
     if(near(o,d=>isLocal(d)&&d.sup,6))sc+=15;else miss.push("comercio");
-    if(S.lvl<3||near(o,d=>d.k==="comisaria",10))sc+=10;else miss.push("seguridad");
-    if(S.lvl<8||near(o,d=>d.k==="bomberos",10))sc+=10;else miss.push("bomberos");
+    if(S.lvl<3||covered(o,"comisaria"))sc+=10;else miss.push("seguridad");
+    if(S.lvl<8||covered(o,"bomberos"))sc+=10;else miss.push("bomberos");
     const green=Math.min(15,bonusAt(o)*1.5);sc+=green;if(green<5)miss.push("verde");
     {const ad=residentsOf(o).filter(isWorker);if(!ad.length||ad.every(p=>p.job))sc+=10;else{sc-=6;miss.push("trabajo");}}
     if(S.lvl>=3&&((o.trash||0)>=6||near(o,d=>(d.trash||0)>=8,2))){sc-=6;miss.push("basura");}if(near(o,d=>d.k==="paradero"&&live(d),6))sc+=2;if(near(o,d=>d.k==="cancha"&&live(d),10)&&houseNeeds(o).kids)sc+=4;if(near(o,d=>d.k==="balneario"&&live(d),10))sc+=4;if(hasK("estadio"))sc+=2;sc+=S.tax===-1?6:S.tax===1?-8:0;
     if(S.fed!==false)sc+=10;else{sc-=25;miss.push("comida");}
     const gr=S.utGrace>t;if(o.wOK===false){if(!gr)sc-=12;miss.push("agua");}else sc+=3;if(o.pOK===false){if(!gr)sc-=10;miss.push("luz");}else sc+=3;
-    if(S.lvl>=3){const hn=houseNeeds(o);if(hn.kids){if(near(o,d=>d.k==="escuela"&&live(d),12))sc+=5;else{sc-=8;miss.push("escuela");}}if(hn.health&&S.lvl>=4){if(near(o,d=>d.k==="consultorio"&&live(d),12)||near(o,d=>d.k==="hospital"&&live(d),24))sc+=5;else{sc-=8;miss.push("salud");}}}
+    if(S.lvl>=3){const hn=houseNeeds(o);if(hn.kids){if(near(o,d=>d.k==="escuela"&&live(d),12))sc+=5;else{sc-=8;miss.push("escuela");}}if(hn.health&&S.lvl>=4){if(healthCov(o))sc+=5;else{sc-=8;miss.push("salud");}}}
     if(typeof jamNear==="function"&&jamNear(o,2)){sc-=6;miss.push("trafico");}
     if(near(o,d=>d.k==="aserradero"||d.k==="bodega"||d.k==="generador",2)||near(o,d=>d.k==="central",3)){sc-=15;miss.push("molestia");}
     const [cx,cz]=centerXZ(o);for(const m of S.moods)if(Math.max(Math.abs(m.x-cx),Math.abs(m.z-cz))<=m.r)sc+=m.v;
@@ -4293,7 +4293,7 @@ function reqDone(r,o){switch(r.k){
   case "local":return near(o,d=>isLocal(d)&&d.sup,6);
   case "comida":return S.merc>=r.q;
   case "estrella":return (o.s||1)>r.s0;
-  case "seguridad":return near(o,d=>d.k==="comisaria",10);
+  case "seguridad":return covered(o,"comisaria");
   case "tienda":return near(o,d=>d.k===r.shop,8);}return false;}
 function reqTick(){
   const t=NOW(),r=S.req;
@@ -4307,7 +4307,7 @@ function reqTick(){
   const o=hs[Math.floor(Math.random()*hs.length)],opts=["verde","comida"];
   if(!near(o,d=>isLocal(d)&&d.sup,6))opts.push("local","local");
   if((o.s||1)<3&&S.lvl>=2)opts.push("estrella");
-  if(S.lvl>=3&&!near(o,d=>d.k==="comisaria",10))opts.push("seguridad","seguridad");
+  if(S.lvl>=3&&!covered(o,"comisaria"))opts.push("seguridad","seguridad");
   let wish=null;for(const rr of residentsOf(o)){const k2=rr.likes[0];if(unlockedShop(k2)&&!near(o,d=>d.k===k2,8)){wish={shop:k2,who:rr.name};break;}}if(wish)opts.push("tienda","tienda","tienda");
   const k=opts[Math.floor(Math.random()*opts.length)];
   const q=Math.min(storeCap(),Math.round((S.merc+20+S.lvl*5)/5)*5);
@@ -7089,8 +7089,7 @@ function covShow(k,extra){const key=k+"|"+(extra?extra.join(","):"")+"|"+Object.
     const r=new THREE.Mesh(new THREE.RingGeometry(.45*wOf(o),.55*wOf(o),28),ring);r.rotation.x=-Math.PI/2;r.position.set(x-M/2,.07,z-M/2);r.renderOrder=4;G.add(r);}}
 let COV_INFO=null;
 {const _oi2=openInfo;openInfo=function(o){_oi2(o);COV_INFO=o&&COV_K[o.k]?o.k:null;};}
-setInterval(()=>{if(!S)return;let k=null,extra=null;if(tool==="place"&&COV_K[placeK]){k=placeK;const c=ghostCell||hover;if(c){const w=CAT[placeK].w||1;extra=[c[0]+w/2,c[1]+w/2];}}
-  else if(COV_INFO&&!$("#modal").hidden)k=COV_INFO;else COV_INFO=null;if(k)covShow(k,extra);else if(COV.grp)covHide();},200);
+/* (intervalo de cobertura reemplazado en lote2) */
 /* botón en la ficha de comisaría y bomberos */
 {const _oi3=openInfo;openInfo=function(o){_oi3(o);if(!o||!COV_K[o.k]||$("#modal").hidden)return;const f=$("#modal .ifoot");const k=o.k,hs=Object.values(OBJ).filter(h=>{const it=CAT[h.k];return it&&live(h)&&(it.cat==="casa"||it.cat==="local");}),nc=hs.filter(h=>!covered(h,k)).length;
   if(f)f.insertAdjacentHTML("beforebegin",`<div class="note ${nc?"bad":"good"}">${nc?`<b>${nc} ${nc>1?"edificios quedan":"edificio queda"} sin ${k==="comisaria"?"policía":"bomberos"}</b> (anillo rojo en el mapa).`:"Todas tus casas y locales están cubiertos."} El área pintada en el suelo es la que protege: ${COV_R} casillas a la redonda.</div>`);};}
@@ -7265,6 +7264,70 @@ setInterval(()=>{if(!S||document.hidden)return;for(const bus of agents){if(!bus.
 /* ficha del paradero: personas esperando y viajes de hoy */
 {const _oi5=openInfo;openInfo=function(o){_oi5(o);if(!o||o.k!=="paradero"||$("#modal").hidden)return;const wait=agents.filter(a=>a.use&&a.use.o===o).length,trips=(S.busT&&S.busT.d===todayStr()&&S.busT.n[o.id])||0;
   const t=$("#modal .tiles");if(t)t.insertAdjacentHTML("beforeend",tile("people",wait,"esperando aquí")+tile("bus",trips,"bajaron aquí hoy"));};}
+
+/* ---- Policía, bomberos y salud con las mismas reglas: alcance por estrellas, área pintada, 30 s si no hay cobertura ---- */
+const SVC={comisaria:{base:10,grp:"policia"},bomberos:{base:10,grp:"bomberos"},consultorio:{base:10,grp:"salud"},hospital:{base:14,grp:"salud"},deposito:{base:22,grp:"basura"}};
+const SVC_G={policia:{ks:["comisaria"],c:0x2f7fd6,n:"policía"},bomberos:{ks:["bomberos"],c:0xe0553f,n:"bomberos"},salud:{ks:["consultorio","hospital"],c:0x2fae6a,n:"salud"},basura:{ks:["deposito"],c:0x8a6a3a,n:"recolección de basura"}};
+function svcR(o){const b=SVC[o.k];if(!b)return 0;const s=(o.s||1)-1;if(o.k==="hospital")return [14,18,24][s];if(o.k==="deposito")return [22,30,40][s];return b.base+4*s;}
+function svcNearest(o,ks){let best=null,bd=1e9;const [cx,cz]=centerXZ(o);for(const k of ks)for(const d of liveK(k)){const [dx,dz]=centerXZ(d),dd=Math.max(Math.abs(dx-cx),Math.abs(dz-cz));if(dd<=svcR(d)&&dd<bd){bd=dd;best=d;}}return best;}
+nearestStation=function(o,k){return svcNearest(o,[k]);};
+const healthCov=o=>!!svcNearest(o,["consultorio","hospital"]);
+/* área pintada: sirve para los 4 grupos y respeta el alcance de cada edificio */
+covShow=function(gk,extra,extraR){const G0=SVC_G[gk];if(!G0)return;const key=gk+"|"+(extra?extra.join(","):"")+"|"+Object.keys(OBJ).length+"|"+liveK(G0.ks[0]).map(o=>o.s||1).join("");if(COV.key===key)return;covHide();COV.key=key;
+  const G=new THREE.Group();COV.grp=G;scene.add(G);const fill=new THREE.MeshBasicMaterial({color:G0.c,transparent:true,opacity:.28,depthWrite:false,depthTest:false}),edge=new THREE.MeshBasicMaterial({color:G0.c,transparent:true,opacity:.95,depthWrite:false,depthTest:false});
+  const zones=[];for(const k of G0.ks)for(const o of liveK(k)){const [x,z]=centerXZ(o);zones.push([x,z,svcR(o)]);}if(extra)zones.push([extra[0],extra[1],extraR||10]);
+  for(const [cx,cz,R] of zones){const S2=R*2+1;const p=new THREE.Mesh(new THREE.PlaneGeometry(S2,S2),fill);p.rotation.x=-Math.PI/2;p.position.set(cx-M/2,.05,cz-M/2);p.renderOrder=20;G.add(p);
+    for(const [dx,dz,w,h] of [[0,-S2/2,S2,.12],[0,S2/2,S2,.12],[-S2/2,0,.12,S2],[S2/2,0,.12,S2]]){const e=new THREE.Mesh(new THREE.PlaneGeometry(w,h),edge);e.rotation.x=-Math.PI/2;e.position.set(cx-M/2+dx,.06,cz-M/2+dz);e.renderOrder=21;G.add(e);}}
+  const ring=new THREE.MeshBasicMaterial({color:0xd6453a,transparent:true,opacity:.9,depthWrite:false,depthTest:false});COV.miss=[];
+  for(const o of Object.values(OBJ)){const it=CAT[o.k];if(!it||!live(o)||!(it.cat==="casa"||it.cat==="local"))continue;const [x,z]=centerXZ(o);if(zones.some(([cx,cz,R])=>Math.max(Math.abs(cx-x),Math.abs(cz-z))<=R))continue;
+    const r=new THREE.Mesh(new THREE.RingGeometry(.45*wOf(o),.6*wOf(o),28),ring);r.rotation.x=-Math.PI/2;r.position.set(x-M/2,.07,z-M/2);r.renderOrder=22;G.add(r);COV.miss.push(o);}
+  G.userData.ring=ring;};
+const grpOf=k=>{for(const g in SVC_G)if(SVC_G[g].ks.includes(k))return g;return null;};
+/* reemplaza el chequeo de la portada de seguridad (ahora por grupo y con modo "Ver cobertura") */
+const COVM={g:null};
+setInterval(()=>{if(!S)return;let g=null,extra=null,er=10;
+  if(COVM.g)g=COVM.g;else if(tool==="place"&&SVC[placeK]){g=grpOf(placeK);const c=ghostCell||hover;if(c){const w=CAT[placeK].w||1;extra=[c[0]+w/2,c[1]+w/2];er=SVC[placeK].base;}}
+  else if(COV_INFO&&!$("#modal").hidden)g=grpOf(COV_INFO);else COV_INFO=null;
+  if(g)covShow(g,extra,er);else if(COV.grp)covHide();if(COV.grp&&COV.grp.userData.ring)COV.grp.userData.ring.opacity=.55+.4*Math.abs(Math.sin(performance.now()/300));},150);
+{const _oi6=openInfo;openInfo=function(o){_oi6(o);if(o&&SVC[o.k])COV_INFO=o.k;};}
+/* botón "Ver cobertura en el mapa" en la ficha */
+function covMode(gk,o){closeModal();COVM.g=gk;COVM.i=0;COV.key="";covShow(gk);const c=o?objCenter(o):null;if(c){cam.tx=c.x;cam.tz=c.z;}cam.dist=Math.max(cam.dist,(o?svcR(o):12)*2.2);covBar();}
+function covBar(){let b=$("#covBar");if(!COVM.g){if(b)b.remove();return;}if(!b){b=document.createElement("div");b.id="covBar";b.className="toy";document.body.appendChild(b);}
+  const n=(COV.miss||[]).length,G0=SVC_G[COVM.g];b.innerHTML=`<span><b>${G0.n[0].toUpperCase()+G0.n.slice(1)}</b> · ${n?`<b class="bad">${n} ${n>1?"edificios":"edificio"} sin cobertura</b>`:"todo cubierto ✓"}</span>${n?`<button class="btn sm gold" data-act="covNext">Ir al siguiente sin cubrir</button>`:""}<button class="btn sm go" data-act="covDone">Listo</button>`;}
+(function(){const st=document.createElement("style");st.textContent=`#covBar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 66px);z-index:7;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;padding:8px 10px 8px 14px;max-width:calc(100% - 20px)}#covBar .bad{color:var(--bad)}`;document.head.appendChild(st);})();
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(a==="covSee"){e.stopPropagation();const o=OBJ[+b.dataset.o];if(o)covMode(grpOf(o.k),o);}
+  else if(a==="covNext"){e.stopPropagation();const L=COV.miss||[];if(!L.length)return;const o=L[COVM.i++%L.length];const c=objCenter(o);cam.tx=c.x;cam.tz=c.z;cam.dist=Math.min(cam.dist,14);covBar();}
+  else if(a==="covDone"){e.stopPropagation();COVM.g=null;covHide();covBar();}},true);
+setInterval(()=>{if(COVM.g)covBar();},2000);
+/* la ficha: texto, alcance y botón (reemplaza la nota anterior) */
+{const _oi7=openInfo;openInfo=function(o){_oi7(o);if(!o||!SVC[o.k]||$("#modal").hidden)return;const m=$("#modal");m.querySelectorAll(".note").forEach(n=>{if(/El área pintada en el suelo/.test(n.textContent))n.remove();});
+  const g=grpOf(o.k),G0=SVC_G[g],hs=Object.values(OBJ).filter(h=>{const it=CAT[h.k];return it&&live(h)&&(it.cat==="casa"||it.cat==="local");});
+  const nc=g==="basura"?0:hs.filter(h=>!svcNearest(h,G0.ks)).length,f=m.querySelector(".ifoot");
+  if(f)f.insertAdjacentHTML("beforebegin",`<div class="note ${nc?"bad":"good"}">Alcance: <b>${svcR(o)} casillas</b>${(o.s||1)<3?` (sube a ${o.k==="hospital"?[14,18,24][o.s||1]:o.k==="deposito"?[22,30,40][o.s||1]:svcR(o)+4} con la próxima estrella)`:""}. ${nc?`<b>${nc} ${nc>1?"edificios quedan":"edificio queda"} sin ${G0.n}.</b>`:g==="basura"?"":"Todas tus casas y locales están cubiertos."}</div><div class="row"><button class="btn gold" data-act="covSee" data-o="${o.id}">🗺️ Ver cobertura en el mapa</button></div>`);};}
+/* felicidad usa el mismo alcance */
+/* (los chequeos de computeHappy se reemplazaron en el texto del juego por covered()/healthCov()) */
+/* seguro contra incendio: la restauración sale gratis */
+{const _rc2=repairCost;repairCost=function(o){if(o.burnt&&o.insF)return {c:0,mt:0};return _rc2(o);};}
+{const _rh2=refHtml;refHtml=function(o){const h=_rh2(o),it=CAT[o.k];if(!it||!(it.cat==="casa"||it.cat==="local")||o.build||o.dmg)return h;
+  if(o.insF)return h+`<div class="note good">Asegurado contra incendio: si se quema, la restauración sale gratis.</div>`;const c=insCost(o);
+  return h+`<div class="item"><div><b>Seguro contra incendio</b><small>Si se quema por no tener bomberos cerca, la restauración sale gratis. Se paga una vez.</small></div><div class="cost"><span class="${S.coins<c?"short":""}">${ICON("coin")}${fmt(c)}</span></div><button class="btn sm go" data-act="insureF" data-o="${o.id}" ${S.coins<c?"disabled":""}>Asegurar</button></div>`;};}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b||b.dataset.act!=="insureF")return;e.stopPropagation();const o=OBJ[+b.dataset.o];if(!o||o.insF)return;const c=insCost(o);if(S.coins<c){toast("Te faltan monedas.");return;}
+  S.coins-=c;o.insF=true;bonus("¡Asegurado!");hud();save();openInfo(o);},true);
+/* emergencias médicas: ambulancia si hay cobertura; si no, 30 s para llevarlo tú o el vecino se va */
+const MED={fx:null};
+function medFx(o){if(MED.fx){scene.remove(MED.fx);MED.fx=null;}if(!o)return;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:moodTex("🤒"),depthTest:false,transparent:true}));s.scale.set(.45,.45,1);const c=objCenter(o);s.position.set(c.x,(o.h||1)+.6,c.z);s.renderOrder=9;scene.add(s);MED.fx=s;}
+startMedica=function(){const hs=houses().filter(h=>!h.vac&&h.g);if(!hs.length||S.med)return;const sick=hs.filter(h=>residentsOf(h).some(p=>p.age>=65||p.age<3)),o=(sick.length?sick:hs)[Math.floor(Math.random()*(sick.length||hs.length))];
+  const ps=residentsOf(o),pp=ps.find(p=>p.age>=65||p.age<3)||ps[0];if(!pp)return;const st=svcNearest(o,["hospital","consultorio"]);
+  if(st){const ag=dispatch("ambulance",st,o,{siren:true,stay:5,onArrive:()=>{stat("pacientes");popup(objCenter(o),"¡Atendido!","#2f7fd6",1.5);news("vida",`La ambulancia atendió a ${pp.full} a tiempo. Ya está mejor.`,3);checkQuests();}});
+    toast(ag?`¡Emergencia médica! ${pp.name} ${pp.ap} se sintió mal. La ambulancia va en camino.`:`${pp.name} se sintió mal y lo atendieron a tiempo.`,4200);if(!ag){stat("pacientes");checkQuests();}save();return;}
+  S.med={oid:o.id,pid:pp.id||pp.full,name:`${pp.name} ${pp.ap}`,until:NOW()+30000};medFx(o);toast(`¡${pp.name} ${pp.ap} se siente mal y no hay consultorio ni hospital cerca! Toca su casa en 30 segundos para llevarlo tú.`,6000);save();};
+{const _act=activate;activate=function(o){if(S.med&&S.med.oid===o.id){if(!spend(1))return;const m=S.med;S.med=null;medFx(null);stat("pacientes");addXP(10);bonus("¡Lo llevaste a tiempo!");toast(`Llevaste a ${m.name} a atenderse. ¡Ya está mejor!`,3500);checkQuests();save();return;}return _act(o);};}
+setInterval(()=>{if(!S||!S.med)return;const o=OBJ[S.med.oid];if(!o){S.med=null;medFx(null);return;}if(!MED.fx)medFx(o);if(NOW()<S.med.until)return;
+  const m=S.med;S.med=null;medFx(null);const e=S.res&&S.res[o.id];if(e&&e.p&&e.p.length>1){e.p=e.p.filter(p=>(p.id||p.full)!==m.pid);}
+  const [x,z]=centerXZ(o);S.moods.push({x,z,r:8,v:-10,until:NOW()+15*60000});toast(`${m.name} se tuvo que ir de la ciudad para atenderse. Los vecinos piden un consultorio o un hospital cerca.`,6000);news("vida",`Sin atención médica cerca: ${m.name} se fue de ${S.name}.`,4);computeHappy();save();},1000);
+/* los vehículos de emergencia se demoran en los tacos */
+{const _ss2=stepSvc;stepSvc=function(ag,dt){if(dt>0&&ag.siren&&typeof JAMSET!=="undefined"&&JAMSET.size){const [x,z]=cellOfPos(ag.obj.position);if(inMap(x,z)&&JAMSET.has(idx(x,z)))dt*=.5;}return _ss2(ag,dt);};}
 
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
@@ -7986,9 +8049,9 @@ function openInfo(o){modalFn=()=>openInfo(o);const it=itemOf(o);const b=bonusAt(
   else if(it.b){tiles=tile("tree","+"+it.b+"%","arriendo y ventas")+tile("star",(it.r||2)+" casillas","alcance");extra=`<div class="note">Sube el arriendo y las ventas de los edificios cercanos. Las casas también lo cuentan como área verde.</div>`;}
   else if(it.desc)extra=`<div class="note">${it.desc}</div>`;
   if(it.cat!=="casa"&&slotsOf(o)>0)tiles+=tile("work",`${empOf(o)}/${slotsOf(o)}`,(PRODK(o)?`trabajadores · +${Math.round(20*(staffRate(o)||0))}%`:"trabajadores"),empOf(o)>=slotsOf(o)?"good":"");
-  const canStar=(it.cat==="casa"||it.cat==="local"||o.k==="aserradero")&&(o.s||1)<3;let up="";
+  const canStar=(it.cat==="casa"||it.cat==="local"||o.k==="aserradero"||(typeof SVC!=="undefined"&&!!SVC[o.k]))&&(o.s||1)<3;let up="";
   if(canStar){const sc={c:Math.round(it.cost*.6*(o.s||1)),mt:5+Math.round(it.cost/60)*(o.s||1)},ok=S.coins>=sc.c&&S.mat>=sc.mt;
-    up=`<div class="upg"><span class="stars">${"★".repeat((o.s||1)+1)}</span><div><b>Mejorar a ${(o.s||1)+1} estrellas</b><small>${o.k==="aserradero"?"+3 materiales en cada ciclo.":`+30% ${it.cat==="casa"?"de arriendo":"por cliente"} y más felicidad.`}</small></div><button class="btn gold" data-act="star" data-o="${o.id}" ${ok?"":"disabled"}><span class="cost">${costPill(sc)}</span></button></div>`;}
+    up=`<div class="upg"><span class="stars">${"★".repeat((o.s||1)+1)}</span><div><b>Mejorar a ${(o.s||1)+1} estrellas</b><small>${o.k==="aserradero"?"+3 materiales en cada ciclo.":o.k==="deposito"?"Más alcance, más capacidad y un camión más.":(typeof SVC!=="undefined"&&SVC[o.k])?"Más casillas de alcance para proteger más casas.":`+30% ${it.cat==="casa"?"de arriendo":"por cliente"} y más felicidad.`}</small></div><button class="btn gold" data-act="star" data-o="${o.id}" ${ok?"":"disabled"}><span class="cost">${costPill(sc)}</span></button></div>`;}
   const rh=refHtml(o);
   h=infoHero(o,it,sub)+(tiles?`<div class="tiles">${tiles}</div>`:"")+prog+(acts?`<div class="acts">${acts}</div>`:"")+extra+up+(rh?`<div class="isec"><h4>${ICON("hammer")} Protección</h4><div class="list">${rh}</div></div>`:"")+footHtml(o);
   openModal(h);}
