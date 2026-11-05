@@ -6165,12 +6165,12 @@ function useArrive(ag){const T=ag.useT;if(!T||!OBJ[T.o.id]||!T.o.g)return false;
 function swimArms(ag,tt){const u=ag.obj.userData;u.armL.rotation.x=Math.sin(tt*5)*2.2;u.armR.rotation.x=Math.sin(tt*5+Math.PI)*2.2;u.legL.rotation.x=Math.sin(tt*9)*.4;u.legR.rotation.x=-u.legL.rotation.x;}
 function useStep(ag,dt){const U=ag.use,o=U.o,ob=ag.obj,u=ob.userData,tt=performance.now()/1000+U.ph;if(!OBJ[o.id]||!o.g){useEnd(ag,true);return;}
   U.t-=dt;const sp=U.spot;
-  if(sp.t==="swim"){ob.position.y=-.6+Math.sin(tt*1.6)*.012;swimArms(ag,tt);ob.position.x=U.base.x+Math.sin(tt*.35)*.12;ob.position.z=U.base.z+Math.cos(tt*.27)*.08;ob.rotation.y+=dt*.25*Math.sin(tt*.2);}
+  if(sp.t==="swim"){ob.position.y=swimY(ag)+Math.sin(tt*1.6)*.012;swimArms(ag,tt);ob.position.x=U.base.x+Math.sin(tt*.35)*.12;ob.position.z=U.base.z+Math.cos(tt*.27)*.08;ob.rotation.y+=dt*.25*Math.sin(tt*.2);}
   else if(sp.t==="lie"){u.armL.rotation.x=Math.sin(tt*.4)>.85?-1.2:0;}
   else if(sp.t==="sit"){u.armL.rotation.x=u.armR.rotation.x=matchAt(o)&&Math.sin(tt*2.3)>.6?-2.6:-.4;if(matchAt(o))ob.position.y=sp.y-.085+Math.max(0,Math.sin(tt*3))*.012;}
   else if(sp.t==="play"){if(!U.tgt||ob.position.distanceTo(U.tgt)<.03){const r=sp.r||.22;U.tgt=spotW(o,sp,(Math.random()-.5)*2*r,(Math.random()-.5)*2*r);}
     const p=ob.position,dx=U.tgt.x-p.x,dz=U.tgt.z-p.z,d=Math.hypot(dx,dz),v=Math.min(d,dt*.5);if(d>1e-4){p.x+=dx/d*v;p.z+=dz/d*v;ob.rotation.y=Math.atan2(dx,dz);}
-    const gy=o.k==="balneario"?beachY(p.x,p.z):sp.y;if(gy<-.3){p.y=-.6;swimArms(ag,tt);}else{p.y=Math.max(gy,0)+.035+(o.k!=="balneario"?.005:0)+Math.max(0,Math.sin(tt*7))*.012;const sw=Math.sin(tt*12)*.8;u.legL.rotation.x=sw;u.legR.rotation.x=-sw;u.armL.rotation.x=-sw;u.armR.rotation.x=sw;}}
+    const gy=o.k==="balneario"?beachY(p.x,p.z):sp.y;if(gy<-.3){p.y=swimY(ag);swimArms(ag,tt);}else{p.y=Math.max(gy,0)+.035+(o.k!=="balneario"?.005:0)+Math.max(0,Math.sin(tt*7))*.012;const sw=Math.sin(tt*12)*.8;u.legL.rotation.x=sw;u.legR.rotation.x=-sw;u.armL.rotation.x=-sw;u.armR.rotation.x=sw;}}
   else{u.armR.rotation.x=Math.sin(tt*1.2)>.3?-1.4:0;}
   if(U.t<=0)useEnd(ag,false);}
 function useEnd(ag,gone){const U=ag.use;ag.use=null;if(U&&U.spot&&U.spot.by===ag)U.spot.by=null;poseReset(ag);const o=U&&U.o;
@@ -6184,7 +6184,7 @@ function useEnd(ag,gone){const U=ag.use;ag.use=null;if(U&&U.spot&&U.spot.by===ag
   if(s&&OBJ[s.id]&&s.g&&s.g.userData.spots&&!ag.work){const sp=pickSpot(s,ag);if(sp){sp.by=ag;const last=ag.pts[ag.pts.length-1].p;ag.useT={o:s,spot:sp,n:0};ag.inV={o:s,i0:ag.pts.length-1,gate:last.clone()};ag.pts.push(...venueIn(s,last,sp));}}return ok;};}
 {const _sp4=stepPed;stepPed=function(ag,dt){if(ag.use){if(typeof evacuated==="function"&&evacuated()){useEnd(ag,true);return;}if(QK&&QK.on)return;useStep(ag,dt);return;}
   _sp4(ag,dt);const V=ag.inV;if(V&&ag.pts&&ag.obj.visible&&!ag.use&&ag.i>=V.i0&&V.o.k==="balneario"){const p=ag.obj.position,gy=beachY(p.x,p.z);
-    if(gy<-.3){p.y=-.6;swimArms(ag,performance.now()/1000);}else{const c=[Math.floor(p.x+M/2),Math.floor(p.z+M/2)];p.y=Math.max(gy,-.3)+.035+(isLand(...c)&&cellsOf(V.o.x,V.o.z,2).some(([a,b])=>a===c[0]&&b===c[1])?.03:0);}}};}
+    if(gy<-.3){p.y=swimY(ag);swimArms(ag,performance.now()/1000);}else{const c=[Math.floor(p.x+M/2),Math.floor(p.z+M/2)];p.y=Math.max(gy,-.3)+.035+(isLand(...c)&&cellsOf(V.o.x,V.o.z,2).some(([a,b])=>a===c[0]&&b===c[1])?.03:0);}}};}
 {const _af=attractionFor;attractionFor=function(ag){if(!ag.fan&&(S.wx?S.wx.k:"sol")==="sol"&&!isNight()&&Math.random()<.16){const b=liveK("balneario").filter(o=>roadSide(o.x,o.z,wOf(o)));if(b.length)return b[Math.floor(Math.random()*b.length)];}return _af(ag);};}
 
 /* ---- Mover edificios ya construidos (gratis, conserva estrellas, vecinos y todo) ---- */
@@ -7048,10 +7048,7 @@ const BEND_FILL={geo:null};
 {const _ud=useDur;useDur=function(sp,ag,o){if(o&&o.k==="paradero")return 60+Math.random()*60;return _ud(sp,ag,o);};}
 {const _af2=attractionFor;attractionFor=function(ag){if(!ag.fan&&!ag.work&&busStops().length>=2&&Math.random()<.14){const b=busStops().filter(o=>o.g&&o.g.userData.spots&&o.g.userData.spots.some(spotFree));if(b.length)return b[Math.floor(Math.random()*b.length)];}return _af2(ag);};}
 /* cuando el micro se detiene en un paradero, suben los que esperan y bajan otros */
-setInterval(()=>{if(!S||document.hidden)return;for(const bus of agents){if(!bus.bus||!(bus.wait>0))continue;const cell=bus.path&&bus.path[bus.path.length-1];if(!cell)continue;
-  const st=busStops().find(o=>{const c=roadCellOf(o);return c&&c[0]===cell[0]&&c[1]===cell[1];});if(!st||bus.lastSt===st.id+":"+Math.round(bus.wait*0)+(bus.stopN||0))continue;bus.stopN=(bus.stopN||0)+1;bus.lastSt=st.id+":0"+bus.stopN;
-  let up=0;for(const a of agents)if(a.use&&a.use.o===st){useEnd(a,true);up++;}const down=Math.random()<.6?1+Math.floor(Math.random()*2):0;for(let k=0;k<down;k++)setTimeout(()=>spawnVisitor(st,null,false),400+k*500);
-  if(up||down)moodAt(objCenter(st).setY(.9),"🚌",1400);}},400);
+/* (reemplazado por pasajeros reales en lote1) */
 /* 3) globos de ánimo sobre la gente */
 const MOOD={tex:{},n:0};
 function moodTex(e){if(MOOD.tex[e])return MOOD.tex[e];MOOD.tex[e]=ctex("mood"+e,96,96,c=>{c.fillStyle="#ffffff";c.strokeStyle="#1d2944";c.lineWidth=6;c.beginPath();c.arc(48,42,34,0,7);c.fill();c.stroke();
@@ -7217,6 +7214,57 @@ accSync=async function(){if(!FB.user||!FB.db||ACC.asked||(typeof VISIT!=="undefi
   if(!data){ACC.synced=true;await accUpload(true);return;}
   toast(`Cargando tu ciudad ${top.city||""} (nivel ${top.lvl}) desde tu cuenta…`,3000);try{sessionStorage.setItem("vr_jl","1");}catch(e){}setTimeout(()=>accLoadRemote({data,ts:top.ts}),900);};
 {const _cpb=cityPush;cityPush=function(f){if(typeof ACC!=="undefined"&&(!ACC.synced||(S&&(S.lvl||1)<(ACC.bestLvl||0))))return Promise.resolve();return _cpb(f);};}
+
+/* ---- Crucero: atraca por el lado del agua y llega/sale navegando por mar ---- */
+const CR2={key:"",dock:null,far:null,rot:0};
+const deepAt=(x,z)=>beachY(x,z)<-.7;
+function cruisePlan(po){const key=po.id+","+po.x+","+po.z+","+(po.r||0);if(CR2.key===key)return CR2;CR2.key=key;CR2.dock=null;
+  const c=objCenter(po),D=[[0,1],[1,0],[0,-1],[-1,0]];let best=null;
+  for(const d of D){const side=[d[1],-d[0]];
+    for(let k=2.5;k<=9;k+=.5){const P=new V3(c.x+d[0]*k,-.35,c.z+d[1]*k);let ok=true;for(let s=-4;s<=4&&ok;s+=1){for(const w of [-.8,0,.8]){if(!deepAt(P.x+side[0]*s+d[0]*w,P.z+side[1]*s+d[1]*w)){ok=false;break;}}}
+      if(!ok)continue;
+      /* ruta de llegada: hacia mar abierto en la misma dirección, o a lo largo de la costa */
+      let far=null;for(const v of [d,side,[-side[0],-side[1]]]){let clear=true;for(let t=1;t<=45;t+=1){if(!deepAt(P.x+v[0]*t,P.z+v[1]*t)){clear=false;break;}}if(clear){far=new V3(P.x+v[0]*45,-.35,P.z+v[1]*45);break;}}
+      const score=k+(far?0:100);if(!best||score<best.score)best={score,dock:P,far,rot:Math.atan2(side[0],side[1])};break;}}
+  if(best){CR2.dock=best.dock;CR2.far=best.far;CR2.rot=best.rot;}return CR2;}
+updateCruise=function(){const c=S&&S.cruise,po=portObj();if(!c||c.state!=="docked"||!po||po.build){if(cruiseShip)cruiseShip.visible=false;return;}
+  if(!cruiseShip){cruiseShip=mk("ship_ocean_liner");cruiseShip.scale.setScalar(.2);cruiseShip.traverse(m=>{if(m.isMesh)m.castShadow=true;});scene.add(cruiseShip);for(let i=0;i<6;i++)lampGlow(cruiseShip,(i%2?1:-1)*2.2,7,-8+i*3.2,6,0);}
+  const P=cruisePlan(po);if(!P.dock){cruiseShip.visible=false;return;}cruiseShip.visible=true;
+  const e=Math.min(1,(NOW()-c.arr)/12000),k=1-Math.pow(1-e,3),le=c.leave-NOW()<12000?1-Math.max(0,(c.leave-NOW())/12000):0,f=k*(1-le);
+  if(P.far){cruiseShip.position.lerpVectors(P.far,P.dock,f);const dx=P.dock.x-P.far.x,dz=P.dock.z-P.far.z,head=Math.atan2(dx,dz),t=Math.max(0,Math.min(1,(f-.75)/.25));let da=((P.rot-head+Math.PI*3)%(Math.PI*2))-Math.PI;cruiseShip.rotation.y=head+da*t;}
+  else{cruiseShip.position.copy(P.dock);cruiseShip.rotation.y=P.rot;cruiseShip.scale.setScalar(.2*Math.max(.01,f));}
+  cruiseShip.position.y=-.35+Math.sin(performance.now()/900)*.02;};
+
+/* ---- Bañistas visibles (cabeza y hombros sobre el agua) ---- */
+function swimY(ag){if(ag._sy==null){const ob=ag.obj,rx=ob.rotation.x;ob.rotation.x=0;const b=new THREE.Box3().setFromObject(ob);ob.rotation.x=rx;const h=Math.max(.05,b.max.y-b.min.y);ag._sy=-.4-h*.55;}return ag._sy;}
+const SWIM_M={};function swimExtras(ag,on){const ob=ag.obj;if(ob.userData.swimX){ob.remove(ob.userData.swimX);ob.userData.swimX=null;}if(!on)return;
+  if(!SWIM_M.rip){SWIM_M.rip=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.55,depthWrite:false});SWIM_M.cols=["#ff5a5f","#ffd23f","#3fc1ff","#7ae582","#ff9ff3"].map(c=>new THREE.MeshStandardMaterial({color:c,roughness:.5}));}
+  const g=new THREE.Group(),sc=ob.scale.y||1,wl=(-.395-ob.position.y)/sc;g.position.y=wl;
+  const r=new THREE.Mesh(new THREE.RingGeometry(.09/sc,.11/sc,20),SWIM_M.rip);r.rotation.x=-Math.PI/2;g.add(r);g.userData.rip=r;
+  if(Math.random()<.4){const t=new THREE.Mesh(new THREE.TorusGeometry(.06/sc,.022/sc,8,16),SWIM_M.cols[Math.floor(Math.random()*5)]);t.rotation.x=Math.PI/2;g.add(t);}
+  ob.add(g);ob.userData.swimX=g;}
+{const _ps2=poseSet;poseSet=function(ag){_ps2(ag);const U=ag.use;if(U&&U.spot&&U.spot.t==="swim"){ag.obj.position.y=swimY(ag);swimExtras(ag,true);}};}
+{const _pr=poseReset;poseReset=function(ag){_pr(ag);if(ag.obj&&ag.obj.userData.swimX)swimExtras(ag,false);};}
+{const _us=useStep;useStep=function(ag,dt){_us(ag,dt);const U=ag.use;if(U&&U.spot&&U.spot.t==="swim"){const tt=performance.now()/1000+(U.ph||0);ag.obj.position.y=swimY(ag)+Math.sin(tt*1.6)*.012;
+  const X=ag.obj.userData.swimX;if(X){X.position.y=(-.395-ag.obj.position.y)/(ag.obj.scale.y||1);const r=X.userData.rip,k=1+((tt*.8)%1)*.8;r.scale.set(k,k,1);r.material.opacity=.55*(1-((tt*.8)%1));}}};}
+/* ---- Micro con pasajeros de verdad: suben, viajan y bajan en su paradero ---- */
+const BUSV={tex:{}};
+function busCountTex(n){if(BUSV.tex[n])return BUSV.tex[n];BUSV.tex[n]=ctex("busn"+n,128,64,c=>{c.fillStyle="#ffffff";c.strokeStyle="#1d2944";c.lineWidth=6;c.beginPath();c.roundRect?c.roundRect(4,4,120,56,26):c.rect(4,4,120,56);c.fill();c.stroke();c.fillStyle="#1d2944";c.font="bold 34px sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillText("🧍 "+n,64,34);});return BUSV.tex[n];}
+function busRiders(bus){if(!bus.riders)bus.riders=[];const n=bus.riders.length,ob=bus.obj;
+  if(!ob.userData.cnt){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:busCountTex(0),depthTest:false,transparent:true}));s.scale.set(.22,.11,1);s.position.y=.42;s.renderOrder=9;ob.add(s);ob.userData.cnt=s;
+    const hm=new THREE.MeshStandardMaterial({color:"#2b2f36",roughness:.8});ob.userData.heads=[];for(let i=0;i<8;i++){const h=new THREE.Mesh(new THREE.SphereGeometry(.022,8,6),hm);h.position.set(i<4?-.11:.11,.205,-.2+(i%4)*.13);h.visible=false;ob.add(h);ob.userData.heads.push(h);}}
+  ob.userData.cnt.material.map=busCountTex(n);ob.userData.cnt.visible=n>0;ob.userData.heads.forEach((h,i)=>h.visible=i<n);}
+const BUSST={};function busStat(st){const d=todayStr();if(!S.busT||S.busT.d!==d)S.busT={d,n:{}};S.busT.n[st.id]=(S.busT.n[st.id]||0)+1;}
+setInterval(()=>{if(!S||document.hidden)return;for(const bus of agents){if(!bus.bus)continue;busRiders(bus);if(!(bus.wait>0)){bus.atSt=null;continue;}const cell=bus.path&&bus.path[bus.path.length-1];if(!cell)continue;
+  const st=busStops().find(o=>{const c=roadCellOf(o);return c&&c[0]===cell[0]&&c[1]===cell[1];});if(!st||bus.atSt===st.id)continue;bus.atSt=st.id;
+  /* bajan los que iban a este paradero */
+  const down=bus.riders.filter(r=>r.dest===st.id);bus.riders=bus.riders.filter(r=>r.dest!==st.id);down.forEach((r,k)=>setTimeout(()=>{const v=spawnVisitor(st,null,false);if(v&&r.who)v.who=r.who;busStat(st);},300+k*450));
+  /* suben los que esperan, cada uno con un destino */
+  const others=busStops().filter(o=>o.id!==st.id);let up=0;for(const a of agents)if(a.use&&a.use.o===st&&bus.riders.length<12){const dest=others[Math.floor(Math.random()*others.length)];bus.riders.push({dest:dest?dest.id:st.id,who:a.who||null});useEnd(a,true);up++;}
+  if(up||down.length){moodAt(objCenter(st).setY(.9),"🚌",1400);stat("viajesMicro",up);}busRiders(bus);}},300);
+/* ficha del paradero: personas esperando y viajes de hoy */
+{const _oi5=openInfo;openInfo=function(o){_oi5(o);if(!o||o.k!=="paradero"||$("#modal").hidden)return;const wait=agents.filter(a=>a.use&&a.use.o===o).length,trips=(S.busT&&S.busT.d===todayStr()&&S.busT.n[o.id])||0;
+  const t=$("#modal .tiles");if(t)t.insertAdjacentHTML("beforeend",tile("people",wait,"esperando aquí")+tile("bus",trips,"bajaron aquí hoy"));};}
 
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
