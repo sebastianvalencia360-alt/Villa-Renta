@@ -274,7 +274,7 @@ button.res{cursor:pointer;font:800 16px/1 var(--f-display)}
   <button class="res toy" data-act="gems" title="Diamantes: para qué sirven"><svg class="i" viewBox="0 0 24 24"><use href="#ic-gem"/></svg><span class="num" id="hGems"></span></button>
   <div class="res toy" title="Energía"><svg class="i" viewBox="0 0 24 24"><use href="#ic-bolt"/></svg><div class="ebar"><i id="hEb"></i><span id="hE"></span></div><button class="plus" data-act="energy" aria-label="Conseguir más energía">+</button></div>
   <div class="res toy" title="Mercadería"><svg class="i" viewBox="0 0 24 24"><use href="#ic-crate"/></svg><span class="num" id="hMerc"></span></div>
-  <div class="res toy" title="Materiales"><svg class="i" viewBox="0 0 24 24"><use href="#ic-logs"/></svg><span class="num" id="hMat"></span></div>
+  <div class="res toy" title="Materiales"><svg class="i" viewBox="0 0 24 24"><use href="#ic-logs"/></svg><span class="num" id="hMat"></span></div><div class="res toy" id="hSteelB" title="Acero" hidden><svg class="i" viewBox="0 0 24 24"><use href="#ic-steel"/></svg><span class="num" id="hSteel"></span></div>
   <button class="res toy" data-act="happy" title="Felicidad" id="hHapB"><svg class="i" viewBox="0 0 24 24"><use id="hFace" href="#ic-happy"/></svg><span class="num" id="hHap"></span></button>
   <button class="res toy" data-act="happy" title="Comida de la ciudad" id="hFoodB"><svg class="i" viewBox="0 0 24 24"><use href="#ic-food"/></svg><span class="num" id="hFood"></span></button>
   <button class="res toy" data-act="util" title="Agua y luz" id="hUtilB"><svg class="i" viewBox="0 0 24 24"><use href="#ic-drop"/></svg><span class="num" id="hW"></span><svg class="i" viewBox="0 0 24 24"><use href="#ic-bulb"/></svg><span class="num" id="hP"></span></button>
@@ -312,7 +312,7 @@ button.res{cursor:pointer;font:800 16px/1 var(--f-display)}
   <symbol id="ic-gem" viewBox="0 0 24 24"><path d="M6 4h12l4 5-10 12L2 9z" fill="#4fd1a5" stroke="#1d2944" stroke-width="2" stroke-linejoin="round"/><path d="M2 9h20M9 4l3 17 3-17" fill="none" stroke="#1d2944" stroke-width="1.4"/></symbol>
   <symbol id="ic-bolt" viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h6L9.5 22 19 9.5h-6.2z" fill="#ffcf2e" stroke="#1d2944" stroke-width="2" stroke-linejoin="round"/></symbol>
   <symbol id="ic-crate" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2" fill="#d9a35b" stroke="#1d2944" stroke-width="2"/><path d="M3 10h18M8 5v15M16 5v15" stroke="#1d2944" stroke-width="1.6"/></symbol>
-  <symbol id="ic-logs" viewBox="0 0 24 24"><rect x="2.5" y="12" width="19" height="6" rx="3" fill="#b5793f" stroke="#1d2944" stroke-width="2"/><rect x="5" y="6" width="14" height="6" rx="3" fill="#c98b4c" stroke="#1d2944" stroke-width="2"/><circle cx="19" cy="15" r="1.6" fill="#f0d29a"/><circle cx="16.5" cy="9" r="1.4" fill="#f0d29a"/></symbol>
+  <symbol id="ic-steel" viewBox="0 0 24 24"><path d="M4 4h16v4h-5v8h5v4H4v-4h5V8H4z" fill="#a9b6c6" stroke="#1d2944" stroke-width="2" stroke-linejoin="round"/><path d="M6 6h12" stroke="#e8eef5" stroke-width="1.2"/></symbol><symbol id="ic-logs" viewBox="0 0 24 24"><rect x="2.5" y="12" width="19" height="6" rx="3" fill="#b5793f" stroke="#1d2944" stroke-width="2"/><rect x="5" y="6" width="14" height="6" rx="3" fill="#c98b4c" stroke="#1d2944" stroke-width="2"/><circle cx="19" cy="15" r="1.6" fill="#f0d29a"/><circle cx="16.5" cy="9" r="1.4" fill="#f0d29a"/></symbol>
   <symbol id="ic-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2" fill="#fff" stroke="#1d2944" stroke-width="1.8"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5z" fill="#fff" stroke="#1d2944" stroke-width="1.8"/><circle cx="16.5" cy="9" r="2.5" fill="#fff" stroke="#1d2944" stroke-width="1.8"/><path d="M15 14.2c2.8-.4 4.8 1.4 5.3 4.8h-4.6" fill="#fff" stroke="#1d2944" stroke-width="1.8"/></symbol>
   <symbol id="ic-build" viewBox="0 0 32 32"><path d="M5 27V13l11-7 11 7v14z" fill="#ffd9a0" stroke="#1d2944" stroke-width="2.4" stroke-linejoin="round"/><path d="M3 14 16 5l13 9" fill="none" stroke="#c94f3d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><rect x="13" y="18" width="6" height="9" fill="#7a4b2a" stroke="#1d2944" stroke-width="2"/><rect x="7.5" y="15" width="4" height="4" fill="#9fd6f5" stroke="#1d2944" stroke-width="1.6"/><rect x="20.5" y="15" width="4" height="4" fill="#9fd6f5" stroke="#1d2944" stroke-width="1.6"/></symbol>
   <symbol id="ic-road" viewBox="0 0 32 32"><path d="M10 3 5 29h22L22 3z" fill="#6b7489" stroke="#1d2944" stroke-width="2.4" stroke-linejoin="round"/><path d="M16 6v4M16 14v4M16 22v4" stroke="#ffd34d" stroke-width="2.4" stroke-linecap="round"/></symbol>
@@ -5429,7 +5429,7 @@ function openUtil(){modalFn=openUtil;utilCalc();const bar=(u,col)=>{const p=u.de
   const heat=S.heat&&S.heat>NOW(),night=isNight();
   openModal(head("Servicios básicos","Agua y luz para cada vecino")+row("drop","Agua potable",UT.w,"linear-gradient(180deg,#7cc8ff,#2f7fd6)",heat?"Hay ola de calor: se usa 30% más agua.":"")+
     row("bulb","Electricidad",UT.p,"linear-gradient(180deg,#ffe27a,#f2b632)",night?"De noche los paneles solares rinden solo 30%.":"")+
-    `${(()=>{const dirty=Object.values(OBJ).filter(o=>(o.trash||0)>=8).length,dep=liveK("deposito"),load=dep.reduce((a,d)=>a+(d.load||0),0),cap=dep.length*depCap();return `<div class="prog"><div class="ptop"><b>${ICON("trash")} Basura</b><span class="pl">${dep.length?`depósitos ${Math.round(load)}/${cap}`:"sin depósito"}</span></div><small class="note">${dirty?`<b class="bad">${dirty} ${dirty>1?"puntos":"punto"} con basura acumulada.</b> `:"Calles limpias. "}${dep.length?"":"Construye un Depósito de basura (nivel 3)."}${hasK("reciclaje")?" La planta de reciclaje produce materiales.":""}</small></div>
+    `${(()=>{const dirty=Object.values(OBJ).filter(o=>(o.trash||0)>=8).length,dep=liveK("deposito"),load=dep.reduce((a,d)=>a+(d.load||0),0),cap=dep.reduce((a,d)=>a+depCapOf(d),0);return `<div class="prog"><div class="ptop"><b>${ICON("trash")} Basura</b><span class="pl">${dep.length?`depósitos ${Math.round(load)}/${cap}`:"sin depósito"}</span></div><small class="note">${dirty?`<b class="bad">${dirty} ${dirty>1?"puntos":"punto"} con basura acumulada.</b> `:"Calles limpias. "}${dep.length?"":"Construye un Depósito de basura (nivel 3)."}${hasK("reciclaje")?" La planta de reciclaje produce materiales.":""}</small></div>
   <div class="prog"><div class="ptop"><b>${ICON("work")} Empleo</b><span class="pl">${fmt(JOBU.e)} de ${fmt(JOBU.w)} trabajan</span></div><div class="pbar big"><i style="width:${JOBU.w?JOBU.e/JOBU.w*100:100}%"></i></div><small class="note">${JOBU.w-JOBU.e>0?`<b class="bad">${fmt(JOBU.w-JOBU.e)} cesantes.</b> Construye locales, servicios o edificios de comunidad para crear trabajos.`:"Todos los adultos tienen trabajo."} Hay ${fmt(JOBU.j)} puestos.</small></div>
   <div class="prog"><div class="ptop"><b>${ICON("bus")} Tráfico</b><span class="pl">${trafficTxt()}</span></div><small class="note">${busStops().length>=2?`Micros andando: ${agents.filter(a=>a.bus).length}. Viajes en auto ${Math.round(transitCut()*100)}% menos.`:"Construye 2 o más Paraderos de micro (nivel 4) para tener transporte público."}</small></div>`;})()}
     <div class="note">La Municipalidad abastece a ${utilBase0()} personas de cada servicio (más si la mejoras).${S.utGrace>NOW()?` <b>Periodo de gracia: ${dur(Math.ceil((S.utGrace-NOW())/1000))} antes de que los vecinos se molesten por falta de servicios.</b>`:""} Cuando el pueblo crece, construye más en <b>Construir → Servicios</b>. Las casas más cercanas a cada edificio se abastecen primero. Las casas sin luz quedan a oscuras de noche.</div>
@@ -5561,8 +5561,7 @@ const trashSrc=o=>{const it=CAT[o.k];return it&&live(o)&&((it.cat==="casa"&&!o.v
 function trashTick(dt){if(!S||S.lvl<3)return;const mins=dt/60;let dirty=0;
   for(const o of Object.values(OBJ)){if(!trashSrc(o)){if(o.trash)o.trash=0;continue;}const it=CAT[o.k];o.trash=Math.min(10,(o.trash||0)+(it.cat==="casa"?it.pop*.03:.25)*mins);if(o.trash>=8)dirty++;updTrash(o);}
   for(const d of liveK("deposito")){d.load=Math.max(0,(d.load||0)-mins*1);}
-  const rp=liveK("reciclaje").length;if(rp){let left=8*rp*mins;for(const d of liveK("deposito")){const t=Math.min(left,d.load||0);d.load-=t;left-=t;S.recBuf=(S.recBuf||0)+t;}
-    while(S.recBuf>=8){S.recBuf-=8;S.mat+=1;stat("reciclado",8);}}
+  recycleTick(mins);
   for(const d of liveK("deposito"))truckTick(d);
   if(dirty>=4)addEmg("basura","Limpia la basura acumulada en el pueblo",10,{c:60+30*S.lvl,g:1});
   if(dirty>=3&&(!S.trA||NOW()-S.trA>8*60000)){S.trA=NOW();toast(hasK("deposito")?"Hay basura acumulada: construye otro Depósito o una Planta de reciclaje.":"Hay basura acumulada en las calles. Construye un Depósito de basura (Servicios) o toca las bolsas para limpiar.",5000);news("vida",`Vecinos reclaman por basura acumulada en ${dirty} puntos del pueblo.`,3);}}
@@ -7011,7 +7010,7 @@ trainFrame=function(){const st=stationObj(),T=S&&S.train;if(!st||!T||T.state==="
 /* ---- Contratos del tren: tú eliges qué trae el próximo (inspirado en Township y CityVille, con un giro) ---- */
 const TR_C={mat:{n:"Carga de materiales",d:"Trae materiales para construir.",ic:"logs"},merc:{n:"Carga de mercadería",d:"Trae mercadería para tus locales.",ic:"crate"},
   tur:{n:"Tren turístico",d:"El doble de pasajeros y cada uno paga el doble en tus locales.",ic:"people"},exp:{n:"Exportar",d:"Se lleva tu mercadería sobrante y te paga por ella.",ic:"coin"}};
-const trAmt=k=>k==="mat"?10+2*S.lvl:k==="merc"?15+3*S.lvl:0;
+const trAmt=k=>k==="mat"?10+2*S.lvl:k==="merc"?15+3*S.lvl:k==="steel"?3+Math.floor(S.lvl/3):0;
 trainTick=function(){const st=stationObj();buildTrack();if(!st){if(TRAIN.grp)TRAIN.grp.visible=false;return;}const T=S.train||(S.train={state:"away",next:NOW()+60000});if(!T.cargo)T.cargo="mat";const t=NOW();
   if(T.state==="away"&&t>=T.next){T.state="in";T.t0=t;}
   else if(T.state==="in"&&t-T.t0>=12000){T.state="docked";T.t0=t;stat("trenes");const k=T.cargo,tur=k==="tur",pax=(6+Math.min(16,S.lvl))*(tur?2:1);
@@ -7019,12 +7018,13 @@ trainTick=function(){const st=stationObj();buildTrack();if(!st){if(TRAIN.grp)TRA
     if(k==="mat"){const q=trAmt("mat");S.mat+=q;popup(objCenter(st).setY(1.2),`+${q} materiales`,"#8a5a1e",1.5);msg=`trae ${q} materiales`;}
     else if(k==="merc"){const q=Math.min(trAmt("merc"),Math.max(0,storeCap()-S.merc));S.merc+=q;popup(objCenter(st).setY(1.2),`+${q} mercadería`,"#2f7fd6",1.5);msg=q?`trae ${q} de mercadería`:"traía mercadería, pero tus bodegas están llenas";}
     else if(k==="exp"){const q=Math.min(S.merc,20+5*S.lvl),v=q*6;S.merc-=q;S.coins+=v;stat("earned",v);popup(objCenter(st).setY(1.2),`+${fmt(v)} monedas`,"#e0a400",1.5);msg=q?`se llevó ${q} de mercadería y te pagó ${fmt(v)} monedas`:"venía a buscar mercadería, pero no tenías";}
+    else if(k==="steel"){const q=trAmt("steel");S.steel=(S.steel||0)+q;popup(objCenter(st).setY(1.2),`+${q} acero`,"#5b6b80",1.5);msg=`trae ${q} de acero`;hud();}
     else msg="viene lleno de turistas";
     toast(`Llegó el tren: ${pax} pasajeros bajan a recorrer ${S.name} y ${msg}.`,4500);news("turismo",`El tren llegó a ${S.name} con ${pax} pasajeros.`,2);checkQuests();save();}
   else if(T.state==="docked"&&t-T.t0>=25000){T.state="out";T.t0=t;}
   else if(T.state==="out"&&t-T.t0>=12000){T.state="away";T.next=t+rnd(6,10)*60000;}};
 function trainPanel(){const T=S.train||{},left=T.next?Math.max(0,Math.ceil((T.next-NOW())/1000)):0,away=T.state==="away"||!T.state,callC=200+50*S.lvl;
-  const opts=Object.entries(TR_C).map(([k,v])=>{const sel=(T.cargo||"mat")===k,am=k==="mat"?`+${trAmt("mat")} materiales`:k==="merc"?`+${trAmt("merc")} mercadería`:k==="exp"?`hasta ${20+5*S.lvl} · 6 c/u`:`${(6+Math.min(16,S.lvl))*2} turistas`;
+  const opts=Object.entries(TR_C).filter(([k])=>k!=="steel"||S.lvl>=7).map(([k,v])=>{const sel=(T.cargo||"mat")===k,am=k==="steel"?`+${trAmt("steel")} acero`:k==="mat"?`+${trAmt("mat")} materiales`:k==="merc"?`+${trAmt("merc")} mercadería`:k==="exp"?`hasta ${20+5*S.lvl} · 6 c/u`:`${(6+Math.min(16,S.lvl))*2} turistas`;
     return `<button class="trc${sel?" on":""}" data-act="trCargo" data-c="${k}">${ICON(v.ic)}<b>${v.n}</b><small>${v.d}</small><span>${am}</span></button>`;}).join("");
   return `<div class="isec"><h4>${ICON("bus")} Próximo tren <small>elige qué trae</small></h4><div class="trcs">${opts}</div>
     ${away?`<div class="row"><span class="note">Llega en ${dur(left)}</span><button class="btn gold sm" data-act="trCall" ${S.coins<callC?"disabled":""}>Llamarlo ya · ${ICON("coin")} ${fmt(callC)}</button></div>`:`<div class="note good">El tren está ${T.state==="docked"?"en el andén":T.state==="in"?"llegando":"saliendo"}. El próximo usará el contrato que elijas.</div>`}</div>`;}
@@ -7329,6 +7329,55 @@ setInterval(()=>{if(!S||!S.med)return;const o=OBJ[S.med.oid];if(!o){S.med=null;m
 /* los vehículos de emergencia se demoran en los tacos */
 {const _ss2=stepSvc;stepSvc=function(ag,dt){if(dt>0&&ag.siren&&typeof JAMSET!=="undefined"&&JAMSET.size){const [x,z]=cellOfPos(ag.obj.position);if(inMap(x,z)&&JAMSET.has(idx(x,z)))dt*=.5;}return _ss2(ag,dt);};}
 
+/* ---- Basura 2.0: depósito con estrellas, camiones que llevan la basura a la planta, y ACERO ---- */
+const depCapOf=o=>[150,250,400][Math.min(3,o&&o.s||1)-1];
+const trucksOf=o=>Math.min(3,o&&o.s||1);
+truckTick=function(d){if(!roadCellOf(d))return;d.trk=d.trk||0;if(d.truck!=null)delete d.truck;if(d.trk>=trucksOf(d))return;
+  /* 1) llevar basura a la planta de reciclaje si el depósito va sobre la mitad */
+  const pl=liveK("reciclaje").filter(p=>roadCellOf(p)&&(p.yard||0)<300);
+  if(pl.length&&(d.load||0)>=depCapOf(d)*.5&&!d.haul){const [cx,cz]=centerXZ(d);pl.sort((a,b)=>{const [ax,az]=centerXZ(a),[bx2,bz]=centerXZ(b);return (Math.abs(ax-cx)+Math.abs(az-cz))-(Math.abs(bx2-cx)+Math.abs(bz-cz));});const p=pl[0];
+    const amt=Math.min(d.load||0,80,300-(p.yard||0));if(amt>=10){d.haul=true;d.trk++;d.load-=amt;const ag=dispatch("garbage_truck",d,p,{stay:3,onArrive:()=>{p.yard=Math.min(300,(p.yard||0)+amt);popup(objCenter(p),`+${amt} para reciclar`,"#3aa856",1.3);},onBack:()=>{d.trk=Math.max(0,(d.trk||1)-1);d.haul=false;}});
+      if(!ag){d.trk--;d.haul=false;d.load+=amt;}else return;}}
+  /* 2) recoger basura del barrio */
+  if((d.load||0)>=depCapOf(d))return;const [cx,cz]=centerXZ(d),R=svcR(d);let best=null,bv=3.5;
+  for(const o of Object.values(OBJ)){if(!trashSrc(o)||(o.trash||0)<bv||o.trashT)continue;const [x,z]=centerXZ(o);if(Math.max(Math.abs(x-cx),Math.abs(z-cz))>R||!roadCellOf(o))continue;bv=o.trash;best=o;}
+  if(!best)return;best.trashT=true;d.trk++;const ag=dispatch("garbage_truck",d,best,{stay:3,onArrive:()=>{const v=Math.round(best.trash||0);best.trash=0;best.trashT=false;updTrash(best);d.load=Math.min(depCapOf(d),(d.load||0)+v);stat("basuraRecogida",v);if(v)popup(objCenter(best),`Basura recogida`,"#3aa856",1.2);},onBack:()=>{d.trk=Math.max(0,(d.trk||1)-1);}});
+  if(!ag){best.trashT=false;d.trk--;}};
+/* la planta procesa lo que tiene en su patio: 6 de basura = 1 acero */
+function recycleTick(mins){for(const p of liveK("reciclaje")){const t=Math.min(p.yard||0,8*mins);if(t<=0)continue;p.yard-=t;S.recBuf=(S.recBuf||0)+t;}
+  while((S.recBuf||0)>=6){S.recBuf-=6;S.steel=(S.steel||0)+1;stat("acero");stat("reciclado",6);}}
+/* fardos en el patio según lo acopiado */
+setInterval(()=>{if(!S)return;for(const p of liveK("reciclaje")){if(!p.g)continue;let Y=p.g.userData.yardG;if(!Y){Y=new THREE.Group();p.g.add(Y);p.g.userData.yardG=Y;const cols=["#2f7fd6","#f2b632","#c9ced6","#8a5d38","#3f8a5a"];
+    const old=[0,1,2,3,4].map(i=>MATC["rcb"+i]).filter(Boolean);p.g.traverse(m=>{if(m.isMesh&&old.includes(m.material))m.visible=false;});
+    for(let i=0;i<10;i++){const b=bx(Y,.17,.13,.13,mat("rcb2"+(i%5),{color:cols[i%5]}),.35+(i%3)*.19,Math.floor(i/6)*.13,.15+Math.floor((i%6)/3)*.17);b.visible=false;}}
+  const n=Math.ceil((p.yard||0)/30);Y.children.forEach((b,i)=>b.visible=i<n);}},2000);
+/* depósito: aspecto según estrellas */
+{const _dd=DECO.deposito;DECO.deposito=(g,o)=>{_dd(g,o);const s=o&&o.s||1;if(s<2)return;const cols=["#3f8a5a","#2f7fd6","#f2b632","#c0392b","#8a8f96"];
+  /* ★★: contenedores de reciclaje de colores, andén y letrero grande */
+  for(let i=0;i<5;i++){bx(g,.13,.18,.13,mat("dbin"+i,{color:cols[i]}),-.72+i*.16,0,-.32);bx(g,.14,.02,.14,mat("dlid",{color:"#3b3f46"}),-.72+i*.16,.18,-.32);}
+  bx(g,.5,.04,.5,mat("dpad",{color:"#cfcac0"}),-.3,0,.45);bx(g,.5,.32,.04,mat("doff",{}),-.3,0,.72);bx(g,.36,.24,.02,mat("ddoor",{color:"#8a9099",metalness:.4}),-.3,0,.70);
+  const sg=signMesh("♻ RECICLA","#2f7fd6","#ffffff",.5,.11);sg.position.set(-.3,.4,.745);g.add(sg);const t2=put(g,"garbage_truck",-.3,.45,Math.PI/2,.15);t2.position.y=.03;
+  if(s<3)return;/* ★★★: techo verde con paneles y compactadora */
+  bx(g,.56,.02,.46,mat("dgreen",{color:"#5aa83a",roughness:1}),.55,.39,.1);for(let i=0;i<3;i++){const pnl=bx(g,.14,.015,.3,mat("dsolar",{color:"#1f3a5f",metalness:.5,roughness:.3}),.4+i*.15,.42,.1);pnl.rotation.x=-.25;}
+  bx(g,.3,.26,.24,mat("dcomp",{color:"#f2b632"}),.6,0,-.6);cy(g,.04,.04,.25,mat("dpist",{color:"#8a9099",metalness:.6}),.6,.26,-.6,10);const t3=put(g,"garbage_truck",.2,.45,Math.PI/2,.15);t3.position.y=.03;};}
+/* ---- ACERO: recurso nuevo ---- */
+const STEEL_CAT={torre1:15,torre2:30,torre3:60,estadio:40,hospital:20,universidad:20,central:25};
+for(const k in STEEL_CAT)if(CAT[k])CAT[k].steel=STEEL_CAT[k];
+const starSteel=o=>(SVC[o.k]||o.k==="central"||o.k==="reciclaje")?[0,10,25][o.s||1]||0:0;
+{const _pay=pay;pay=function(c){if(c.st&&(S.steel||0)<c.st)return `Te falta acero (${c.st}). Se consigue en la Planta de reciclaje.`;const e=_pay(c);if(!e&&c.st)S.steel-=c.st;return e;};}
+{const _cp3=canPlace;canPlace=function(k,x,z,q){const e=_cp3(k,x,z,q);if(e)return e;const it=CAT[k];if(it&&it.steel&&!it.special&&!(typeof MOVE!=="undefined"&&MOVE)&&(S.steel||0)<it.steel)return `Te falta acero (${it.steel}). Se consigue en la Planta de reciclaje.`;return null;};}
+{const _us2=upgradeStar;upgradeStar=function(o){const st=starSteel(o);if(st&&(S.steel||0)<st){toast(`Para la próxima estrella necesitas ${st} de acero. Se consigue en la Planta de reciclaje.`,4000);return;}const s0=o.s||1;_us2(o);if((o.s||1)>s0&&st){S.steel-=st;hud();save();}};}
+/* HUD: mostrar acero cuando ya importa */
+{const _hud=hud;hud=function(){_hud();const b=$("#hSteelB");if(!b||!S)return;const show=S.lvl>=7||(S.steel||0)>0;b.hidden=!show;const n=$("#hSteel");if(n)n.textContent=fmt(S.steel||0);};}
+/* ayuda del recurso */
+{const _or=openRes;openRes=function(r){if(r!=="steel")return _or(r);modalFn=()=>openRes(r);
+  openModal(head(`${ICON("steel")} Acero`,`Tienes ${fmt(S.steel||0)} · para las obras grandes`)+`<div class="note">Se usa en las torres, el estadio, el hospital, la universidad, la central y para mejorar los servicios a ★★ y ★★★.</div><h4 class="rnh">Cómo conseguirlo</h4><div class="list">`+
+    rnWay("trash","Planta de reciclaje","Los camiones le llevan basura de los depósitos y la convierte en acero (6 de basura = 1 acero).",rnState("reciclaje"))+
+    rnWay("bus","Tren de carga","Elige \"Carga de acero\" en la estación.",rnState("estacion"))+rnWay("anchor","Barcos del puerto","Algunos barcos pagan con acero.",rnState("muelle"))+`</div>`);};}
+setTimeout(()=>{const el=$("#hSteelB");if(el){el.dataset.act="rinfo";el.dataset.r="steel";el.setAttribute("role","button");el.style.cursor="pointer";}hud&&S&&hud();},500);
+/* tren: opción de carga de acero desde nivel 7 */
+TR_C.steel={n:"Carga de acero",d:"Trae acero para obras grandes.",ic:"steel"};
+
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
   const r0=rightOf(path[1][0]-path[0][0],path[1][1]-path[0][1]),c0=cellC(...path[0]);pts.push({p:new V3(c0.x+r0[0]*off,.02,c0.z+r0[1]*off)});
@@ -7607,7 +7656,7 @@ function canPlace(k,x,z,quiet){
 function place(k,x,z,rot){
   const err=canPlace(k,x,z);if(err){toast(err);return false;}
   const it=CAT[k],w=it.w||1;
-  if(it.special)S.inv[k]--;else{S.coins-=it.cost||0;S.mat-=it.mats||0;S.gems-=it.gems||0;if(it.gems)stat("gemsUsed",it.gems);}
+  if(it.special)S.inv[k]--;else{S.coins-=it.cost||0;S.mat-=it.mats||0;S.steel=(S.steel||0)-(it.steel||0);S.gems-=it.gems||0;if(it.gems)stat("gemsUsed",it.gems);}
   let r=rot;if(r==null){const rs=roadSide(x,z,w);r=rs?rotFromDir(rs.d):0;if(k==="muelle"||k==="balneario"||k==="estacion"){const d=waterSide(x,z,w);if(d)r=rotFromDir(d);}}
   const o={id:nextId++,k,x,z,r,s:1};
   if(isObraItem(it))o.build={t0:NOW(),d:buildSecs(it)};
@@ -7952,7 +8001,7 @@ function openModal(html,wide){const m=$("#modal");m.innerHTML=`<div class="sheet
 function closeModal(){$("#modal").hidden=true;$("#modal").innerHTML="";modalFn=null;}
 let modalFn=null;
 const head=(t,sub)=>`<div class="shead"><div><h2>${t}</h2>${sub?`<div class="sub">${sub}</div>`:""}</div><button class="x" data-act="close" aria-label="Cerrar">×</button></div>`;
-const costHtml=it=>`<div class="cost">${it.special?`<span>Gratis</span>`:it.gems?`<span class="${S&&S.gems<it.gems?"short":""}">${ICON("gem")}${it.gems}</span>`:`<span class="${S&&S.coins<it.cost?"short":""}">${ICON("coin")}${fmt(it.cost)}</span>`}${it.mats?`<span class="${S&&S.mat<it.mats?"short":""}">${ICON("logs")}${it.mats}</span>`:""}</div>`;
+const costHtml=it=>`<div class="cost">${it.steel?`<span class="${S&&(S.steel||0)<it.steel?"short":""}">${ICON("steel")}${it.steel}</span>`:""}${it.special?`<span>Gratis</span>`:it.gems?`<span class="${S&&S.gems<it.gems?"short":""}">${ICON("gem")}${it.gems}</span>`:`<span class="${S&&S.coins<it.cost?"short":""}">${ICON("coin")}${fmt(it.cost)}</span>`}${it.mats?`<span class="${S&&S.mat<it.mats?"short":""}">${ICON("logs")}${it.mats}</span>`:""}</div>`;
 function statLine(it){
   if(it.water)return `Agua para ${it.water} personas`;if(it.power)return `Luz para ${it.power} personas${it.solar?" (de día)":""}`;if(it.gems)return `+${it.b}% en un radio de ${it.r} · exclusiva`;
   if(it.cat==="casa")return `+${it.pop} habitantes · ${fmt(it.rent)} cada ${dur(it.t)}`;
@@ -8002,7 +8051,7 @@ function infoHero(o,it,sub){const cs=CAT_S[it.cat]||["Edificio","#eef4f9","#2f7f
   const chips=(o.ref?`<span class="chip ok">Antisísmico</span>`:"")+(b&&(it.cat==="casa"||it.cat==="local")?`<span class="chip">+${b}% por decoración</span>`:"");
   let img="";try{img=thumb(o.k);}catch(e){}
   return `<div class="ihero" style="--c1:${cs[1]};--c2:${cs[2]}"><div class="ithumb">${img?`<img src="${img}" alt="">`:""}</div><div class="ihd"><span class="ichip">${cs[0]}</span><h2>${it.name}</h2><div class="isub">${st}${sub?`<span>${sub}</span>`:""}${chips}</div></div><button class="x" data-act="close" aria-label="Cerrar">×</button></div>`;}
-const costPill=c=>`${c.c?`<span class="${S&&S.coins<c.c?"short":""}">${ICON("coin")}${fmt(c.c)}</span>`:""}${c.mt?`<span class="${S&&S.mat<c.mt?"short":""}">${ICON("logs")}${c.mt}</span>`:""}`;
+const costPill=c=>`${c.st?`<span class="${S&&(S.steel||0)<c.st?"short":""}">${ICON("steel")}${c.st}</span>`:""}${c.c?`<span class="${S&&S.coins<c.c?"short":""}">${ICON("coin")}${fmt(c.c)}</span>`:""}${c.mt?`<span class="${S&&S.mat<c.mt?"short":""}">${ICON("logs")}${c.mt}</span>`:""}`;
 function footHtml(o,cancel){return `<div class="ifoot">${cancel?"":`<button class="btn ghost" data-act="rot" data-o="${o.id}">${SVG_ROT} Girar</button>${o.k!=="muni"?`<button class="btn ghost" data-act="mover" data-o="${o.id}">${SVG_MOVE} Mover</button>`:""}`}<button class="btn ghost danger" data-act="sell" data-o="${o.id}">${SVG_DEL} ${cancel?"Cancelar obra":"Demoler"}</button></div>`;}
 function openInfo(o){modalFn=()=>openInfo(o);const it=itemOf(o);const b=bonusAt(o);let h="";
   if(o.build){const p=obraProg(o),ready=p>=1,gm=obraGems(o),left=obraLeft(o),tot=p<1?left*1000/(1-p):1;
@@ -8043,14 +8092,14 @@ function openInfo(o){modalFn=()=>openInfo(o);const it=itemOf(o);const b=bonusAt(
     extra=`<div class="note">${o.k==="estadio"?"Cada día a las 18:00 llegan hinchas desde las casas. Si gana el equipo del pueblo hay fuegos artificiales y todos quedan más felices. La entrada deja monedas.":"Los niños y jóvenes vienen a jugar en la tarde y hay un partido de barrio a las 17:00 (si no tienes estadio)."}</div>`;}
   else if(o.k==="balneario"){tiles=tile("sun",(S.wx?S.wx.k:"sol")==="sol"&&!isNight()?"Abierto":"Vacío","bañistas con sol")+tile("people","+"+Math.round(Math.min(.12,liveK("balneario").length*.04)*100)+"%","más viajeros paran");extra=`<div class="note">Con sol llegan bañistas y turistas, y el carrito vende helados. Las casas a 10 casillas son más felices.</div>`;}
   else if(o.k==="estacion"){const T=S.train||{};tiles=tile("bus",T.state==="docked"?"En el andén":T.state==="in"?"Llegando":T.state==="out"?"Saliendo":T.next?`En ${dur(Math.max(0,Math.ceil((T.next-NOW())/1000)))}`:"Pronto","próximo tren",T.state==="docked"?"good":"")+tile("people",fmt(S.stats.trenes||0),"trenes recibidos");extra=`<div class="note">Cada 6 a 10 minutos llega un tren: bajan pasajeros que compran en tus locales. Abajo eliges qué trae el próximo.</div>`;}
-  else if(o.k==="deposito"){tiles=tile("trash",`${Math.round(o.load||0)}/${depCap()}`,"basura en el depósito",(o.load||0)>=depCap()?"bad":"")+tile("work",o.truck?"En ruta":"Listo","camión recolector");extra=`<div class="note">El camión recoge la basura de casas y locales a 22 casillas. ${hasK("reciclaje")?"La planta de reciclaje la convierte en materiales.":"Con una Planta de reciclaje la basura se convierte en materiales."} Si el depósito se llena, el camión deja de salir.</div>`;}
-  else if(o.k==="reciclaje"){tiles=tile("logs",fmt(Math.floor((S.stats.reciclado||0)/8)),"materiales reciclados");extra=`<div class="note">Procesa 8 de basura por minuto desde los depósitos y la convierte en 1 material.</div>`;}
+  else if(o.k==="deposito"){tiles=tile("trash",`${Math.round(o.load||0)}/${depCapOf(o)}`,"basura en el depósito",(o.load||0)>=depCapOf(o)?"bad":"")+tile("work",`${o.trk||0}/${trucksOf(o)}`,"camiones en ruta");extra=`<div class="note">El camión recoge la basura de casas y locales a 22 casillas. ${hasK("reciclaje")?"La planta de reciclaje la convierte en materiales.":"Con una Planta de reciclaje la basura se convierte en materiales."} Si el depósito se llena, el camión deja de salir.</div>`;}
+  else if(o.k==="reciclaje"){tiles=tile("steel",fmt(S.stats.acero||0),"acero producido")+tile("trash",`${Math.round(o.yard||0)}/300`,"basura en el patio");extra=`<div class="note">Los camiones de los depósitos le traen la basura cuando van sobre la mitad. Procesa 8 por minuto: cada 6 de basura sale 1 de acero.</div>`;}
   else if(o.k==="paradero"){tiles=tile("bus",busStops().length,"paraderos en la ruta")+tile("people",Math.round(transitCut()*100)+"%","menos viajes en auto")+tile("bus",agents.filter(a=>a.bus).length,"micros andando");extra=(busStops().length<2?(liveK("paradero").length>=2?`<div class="note bad"><b>Pon el otro paradero más lejos.</b> Tus paraderos están en el mismo tramo de calle; el micro necesita al menos 2 paradas distintas.</div>`:`<div class="note bad"><b>Falta otro paradero.</b> El micro empieza a pasar cuando hay 2 paraderos al lado de una calle, conectados por calles.</div>`):"")+`<div class="note">Con 2 o más paraderos pasa un micro que recorre todos. Cada paradero reduce el uso del auto (hasta 60%). Tráfico: <b>${trafficTxt()}</b>.</div>`;}
   else if(it.b){tiles=tile("tree","+"+it.b+"%","arriendo y ventas")+tile("star",(it.r||2)+" casillas","alcance");extra=`<div class="note">Sube el arriendo y las ventas de los edificios cercanos. Las casas también lo cuentan como área verde.</div>`;}
   else if(it.desc)extra=`<div class="note">${it.desc}</div>`;
   if(it.cat!=="casa"&&slotsOf(o)>0)tiles+=tile("work",`${empOf(o)}/${slotsOf(o)}`,(PRODK(o)?`trabajadores · +${Math.round(20*(staffRate(o)||0))}%`:"trabajadores"),empOf(o)>=slotsOf(o)?"good":"");
   const canStar=(it.cat==="casa"||it.cat==="local"||o.k==="aserradero"||(typeof SVC!=="undefined"&&!!SVC[o.k]))&&(o.s||1)<3;let up="";
-  if(canStar){const sc={c:Math.round(it.cost*.6*(o.s||1)),mt:5+Math.round(it.cost/60)*(o.s||1)},ok=S.coins>=sc.c&&S.mat>=sc.mt;
+  if(canStar){const sc={c:Math.round(it.cost*.6*(o.s||1)),mt:5+Math.round(it.cost/60)*(o.s||1),st:typeof starSteel==="function"?starSteel(o):0},ok=S.coins>=sc.c&&S.mat>=sc.mt&&(S.steel||0)>=(sc.st||0);
     up=`<div class="upg"><span class="stars">${"★".repeat((o.s||1)+1)}</span><div><b>Mejorar a ${(o.s||1)+1} estrellas</b><small>${o.k==="aserradero"?"+3 materiales en cada ciclo.":o.k==="deposito"?"Más alcance, más capacidad y un camión más.":(typeof SVC!=="undefined"&&SVC[o.k])?"Más casillas de alcance para proteger más casas.":`+30% ${it.cat==="casa"?"de arriendo":"por cliente"} y más felicidad.`}</small></div><button class="btn gold" data-act="star" data-o="${o.id}" ${ok?"":"disabled"}><span class="cost">${costPill(sc)}</span></button></div>`;}
   const rh=refHtml(o);
   h=infoHero(o,it,sub)+(tiles?`<div class="tiles">${tiles}</div>`:"")+prog+(acts?`<div class="acts">${acts}</div>`:"")+extra+up+(rh?`<div class="isec"><h4>${ICON("hammer")} Protección</h4><div class="list">${rh}</div></div>`:"")+footHtml(o);
