@@ -7196,6 +7196,28 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
 /* el modal (avisos, ayuda de navegador) debe verse sobre la portada */
 (function(){const st=document.createElement("style");st.textContent=`#cover~#toast{z-index:260}`;document.head.appendChild(st);})();
 
+/* ---- Nube: siempre gana la partida con MÁS nivel (y copia de respaldo de la mejor partida) ---- */
+ACC.bestLvl=0;
+accUpload=async function(force){if(typeof VISIT!=="undefined"&&VISIT)return false;if(!FB.user||!FB.db||!S||FB.user.isAnonymous)return false;if(!force&&!ACC.synced)return false;
+  if(ACC.busy)return false;if(!force&&(S.ts||0)<=ACC.upTs)return false;const json=accSaveJSON();if(!json)return false;if(json.length>900000){console.warn("partida muy grande para la nube");return false;}
+  ACC.busy=true;const ts=S.ts||NOW();const doc={data:json,...accMeta(),ts,v:1,dev:accDev()};
+  try{if((S.lvl||1)>=(ACC.bestLvl||0)){const z=await cpZip(json);if(z.z&&json.length+z.data.length<950000){doc.bestZ=z.data;doc.bestLvl=S.lvl||1;doc.bestPop=popNow();doc.bestTs=ts;doc.bestCity=String(S.name||"").slice(0,32);}}
+    await FB.db.collection("saves").doc(FB.user.uid).set(doc,{merge:true});if(doc.bestLvl)ACC.bestLvl=doc.bestLvl;ACC.upTs=ts;ACC.upT=NOW();accLast(ts);return true;}
+  catch(e){console.warn("nube",e&&e.code||e);return false;}finally{ACC.busy=false;}};
+function bestPick(a,b){return (b.lvl-a.lvl)||(b.pop-a.pop)||(b.ts-a.ts);}
+accSync=async function(){if(!FB.user||!FB.db||ACC.asked||(typeof VISIT!=="undefined"&&VISIT))return;ACC.asked=true;if(FB.user.isAnonymous){ACC.synced=true;return;}
+  const uid=FB.user.uid;let snap=null,city=null;try{snap=await FB.db.collection("saves").doc(uid).get();}catch(e){ACC.asked=false;return;}try{city=await FB.db.collection("cities").doc(uid).get();}catch(e){}
+  const loc={src:"local",lvl:S.lvl||1,pop:popNow(),ts:window.__loadTs||S.ts||0,city:S.name},C=[loc];
+  if(snap&&snap.exists){const d=snap.data();ACC.bestLvl=Math.max(d.bestLvl||0,d.lvl||0);C.push({src:"save",lvl:d.lvl||1,pop:d.pop||0,ts:d.ts||0,city:d.city,get:()=>d.data});
+    if(d.bestZ&&(d.bestLvl||0)>=(d.lvl||0))C.push({src:"best",lvl:d.bestLvl||1,pop:d.bestPop||0,ts:d.bestTs||0,city:d.bestCity,get:()=>cpUnzip({z:1,data:d.bestZ})});}
+  if(city&&city.exists){const c=city.data();if(c&&c.data)C.push({src:"city",lvl:c.lvl||1,pop:c.pop||0,ts:c.ts||0,city:c.city,get:()=>cpUnzip(c)});}
+  C.sort(bestPick);const top=C[0];let jl=false;try{jl=!!sessionStorage.getItem("vr_jl");sessionStorage.removeItem("vr_jl");}catch(e){}
+  if(top.src==="local"||top.lvl<=loc.lvl||jl){ACC.synced=true;const cloud=C.find(c=>c.src==="save");if(!cloud||cloud.lvl!==loc.lvl||cloud.pop!==loc.pop||Math.abs(cloud.ts-loc.ts)>5000){await accUpload(true);if(cloud&&cloud.lvl<loc.lvl)toast(`Guardamos en tu cuenta tu ciudad ${S.name} (nivel ${S.lvl}), que es la de más nivel.`,4500);}return;}
+  let data=null;try{data=top.get();const o=JSON.parse(data);if(!o||o.v!==1||!o.objs)data=null;}catch(e){data=null;}
+  if(!data){ACC.synced=true;await accUpload(true);return;}
+  toast(`Cargando tu ciudad ${top.city||""} (nivel ${top.lvl}) desde tu cuenta…`,3000);try{sessionStorage.setItem("vr_jl","1");}catch(e){}setTimeout(()=>accLoadRemote({data,ts:top.ts}),900);};
+{const _cpb=cityPush;cityPush=function(f){if(typeof ACC!=="undefined"&&(!ACC.synced||(S&&(S.lvl||1)<(ACC.bestLvl||0))))return Promise.resolve();return _cpb(f);};}
+
 /* ---- Trayectos por calles (con semáforos) ---- */
 function lanePts(path,off=.17){const n=path.length,pts=[];if(n<2){const c=cellC(...path[0]);return [{p:new V3(c.x,.02,c.z)}];}
   const r0=rightOf(path[1][0]-path[0][0],path[1][1]-path[0][1]),c0=cellC(...path[0]);pts.push({p:new V3(c0.x+r0[0]*off,.02,c0.z+r0[1]*off)});
