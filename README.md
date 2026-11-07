@@ -7,3 +7,7 @@ Juego de ciudad en 3D para el navegador: construye casas y locales, cobra el arr
 - Funciona en computador y celular (Chrome, Safari, Edge, Firefox).
 - La partida se guarda en tu navegador. Para llevarla a otro equipo: *Ajustes → Llevar tu partida*.
 - Todo el juego está en un solo archivo (`index.html`), también se puede descargar y jugar sin internet.
+
+---
+
+© 2026 Sebastián Enrique Valencia Pozo. **Todos los derechos reservados.** No está permitido copiar, modificar ni volver a publicar este juego sin autorización (ver `LICENSE`).
